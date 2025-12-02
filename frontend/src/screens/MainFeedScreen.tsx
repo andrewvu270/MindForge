@@ -7,15 +7,10 @@ import {
     TouchableOpacity,
     Dimensions,
     StatusBar,
+    TextInput,
+    Image,
 } from 'react-native';
-import Animated, {
-    useAnimatedScrollHandler,
-    useSharedValue,
-    useAnimatedStyle,
-    interpolate,
-    Extrapolate,
-    FadeInDown,
-} from 'react-native-reanimated';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { theme } from '../theme';
@@ -24,16 +19,13 @@ import { BentoCard } from '../components/BentoCard';
 import { apiService } from '../services/api';
 import { Field, Lesson, DailyChallenge } from '../types';
 
-const { width, height } = Dimensions.get('window');
-const HEADER_HEIGHT = 300;
+const { width } = Dimensions.get('window');
 
 const MainFeedScreen = ({ navigation }: { navigation: any }) => {
     const [dailyChallenge, setDailyChallenge] = useState<DailyChallenge | null>(null);
     const [recentLessons, setRecentLessons] = useState<Lesson[]>([]);
     const [fields, setFields] = useState<Field[]>([]);
     const [loading, setLoading] = useState(true);
-
-    const scrollY = useSharedValue(0);
 
     useEffect(() => {
         loadData();
@@ -57,211 +49,221 @@ const MainFeedScreen = ({ navigation }: { navigation: any }) => {
         }
     };
 
-    const scrollHandler = useAnimatedScrollHandler({
-        onScroll: (event) => {
-            scrollY.value = event.contentOffset.y;
-        },
-    });
+    const renderHeader = () => (
+        <View style={styles.header}>
+            <View style={styles.headerTop}>
+                <View>
+                    <TouchableOpacity style={styles.iconButton}>
+                        <Feather name="mail" size={24} color={theme.colors.text} />
+                    </TouchableOpacity>
+                </View>
+                <View style={styles.headerActions}>
+                    <TouchableOpacity style={styles.iconButton}>
+                        <Feather name="bell" size={24} color={theme.colors.text} />
+                    </TouchableOpacity>
+                    <View style={styles.avatarContainer}>
+                        <Ionicons name="person" size={24} color={theme.colors.text} />
+                    </View>
+                </View>
+            </View>
 
-    const headerAnimatedStyle = useAnimatedStyle(() => {
-        const opacity = interpolate(
-            scrollY.value,
-            [0, HEADER_HEIGHT / 2, HEADER_HEIGHT],
-            [1, 0.5, 0],
-            Extrapolate.CLAMP
-        );
+            <Text style={styles.greeting}>Hello, Jason</Text>
+            <Text style={styles.subGreeting}>help you reach your full potential</Text>
 
-        const translateY = interpolate(
-            scrollY.value,
-            [0, HEADER_HEIGHT],
-            [0, -HEADER_HEIGHT / 2],
-            Extrapolate.CLAMP
-        );
+            <View style={styles.searchContainer}>
+                <Feather name="search" size={20} color={theme.colors.textLight} style={styles.searchIcon} />
+                <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search your course...."
+                    placeholderTextColor={theme.colors.textLight}
+                />
+            </View>
+        </View>
+    );
 
-        return {
-            opacity,
-            transform: [{ translateY }],
-        };
-    });
-
-    const renderHeroSection = () => (
-        <Animated.View style={[styles.heroSection, headerAnimatedStyle]}>
+    const renderBanner = () => (
+        <Animated.View entering={FadeInDown.delay(100).duration(600)} style={styles.bannerContainer}>
             <LinearGradient
-                colors={theme.gradients.hero}
+                colors={theme.gradients.banner}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={styles.heroGradient}
+                style={styles.banner}
             >
-                <View style={styles.heroContent}>
-                    <Text style={styles.heroGreeting}>Good morning</Text>
-                    <Text style={styles.heroTitle}>Ready to learn?</Text>
-                    <Text style={styles.heroSubtitle}>Continue your journey</Text>
+                <View style={styles.bannerContent}>
+                    <Text style={styles.bannerTag}>ONLINE COURSE</Text>
+                    <Text style={styles.bannerTitle}>Sharpen Your Skills with Professional Online Courses</Text>
+
+                    <TouchableOpacity style={styles.joinButton}>
+                        <Text style={styles.joinButtonText}>Join Now</Text>
+                        <Feather name="arrow-right" size={16} color="#FFFFFF" />
+                    </TouchableOpacity>
                 </View>
+                {/* Decorative shapes could go here */}
             </LinearGradient>
         </Animated.View>
     );
 
-    const renderDailyChallenge = () => {
-        if (!dailyChallenge || !dailyChallenge.title || !dailyChallenge.description) return null;
+    const renderContinueWatching = () => {
+        if (!recentLessons || recentLessons.length === 0) return null;
 
         return (
-            <Animated.View entering={FadeInDown.delay(100).duration(600)}>
-                <SectionHeader title="Today's Challenge" size="medium" />
-                <TouchableOpacity
-                    onPress={() => navigation.navigate('DailyChallenge')}
-                    activeOpacity={0.9}
-                >
-                    <LinearGradient
-                        colors={['#FFFFFF', '#F9FAFB']}
-                        style={styles.challengeCard}
-                    >
-                        <View style={styles.challengeHeader}>
-                            <View style={styles.challengeIconContainer}>
-                                <Ionicons name="flash" size={24} color={theme.colors.primary} />
-                            </View>
-                            <View style={styles.challengeInfo}>
-                                <Text style={styles.challengeTitle}>{dailyChallenge.title || ''}</Text>
-                                <Text style={styles.challengeSubtitle} numberOfLines={2}>
-                                    {dailyChallenge.description || ''}
-                                </Text>
-                            </View>
-                        </View>
-                        <View style={styles.challengeMeta}>
-                            <View style={styles.metaItem}>
-                                <Feather name="book-open" size={14} color={theme.colors.textLight} />
-                                <Text style={styles.metaText}>{dailyChallenge.lesson_ids?.length || 0} lessons</Text>
-                            </View>
-                            <View style={styles.metaItem}>
-                                <Feather name="target" size={14} color={theme.colors.textLight} />
-                                <Text style={styles.metaText}>{dailyChallenge.difficulty_level || 'intermediate'}</Text>
-                            </View>
-                        </View>
-                    </LinearGradient>
-                </TouchableOpacity>
-            </Animated.View>
-        );
-    };
+            <Animated.View entering={FadeInDown.delay(200).duration(600)} style={styles.section}>
+                <View style={styles.sectionHeaderRow}>
+                    <Text style={styles.sectionTitle}>Continue Watching</Text>
+                    <TouchableOpacity>
+                        <Text style={styles.seeAllText}>See all</Text>
+                    </TouchableOpacity>
+                </View>
 
-    const renderFieldsSection = () => {
-        if (!fields || fields.length === 0) return null;
-        
-        return (
-            <Animated.View entering={FadeInDown.delay(200).duration(600)}>
-                <SectionHeader title="Explore Fields" size="medium" />
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.fieldsScroll}
+                    contentContainerStyle={styles.horizontalScroll}
                 >
-                    {fields.map((field, index) => (
-                        <TouchableOpacity
-                            key={field.id}
-                            style={styles.fieldCard}
-                            onPress={() => navigation.navigate('Learn', { fieldId: field.id })}
-                            activeOpacity={0.9}
-                        >
-                            <LinearGradient
-                                colors={theme.gradients.card}
-                                style={styles.fieldGradient}
-                            >
-                                <View style={styles.fieldIconContainer}>
-                                    <Ionicons
-                                        name={getFieldIcon(field.name)}
-                                        size={32}
-                                        color={theme.colors.primary}
-                                    />
-                                </View>
-                                <Text style={styles.fieldName}>{field.name || ''}</Text>
-                                <Text style={styles.fieldCount}>{field.total_lessons || 0} lessons</Text>
-                            </LinearGradient>
-                        </TouchableOpacity>
+                    {recentLessons.map((lesson, index) => (
+                        <BentoCard
+                            key={lesson.id}
+                            title={lesson.title}
+                            subtitle={`${lesson.difficulty_level} • ${lesson.estimated_minutes} min`}
+                            variant="course"
+                            size="medium"
+                            style={styles.courseCard}
+                            imageGradient={index % 2 === 0 ? theme.gradients.primary : theme.gradients.secondary}
+                            progress={Math.random() * 100} // Simulated progress
+                            tag={lesson.difficulty_level}
+                            icon={<Feather name="play" size={24} color="#FFFFFF" />}
+                            onPress={() => navigation.navigate('LessonDetail', { lessonId: lesson.id })}
+                        />
                     ))}
                 </ScrollView>
             </Animated.View>
         );
     };
 
-    const renderRecentLessons = () => {
-        if (!recentLessons || recentLessons.length === 0) return null;
-        
-        return (
-            <Animated.View entering={FadeInDown.delay(300).duration(600)}>
-                <SectionHeader title="Continue Learning" size="medium" />
-                {recentLessons.map((lesson, index) => (
-                    <Animated.View
-                        key={lesson.id}
-                        entering={FadeInDown.delay(350 + index * 50).duration(600)}
-                    >
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate('LessonDetail', { lessonId: lesson.id })}
-                            activeOpacity={0.9}
-                        >
-                            <View style={styles.lessonCard}>
-                                <View style={styles.lessonIconContainer}>
-                                    <Feather name="book" size={20} color={theme.colors.primary} />
-                                </View>
-                                <View style={styles.lessonInfo}>
-                                    <Text style={styles.lessonTitle}>{lesson.title || ''}</Text>
-                                    <Text style={styles.lessonMeta}>
-                                        {lesson.estimated_minutes || 0} min • {lesson.difficulty_level || 'beginner'}
-                                    </Text>
-                                </View>
-                                <Feather name="chevron-right" size={20} color={theme.colors.textLight} />
-                            </View>
-                        </TouchableOpacity>
-                    </Animated.View>
-                ))}
-            </Animated.View>
-        );
-    };
+    const renderStatistic = () => (
+        <Animated.View entering={FadeInDown.delay(300).duration(600)} style={styles.section}>
+            <View style={styles.sectionHeaderRow}>
+                <Text style={styles.sectionTitle}>Statistic</Text>
+                <TouchableOpacity>
+                    <Ionicons name="ellipsis-horizontal" size={24} color={theme.colors.text} />
+                </TouchableOpacity>
+            </View>
 
-    const renderQuickStats = () => (
-        <Animated.View entering={FadeInDown.delay(400).duration(600)}>
-            <SectionHeader title="Your Progress" size="medium" />
-            <View style={styles.statsGrid}>
-                <View style={styles.statCard}>
-                    <Feather name="check-circle" size={24} color={theme.colors.success} />
-                    <Text style={styles.statNumber}>127</Text>
-                    <Text style={styles.statLabel}>Completed</Text>
+            <View style={styles.statsCard}>
+                <View style={styles.statsHeader}>
+                    <View style={styles.statsAvatarContainer}>
+                        <Ionicons name="person" size={40} color={theme.colors.text} />
+                        <View style={styles.statsBadge}>
+                            <Text style={styles.statsBadgeText}>32%</Text>
+                        </View>
+                    </View>
+                    <Text style={styles.statsGreeting}>Good Morning Jason 🔥</Text>
+                    <Text style={styles.statsSubtext}>Continue your learning to achieve your target!</Text>
                 </View>
-                <View style={styles.statCard}>
-                    <Feather name="trending-up" size={24} color={theme.colors.primary} />
-                    <Text style={styles.statNumber}>84%</Text>
-                    <Text style={styles.statLabel}>Avg Score</Text>
-                </View>
-                <View style={styles.statCard}>
-                    <Feather name="zap" size={24} color={theme.colors.warning} />
-                    <Text style={styles.statNumber}>12</Text>
-                    <Text style={styles.statLabel}>Day Streak</Text>
+
+                <View style={styles.chartContainer}>
+                    {/* Simplified Bar Chart Representation */}
+                    {[40, 65, 30, 85, 25].map((height, index) => (
+                        <View key={index} style={styles.chartBarContainer}>
+                            <View style={[styles.chartBar, { height: `${height}%`, backgroundColor: index === 3 ? theme.colors.primary : theme.colors.primary + '40' }]} />
+                            <Text style={styles.chartLabel}>Day {index + 1}</Text>
+                        </View>
+                    ))}
                 </View>
             </View>
         </Animated.View>
     );
 
+    const getVibrantColor = (index: number) => {
+        const colors = [
+            theme.colors.vintage.navy,
+            theme.colors.vintage.sage,
+            theme.colors.vintage.terracotta,
+            theme.colors.vintage.sand,
+            theme.colors.vintage.lavender,
+            theme.colors.vintage.slate,
+        ];
+        return colors[index % colors.length];
+    };
+
+    const renderVibrantFields = () => {
+        if (!fields || fields.length === 0) return null;
+
+        return (
+            <Animated.View entering={FadeInDown.delay(150).duration(600)} style={styles.section}>
+                <View style={styles.sectionHeaderRow}>
+                    <Text style={styles.sectionTitle}>Explore Fields</Text>
+                </View>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.horizontalScroll}
+                >
+                    {fields.map((field, index) => (
+                        <BentoCard
+                            key={field.id}
+                            title={field.name}
+                            subtitle={`${field.total_lessons} lessons`}
+                            variant="vibrant"
+                            size="small"
+                            style={[styles.vibrantCard, { backgroundColor: getVibrantColor(index) }]}
+                            icon={<Ionicons name={getFieldIcon(field.name)} size={24} color="#FFFFFF" />}
+                            onPress={() => navigation.navigate('Learn', { fieldId: field.id })}
+                        />
+                    ))}
+                </ScrollView>
+            </Animated.View>
+        );
+    };
+
+    const renderDailyChallenge = () => {
+        if (!dailyChallenge) return null;
+
+        return (
+            <Animated.View entering={FadeInDown.delay(250).duration(600)} style={styles.section}>
+                <BentoCard
+                    title="Daily Challenge"
+                    subtitle={dailyChallenge.title}
+                    variant="vibrant"
+                    size="medium"
+                    style={[styles.dailyChallengeCard, { backgroundColor: theme.colors.vintage.terracotta }]}
+                    icon={<Ionicons name="flash" size={32} color="#FFFFFF" />}
+                    onPress={() => navigation.navigate('DailyChallenge')}
+                >
+                    <View style={styles.challengeBadge}>
+                        <Text style={styles.challengeBadgeText}>4 Unread</Text>
+                    </View>
+                </BentoCard>
+            </Animated.View>
+        );
+    };
+
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-            {renderHeroSection()}
-            <Animated.ScrollView
+            <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
+            <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
-                onScroll={scrollHandler}
-                scrollEventThrottle={16}
             >
-                <View style={styles.content}>
-                    {loading ? (
-                        <Text style={styles.loadingText}>Loading...</Text>
-                    ) : (
-                        <>
-                            {renderDailyChallenge()}
-                            {renderFieldsSection()}
-                            {renderRecentLessons()}
-                            {renderQuickStats()}
-                        </>
-                    )}
+                {renderHeader()}
+                {renderBanner()}
+                {renderVibrantFields()}
+                {renderDailyChallenge()}
+
+                {/* Quick Access Pills */}
+                <View style={styles.pillsContainer}>
+                    <TouchableOpacity style={styles.pill}>
+                        <Text style={styles.pillText}>UI/UX Design</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.pill}>
+                        <Text style={styles.pillText}>Branding</Text>
+                    </TouchableOpacity>
                 </View>
-            </Animated.ScrollView>
+
+                {renderContinueWatching()}
+                {renderStatistic()}
+            </ScrollView>
         </View>
     );
 };
@@ -283,202 +285,250 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: theme.colors.background,
     },
-    heroSection: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: HEADER_HEIGHT,
-        zIndex: 1,
-    },
-    heroGradient: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        paddingBottom: theme.spacing.xxl,
-        paddingHorizontal: theme.spacing.lg,
-    },
-    heroContent: {
-        marginTop: 40,
-    },
-    heroGreeting: {
-        fontFamily: theme.typography.fontFamily.medium,
-        fontSize: theme.typography.sizes.lg,
-        color: 'rgba(255,255,255,0.9)',
-        marginBottom: theme.spacing.xs,
-    },
-    heroTitle: {
-        fontFamily: theme.typography.fontFamily.black,
-        fontSize: theme.typography.sizes.display,
-        color: '#FFFFFF',
-        marginBottom: theme.spacing.sm,
-        lineHeight: theme.typography.sizes.display * theme.typography.lineHeights.tight,
-    },
-    heroSubtitle: {
-        fontFamily: theme.typography.fontFamily.regular,
-        fontSize: theme.typography.sizes.xl,
-        color: 'rgba(255,255,255,0.8)',
-    },
     scrollView: {
         flex: 1,
     },
     scrollContent: {
-        paddingTop: HEADER_HEIGHT - 40,
-    },
-    content: {
-        backgroundColor: theme.colors.background,
-        borderTopLeftRadius: theme.borderRadius.xxl,
-        borderTopRightRadius: theme.borderRadius.xxl,
         padding: theme.spacing.lg,
-        minHeight: height,
+        paddingTop: 60,
+        paddingBottom: 100,
     },
-    loadingText: {
-        fontFamily: theme.typography.fontFamily.medium,
-        fontSize: theme.typography.sizes.md,
-        color: theme.colors.textLight,
-        textAlign: 'center',
-        marginTop: theme.spacing.xl,
+    header: {
+        marginBottom: theme.spacing.xl,
     },
-    challengeCard: {
-        borderRadius: theme.borderRadius.xl,
-        padding: theme.spacing.lg,
-        marginBottom: theme.spacing.xxl,
-        ...theme.shadows.medium,
-    },
-    challengeHeader: {
+    headerTop: {
         flexDirection: 'row',
-        marginBottom: theme.spacing.md,
-    },
-    challengeIconContainer: {
-        width: 48,
-        height: 48,
-        borderRadius: theme.borderRadius.md,
-        backgroundColor: theme.colors.primary + '15',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         alignItems: 'center',
-        marginRight: theme.spacing.md,
+        marginBottom: theme.spacing.lg,
     },
-    challengeInfo: {
-        flex: 1,
-    },
-    challengeTitle: {
-        fontFamily: theme.typography.fontFamily.bold,
-        fontSize: theme.typography.sizes.xl,
-        color: theme.colors.text,
-        marginBottom: theme.spacing.xs,
-    },
-    challengeSubtitle: {
-        fontFamily: theme.typography.fontFamily.regular,
-        fontSize: theme.typography.sizes.md,
-        color: theme.colors.textLight,
-        lineHeight: theme.typography.sizes.md * theme.typography.lineHeights.normal,
-    },
-    challengeMeta: {
+    headerActions: {
         flexDirection: 'row',
+        alignItems: 'center',
         gap: theme.spacing.md,
     },
-    metaItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: theme.spacing.xs,
-    },
-    metaText: {
-        fontFamily: theme.typography.fontFamily.medium,
-        fontSize: theme.typography.sizes.sm,
-        color: theme.colors.textLight,
-    },
-    fieldsScroll: {
-        paddingRight: theme.spacing.lg,
-        marginBottom: theme.spacing.xxl,
-    },
-    fieldCard: {
-        marginRight: theme.spacing.md,
-        borderRadius: theme.borderRadius.lg,
-        overflow: 'hidden',
-        ...theme.shadows.soft,
-    },
-    fieldGradient: {
-        width: 160,
-        padding: theme.spacing.lg,
-        alignItems: 'center',
-    },
-    fieldIconContainer: {
-        width: 64,
-        height: 64,
-        borderRadius: theme.borderRadius.md,
-        backgroundColor: theme.colors.primary + '10',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: theme.spacing.md,
-    },
-    fieldName: {
-        fontFamily: theme.typography.fontFamily.bold,
-        fontSize: theme.typography.sizes.md,
-        color: theme.colors.text,
-        textAlign: 'center',
-        marginBottom: theme.spacing.xs,
-    },
-    fieldCount: {
-        fontFamily: theme.typography.fontFamily.regular,
-        fontSize: theme.typography.sizes.sm,
-        color: theme.colors.textLight,
-    },
-    lessonCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: theme.colors.cardBackground,
-        borderRadius: theme.borderRadius.lg,
-        padding: theme.spacing.md,
-        marginBottom: theme.spacing.md,
-        ...theme.shadows.soft,
-    },
-    lessonIconContainer: {
+    iconButton: {
         width: 40,
         height: 40,
-        borderRadius: theme.borderRadius.sm,
-        backgroundColor: theme.colors.primary + '10',
+        borderRadius: theme.borderRadius.full,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: theme.spacing.md,
+        backgroundColor: theme.colors.cardBackground,
     },
-    lessonInfo: {
+    avatarContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: theme.borderRadius.full,
+        backgroundColor: theme.colors.borderLight,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    greeting: {
+        fontFamily: theme.typography.fontFamily.serifBold,
+        fontSize: theme.typography.sizes.xxl,
+        color: theme.colors.text,
+        marginBottom: theme.spacing.xs,
+    },
+    subGreeting: {
+        fontFamily: theme.typography.fontFamily.regular,
+        fontSize: theme.typography.sizes.md,
+        color: theme.colors.textLight,
+        marginBottom: theme.spacing.lg,
+    },
+    searchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.colors.searchBackground,
+        borderRadius: theme.borderRadius.xl,
+        paddingHorizontal: theme.spacing.md,
+        height: 50,
+    },
+    searchIcon: {
+        marginRight: theme.spacing.sm,
+    },
+    searchInput: {
         flex: 1,
-    },
-    lessonTitle: {
-        fontFamily: theme.typography.fontFamily.bold,
+        fontFamily: theme.typography.fontFamily.medium,
         fontSize: theme.typography.sizes.md,
         color: theme.colors.text,
-        marginBottom: 2,
     },
-    lessonMeta: {
+    bannerContainer: {
+        marginBottom: theme.spacing.xl,
+    },
+    banner: {
+        borderRadius: theme.borderRadius.xl,
+        padding: theme.spacing.xl,
+        minHeight: 180,
+        justifyContent: 'center',
+    },
+    bannerContent: {
+        maxWidth: '70%',
+    },
+    bannerTag: {
+        fontFamily: theme.typography.fontFamily.medium,
+        fontSize: 10,
+        color: 'rgba(255,255,255,0.8)',
+        marginBottom: theme.spacing.xs,
+        letterSpacing: 1,
+    },
+    bannerTitle: {
+        fontFamily: theme.typography.fontFamily.serifBold,
+        fontSize: theme.typography.sizes.xl,
+        color: '#FFFFFF',
+        marginBottom: theme.spacing.lg,
+        lineHeight: 28,
+    },
+    joinButton: {
+        backgroundColor: '#000000',
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: theme.borderRadius.full,
+        alignSelf: 'flex-start',
+        gap: 8,
+    },
+    joinButtonText: {
+        color: '#FFFFFF',
+        fontFamily: theme.typography.fontFamily.medium,
+        fontSize: theme.typography.sizes.sm,
+    },
+    pillsContainer: {
+        flexDirection: 'row',
+        gap: theme.spacing.md,
+        marginBottom: theme.spacing.xl,
+    },
+    pill: {
+        backgroundColor: theme.colors.cardBackground,
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: theme.borderRadius.full,
+        ...theme.shadows.soft,
+    },
+    pillText: {
+        fontFamily: theme.typography.fontFamily.medium,
+        fontSize: theme.typography.sizes.sm,
+        color: theme.colors.text,
+    },
+    section: {
+        marginBottom: theme.spacing.xl,
+    },
+    sectionHeaderRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: theme.spacing.md,
+    },
+    sectionTitle: {
+        fontFamily: theme.typography.fontFamily.bold,
+        fontSize: theme.typography.sizes.lg,
+        color: theme.colors.text,
+    },
+    seeAllText: {
+        fontFamily: theme.typography.fontFamily.medium,
+        fontSize: theme.typography.sizes.sm,
+        color: theme.colors.primary,
+    },
+    horizontalScroll: {
+        paddingRight: theme.spacing.lg,
+    },
+    courseCard: {
+        width: 240,
+        marginRight: theme.spacing.md,
+    },
+    statsCard: {
+        backgroundColor: theme.colors.cardBackground,
+        borderRadius: theme.borderRadius.xl,
+        padding: theme.spacing.xl,
+        ...theme.shadows.soft,
+    },
+    statsHeader: {
+        alignItems: 'center',
+        marginBottom: theme.spacing.xl,
+    },
+    statsAvatarContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: theme.borderRadius.full,
+        backgroundColor: theme.colors.borderLight,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: theme.spacing.md,
+        position: 'relative',
+    },
+    statsBadge: {
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        backgroundColor: theme.colors.primary,
+        borderRadius: theme.borderRadius.full,
+        width: 24,
+        height: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    statsBadgeText: {
+        color: '#FFFFFF',
+        fontSize: 8,
+        fontFamily: theme.typography.fontFamily.bold,
+    },
+    statsGreeting: {
+        fontFamily: theme.typography.fontFamily.bold,
+        fontSize: theme.typography.sizes.lg,
+        color: theme.colors.text,
+        marginBottom: theme.spacing.xs,
+    },
+    statsSubtext: {
         fontFamily: theme.typography.fontFamily.regular,
         fontSize: theme.typography.sizes.sm,
         color: theme.colors.textLight,
-    },
-    statsGrid: {
-        flexDirection: 'row',
-        gap: theme.spacing.md,
-        marginBottom: theme.spacing.xxl,
-    },
-    statCard: {
-        flex: 1,
-        backgroundColor: theme.colors.cardBackground,
-        borderRadius: theme.borderRadius.lg,
-        padding: theme.spacing.md,
-        alignItems: 'center',
-        ...theme.shadows.soft,
-    },
-    statNumber: {
-        fontFamily: theme.typography.fontFamily.black,
-        fontSize: theme.typography.sizes.xxl,
-        color: theme.colors.text,
-        marginTop: theme.spacing.sm,
-        marginBottom: theme.spacing.xs,
-    },
-    statLabel: {
-        fontFamily: theme.typography.fontFamily.medium,
-        fontSize: theme.typography.sizes.xs,
-        color: theme.colors.textLight,
         textAlign: 'center',
+    },
+    chartContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        height: 150,
+        paddingTop: theme.spacing.lg,
+    },
+    chartBarContainer: {
+        alignItems: 'center',
+        gap: theme.spacing.xs,
+        flex: 1,
+    },
+    chartBar: {
+        width: 30,
+        borderRadius: theme.borderRadius.sm,
+    },
+    chartLabel: {
+        fontFamily: theme.typography.fontFamily.medium,
+        fontSize: 10,
+        color: theme.colors.textLight,
+    },
+    vibrantCard: {
+        width: 140,
+        height: 140,
+        marginRight: theme.spacing.md,
+        justifyContent: 'space-between',
+    },
+    dailyChallengeCard: {
+        marginBottom: theme.spacing.md,
+    },
+    challengeBadge: {
+        position: 'absolute',
+        bottom: theme.spacing.lg,
+        left: theme.spacing.lg,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: 4,
+        borderRadius: theme.borderRadius.full,
+    },
+    challengeBadgeText: {
+        color: '#FFFFFF',
+        fontFamily: theme.typography.fontFamily.bold,
+        fontSize: 12,
     },
 });
 

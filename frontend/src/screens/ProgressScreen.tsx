@@ -7,6 +7,7 @@ import {
   Dimensions,
   StatusBar,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme';
 import { BentoCard } from '../components/BentoCard';
 
@@ -27,8 +28,8 @@ const ProgressScreen = () => {
       {
         fieldId: 'tech',
         fieldName: 'Technology',
-        icon: '🤖',
-        color: theme.colors.info,
+        icon: 'hardware-chip-outline',
+        color: theme.colors.vintage.navy,
         lessonsCompleted: 45,
         totalLessons: 62,
         averageScore: 88,
@@ -37,8 +38,8 @@ const ProgressScreen = () => {
       {
         fieldId: 'finance',
         fieldName: 'Finance',
-        icon: '📈',
-        color: theme.colors.success,
+        icon: 'trending-up-outline',
+        color: theme.colors.vintage.sage,
         lessonsCompleted: 32,
         totalLessons: 45,
         averageScore: 82,
@@ -47,8 +48,8 @@ const ProgressScreen = () => {
       {
         fieldId: 'economics',
         fieldName: 'Economics',
-        icon: '💰',
-        color: theme.colors.warning,
+        icon: 'cash-outline',
+        color: theme.colors.vintage.sand,
         lessonsCompleted: 20,
         totalLessons: 38,
         averageScore: 79,
@@ -57,8 +58,8 @@ const ProgressScreen = () => {
       {
         fieldId: 'culture',
         fieldName: 'Culture',
-        icon: '🌍',
-        color: theme.colors.accent,
+        icon: 'globe-outline',
+        color: theme.colors.vintage.lavender,
         lessonsCompleted: 15,
         totalLessons: 28,
         averageScore: 91,
@@ -67,8 +68,8 @@ const ProgressScreen = () => {
       {
         fieldId: 'influence',
         fieldName: 'Influence Skills',
-        icon: '💡',
-        color: theme.colors.warning,
+        icon: 'bulb-outline',
+        color: theme.colors.vintage.terracotta,
         lessonsCompleted: 18,
         totalLessons: 33,
         averageScore: 85,
@@ -77,8 +78,8 @@ const ProgressScreen = () => {
       {
         fieldId: 'global',
         fieldName: 'Global Events',
-        icon: '🌐',
-        color: theme.colors.secondary,
+        icon: 'earth-outline',
+        color: theme.colors.vintage.slate,
         lessonsCompleted: 25,
         totalLessons: 41,
         averageScore: 77,
@@ -99,7 +100,7 @@ const ProgressScreen = () => {
         id: 'streak_week',
         title: 'Week Warrior',
         description: '7-day learning streak',
-        icon: '🔥',
+        icon: 'flame-outline',
         earned: true,
         earnedDate: '2024-01-15',
       },
@@ -107,7 +108,7 @@ const ProgressScreen = () => {
         id: 'lessons_100',
         title: 'Century Club',
         description: '100 lessons completed',
-        icon: '💯',
+        icon: 'ribbon-outline',
         earned: true,
         earnedDate: '2024-01-10',
       },
@@ -115,7 +116,7 @@ const ProgressScreen = () => {
         id: 'quiz_master',
         title: 'Quiz Master',
         description: 'Average score above 85%',
-        icon: '🏆',
+        icon: 'trophy-outline',
         earned: true,
         earnedDate: '2024-01-08',
       },
@@ -123,7 +124,7 @@ const ProgressScreen = () => {
         id: 'balanced_learner',
         title: 'Balanced Learner',
         description: 'Complete lessons in 5 fields',
-        icon: '⚖️',
+        icon: 'scale-outline',
         earned: false,
         progress: 4,
         total: 5,
@@ -177,7 +178,7 @@ const ProgressScreen = () => {
         title={field.fieldName}
         subtitle={`${field.lessonsCompleted}/${field.totalLessons} lessons`}
         backgroundColor={theme.colors.cardBackground}
-        icon={<Text style={{ fontSize: 24 }}>{field.icon}</Text>}
+        icon={<Ionicons name={field.icon} size={24} color={theme.colors.text} />}
         style={styles.fieldCard}
       >
         <View style={styles.progressBarContainer}>
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   sectionTitle: {
-    fontFamily: theme.typography.fontFamily.bold,
+    fontFamily: theme.typography.fontFamily.serifBold,
     fontSize: theme.typography.sizes.xl,
     color: theme.colors.text,
     marginBottom: theme.spacing.md,

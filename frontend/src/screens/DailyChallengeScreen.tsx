@@ -8,6 +8,7 @@ import {
   Alert,
   StatusBar,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme';
 import { BentoCard } from '../components/BentoCard';
 
@@ -75,21 +76,21 @@ const DailyChallengeScreen = ({ navigation }: { navigation: any }) => {
     <BentoCard
       title="Daily Challenge"
       subtitle={challenge.title}
-      backgroundColor={theme.colors.accent}
+      backgroundColor={theme.colors.vintage.terracotta}
       style={styles.headerCard}
     >
       <Text style={styles.description}>{challenge.description}</Text>
       <View style={styles.metaContainer}>
         <View style={styles.metaItem}>
-          <Text style={styles.metaIcon}>🎯</Text>
+          <Ionicons name="disc-outline" size={16} color={theme.colors.text} style={styles.metaIcon} />
           <Text style={styles.metaText}>{challenge.difficulty}</Text>
         </View>
         <View style={styles.metaItem}>
-          <Text style={styles.metaIcon}>⏱️</Text>
+          <Ionicons name="time-outline" size={16} color={theme.colors.text} style={styles.metaIcon} />
           <Text style={styles.metaText}>{challenge.estimatedTime}</Text>
         </View>
         <View style={styles.metaItem}>
-          <Text style={styles.metaIcon}>📚</Text>
+          <Ionicons name="book-outline" size={16} color={theme.colors.text} style={styles.metaIcon} />
           <Text style={styles.metaText}>{challenge.lessons.length} lessons</Text>
         </View>
       </View>
@@ -109,7 +110,11 @@ const DailyChallengeScreen = ({ navigation }: { navigation: any }) => {
         style={styles.stepCard}
         icon={
           <View style={[styles.stepNumber, isCompleted && styles.completedStepNumber]}>
-            <Text style={styles.stepNumberText}>{isCompleted ? '✓' : index + 1}</Text>
+            {isCompleted ? (
+              <Ionicons name="checkmark" size={16} color={theme.colors.background} />
+            ) : (
+              <Text style={styles.stepNumberText}>{index + 1}</Text>
+            )}
           </View>
         }
       >
@@ -140,7 +145,11 @@ const DailyChallengeScreen = ({ navigation }: { navigation: any }) => {
         style={styles.stepCard}
         icon={
           <View style={[styles.stepNumber, isCompleted && styles.completedStepNumber]}>
-            <Text style={styles.stepNumberText}>{isCompleted ? '✓' : '📝'}</Text>
+            {isCompleted ? (
+              <Ionicons name="checkmark" size={16} color={theme.colors.background} />
+            ) : (
+              <Ionicons name="document-text-outline" size={16} color={theme.colors.background} />
+            )}
           </View>
         }
       >
@@ -244,7 +253,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xl,
   },
   sectionTitle: {
-    fontFamily: theme.typography.fontFamily.bold,
+    fontFamily: theme.typography.fontFamily.serifBold,
     fontSize: theme.typography.sizes.xl,
     color: theme.colors.text,
     marginBottom: theme.spacing.md,

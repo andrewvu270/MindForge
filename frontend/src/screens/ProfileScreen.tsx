@@ -75,7 +75,8 @@ const ProfileScreen = () => {
         </BentoCard>
 
         <TouchableOpacity style={styles.settingsButton}>
-          <Text style={styles.settingsButtonText}>⚙️ Settings</Text>
+          <Ionicons name="settings-outline" size={20} color={theme.colors.text} style={{ marginRight: 8 }} />
+          <Text style={styles.settingsButtonText}>Settings</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
     fontSize: 40,
   },
   profileName: {
-    fontFamily: theme.typography.fontFamily.bold,
+    fontFamily: theme.typography.fontFamily.serifBold,
     fontSize: theme.typography.sizes.xl,
     color: theme.colors.text,
     marginBottom: theme.spacing.xs,
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textLight,
   },
   sectionTitle: {
-    fontFamily: theme.typography.fontFamily.bold,
+    fontFamily: theme.typography.fontFamily.serifBold,
     fontSize: theme.typography.sizes.lg,
     color: theme.colors.text,
     marginBottom: theme.spacing.md,
@@ -171,6 +172,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.cardBackground,
     borderRadius: theme.borderRadius.md,
     padding: theme.spacing.md,
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: theme.colors.border,

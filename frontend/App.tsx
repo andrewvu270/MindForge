@@ -13,6 +13,10 @@ import {
   Inter_700Bold,
   Inter_900Black,
 } from '@expo-google-fonts/inter';
+import {
+  PlayfairDisplay_400Regular,
+  PlayfairDisplay_700Bold,
+} from '@expo-google-fonts/playfair-display';
 
 import MainFeedScreen from './src/screens/MainFeedScreen';
 import LearnScreen from './src/screens/LearnScreen';
@@ -32,6 +36,8 @@ export default function App() {
     Inter_500Medium,
     Inter_700Bold,
     Inter_900Black,
+    PlayfairDisplay_400Regular,
+    PlayfairDisplay_700Bold,
   });
 
   const onLayoutRootView = useCallback(async () => {

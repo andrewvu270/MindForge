@@ -6,6 +6,7 @@ import {
   ScrollView,
   StatusBar,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme';
 import { BentoCard } from '../components/BentoCard';
 import { apiService } from '../services/api';
@@ -31,32 +32,32 @@ const LearnScreen = ({ navigation }: { navigation: any }) => {
           id: 'tech',
           name: 'Technology',
           description: 'Latest in tech and AI',
-          icon: '🤖',
-          color: theme.colors.info,
+          icon: 'hardware-chip-outline',
+          color: theme.colors.vintage.navy,
           total_lessons: 62,
         },
         {
           id: 'finance',
           name: 'Finance',
           description: 'Markets and investing',
-          icon: '📈',
-          color: theme.colors.success,
+          icon: 'trending-up-outline',
+          color: theme.colors.vintage.sage,
           total_lessons: 45,
         },
         {
           id: 'economics',
           name: 'Economics',
           description: 'Economic principles',
-          icon: '💰',
-          color: theme.colors.warning,
+          icon: 'cash-outline',
+          color: theme.colors.vintage.sand,
           total_lessons: 38,
         },
         {
           id: 'culture',
           name: 'Culture',
           description: 'Arts and society',
-          icon: '🌍',
-          color: theme.colors.accent,
+          icon: 'globe-outline',
+          color: theme.colors.vintage.lavender,
           total_lessons: 28,
         },
       ]);
@@ -87,14 +88,9 @@ const LearnScreen = ({ navigation }: { navigation: any }) => {
                 key={field.id}
                 title={field.name}
                 subtitle={`${field.total_lessons} lessons`}
-                backgroundColor={[
-                  theme.colors.info,
-                  theme.colors.success,
-                  theme.colors.warning,
-                  theme.colors.accent,
-                  theme.colors.secondary,
-                  theme.colors.warning
-                ][index % 6]}
+                variant="vibrant"
+                backgroundColor={field.color || theme.colors.primary}
+                icon={<Ionicons name={field.icon as any || 'book-outline'} size={32} color="#FFFFFF" />}
                 onPress={() => navigation.navigate('Learn', { fieldId: field.id })}
                 style={styles.card}
               >
@@ -126,7 +122,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xl,
   },
   title: {
-    fontFamily: theme.typography.fontFamily.black,
+    fontFamily: theme.typography.fontFamily.serifBold,
     fontSize: theme.typography.sizes.xxl,
     color: theme.colors.text,
     marginBottom: theme.spacing.xs,
@@ -143,10 +139,10 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   description: {
-    fontFamily: theme.typography.fontFamily.regular,
+    fontFamily: theme.typography.fontFamily.medium,
     fontSize: theme.typography.sizes.sm,
-    color: theme.colors.text,
-    opacity: 0.8,
+    color: '#FFFFFF',
+    opacity: 0.9,
     marginTop: theme.spacing.sm,
   },
   loadingText: {
