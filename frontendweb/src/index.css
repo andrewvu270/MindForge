@@ -1,0 +1,198 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  /* Family.co inspired warm, minimal palette */
+  --color-cream: #FAF9F6;
+  --color-cream-dark: #F0EDE8;
+  --color-warm-white: #FFFFFF;
+  --color-charcoal: #1A1A1A;
+  --color-charcoal-light: #2D2D2D;
+  --color-muted: #6B6B6B;
+  --color-muted-light: #9A9A9A;
+  
+  /* Warm accent colors */
+  --color-coral: #E8927C;
+  --color-coral-light: #FDF0ED;
+  --color-sage: #7BA889;
+  --color-sage-light: #EDF5EF;
+  --color-honey: #E5B567;
+  --color-honey-light: #FDF8ED;
+  --color-sky: #7AAED4;
+  --color-sky-light: #EDF5FA;
+  --color-lavender: #9B8DC4;
+  --color-lavender-light: #F3F0FA;
+  --color-rose: #D4A5A5;
+  --color-rose-light: #FAF0F0;
+  
+  /* Primary action color */
+  --color-primary: #1A1A1A;
+  --color-primary-hover: #2D2D2D;
+  
+  --font-sans: 'DM Sans', 'Inter', system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-cream text-charcoal font-sans antialiased;
+  }
+  
+  ::selection {
+    background-color: #E8927C;
+    color: white;
+  }
+}
+
+@layer components {
+  /* Clean, minimal buttons */
+  .btn-primary {
+    @apply bg-charcoal text-white px-6 py-3 rounded-2xl font-semibold 
+           hover:bg-charcoal-light transition-all duration-200 
+           active:scale-[0.98];
+  }
+  
+  .btn-secondary {
+    @apply bg-warm-white text-charcoal px-6 py-3 rounded-2xl font-semibold 
+           border border-cream-dark hover:bg-cream-dark transition-all duration-200
+           active:scale-[0.98];
+  }
+  
+  .btn-ghost {
+    @apply text-charcoal px-6 py-3 rounded-2xl font-semibold 
+           hover:bg-cream-dark transition-all duration-200;
+  }
+  
+  /* Soft, warm cards */
+  .card {
+    @apply bg-warm-white rounded-3xl p-6 
+           shadow-[0_2px_8px_rgba(0,0,0,0.04)] 
+           hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] 
+           transition-all duration-300;
+  }
+  
+  .card-flat {
+    @apply bg-warm-white rounded-3xl p-6;
+  }
+  
+  .card-coral {
+    @apply bg-coral-light rounded-3xl p-6;
+  }
+  
+  .card-sage {
+    @apply bg-sage-light rounded-3xl p-6;
+  }
+  
+  .card-honey {
+    @apply bg-honey-light rounded-3xl p-6;
+  }
+  
+  .card-sky {
+    @apply bg-sky-light rounded-3xl p-6;
+  }
+  
+  .card-lavender {
+    @apply bg-lavender-light rounded-3xl p-6;
+  }
+  
+  .card-rose {
+    @apply bg-rose-light rounded-3xl p-6;
+  }
+  
+  /* Soft pill badges */
+  .pill {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .pill-default {
+    @apply bg-cream-dark text-charcoal;
+  }
+  
+  .pill-coral {
+    @apply bg-coral-light text-coral;
+  }
+  
+  .pill-sage {
+    @apply bg-sage-light text-sage;
+  }
+  
+  .pill-honey {
+    @apply bg-honey-light text-honey;
+  }
+  
+  /* Clean inputs */
+  .input {
+    @apply w-full px-4 py-3 bg-warm-white border border-cream-dark rounded-2xl 
+           focus:outline-none focus:border-charcoal focus:ring-1 focus:ring-charcoal/10 
+           transition-all placeholder:text-muted-light;
+  }
+  
+  .select {
+    @apply w-full px-4 py-3 bg-warm-white border border-cream-dark rounded-2xl 
+           focus:outline-none focus:border-charcoal focus:ring-1 focus:ring-charcoal/10 
+           transition-all appearance-none cursor-pointer;
+  }
+}
+
+/* Smooth animations */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out;
+}
+
+/* Stagger children */
+.stagger > * {
+  animation: slide-up 0.5s ease-out both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger > *:nth-child(6) { animation-delay: 0.3s; }
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D1D1D1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B1B1B1;
+}
