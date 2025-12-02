@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindForge - Claymorphism Mobile App UI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #FFE5E5 0%, #E8F4FD 50%, #E5F5E3 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .mockup-container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 1400px;
+            width: 100%;
+        }
+
+        .phone-mockup {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FFE5E5 0%, #E8F4FD 50%, #E5F5E3 100%);
+            border-radius: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .status-bar {
+            height: 44px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Claymorphism Base Styles */
+        .clay-card {
+            background: rgba(255, 255, 255, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 24px;
+            box-shadow: 
+                8px 8px 16px rgba(0, 0, 0, 0.2),
+                -8px -8px 16px rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .clay-card::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 8px;
+            bottom: 8px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+            border-radius: 20px;
+            opacity: 0.6;
+        }
+
+        .clay-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0), rgba(0,0,0,0.1), rgba(0,0,0,0.2));
+            border-radius: 22px;
+            opacity: 0.3;
+        }
+
+        .clay-button {
+            background: rgba(255, 107, 107, 0.4);
+            border: 2px solid rgba(255, 107, 107, 0.8);
+            border-radius: 20px;
+            padding: 16px 28px;
+            font-weight: 700;
+            color: #FF6B6B;
+            text-align: center;
+            box-shadow: 
+                6px 6px 12px rgba(0, 0, 0, 0.2),
+                -6px -6px 12px rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .clay-button::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 4px;
+            bottom: 4px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+            border-radius: 18px;
+            opacity: 0.6;
+        }
+
+        .clay-button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0), rgba(0,0,0,0.1), rgba(0,0,0,0.2));
+            border-radius: 18px;
+            opacity: 0.3;
+        }
+
+        .clay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                8px 8px 16px rgba(0, 0, 0, 0.25),
+                -8px -8px 16px rgba(255, 255, 255, 0.9);
+        }
+
+        .clay-button:active {
+            transform: translateY(0);
+            box-shadow: 
+                4px 4px 8px rgba(0, 0, 0, 0.2),
+                -4px -4px 8px rgba(255, 255, 255, 0.8);
+        }
+
+        .clay-input {
+            background: rgba(78, 205, 196, 0.2);
+            border: 2px solid rgba(78, 205, 196, 0.4);
+            border-radius: 20px;
+            padding: 16px 20px;
+            font-size: 16px;
+            color: #333;
+            box-shadow: 
+                4px 4px 8px rgba(0, 0, 0, 0.15),
+                -4px -4px 8px rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .clay-input::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 6px;
+            bottom: 6px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+            border-radius: 18px;
+            opacity: 0.6;
+        }
+
+        .clay-input::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0), rgba(0,0,0,0.1), rgba(0,0,0,0.2));
+            border-radius: 18px;
+            opacity: 0.3;
+        }
+
+        .clay-input:focus {
+            outline: none;
+            border-color: rgba(78, 205, 196, 0.6);
+            box-shadow: 
+                4px 4px 8px rgba(0, 0, 0, 0.15),
+                -4px -4px 8px rgba(255, 255, 255, 0.8),
+                0 0 0 4px rgba(78, 205, 196, 0.1);
+        }
+
+        /* Onboarding Screen */
+        .onboarding-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 24px;
+            height: 100%;
+            position: relative;
+        }
+
+        .skip-button {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 8px 16px;
+            color: #666;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 
+                2px 2px 4px rgba(0, 0, 0, 0.1),
+                -2px -2px 4px rgba(255, 255, 255, 0.8);
+        }
+
+        .illustration-circle {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.8), rgba(255, 107, 107, 0.4));
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            border-radius: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 
+                8px 8px 16px rgba(0, 0, 0, 0.2),
+                -8px -8px 16px rgba(255, 255, 255, 0.8);
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .illustration-circle::before {
+            content: '📚';
+            font-size: 50px;
+        }
+
+        .floating-element {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 230, 109, 0.4);
+            border: 2px solid rgba(255, 230, 109, 0.8);
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 
+                4px 4px 8px rgba(0, 0, 0, 0.15),
+                -4px -4px 8px rgba(255, 255, 255, 0.8);
+            font-size: 24px;
+        }
+
+        .floating-1 {
+            top: -20px;
+            right: -30px;
+            transform: rotate(15deg);
+        }
+
+        .floating-2 {
+            bottom: -10px;
+            left: -25px;
+            transform: rotate(-10deg);
+        }
+
+        .floating-3 {
+            top: 20px;
+            right: -40px;
+        }
+
+        .onboarding-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #333;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .onboarding-subtitle {
+            font-size: 20px;
+            font-weight: 700;
+            color: #FF6B6B;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .onboarding-description {
+            font-size: 16px;
+            color: #666;
+            text-align: center;
+            line-height: 24px;
+            margin-bottom: 24px;
+        }
+
+        .features {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .feature-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 
+                2px 2px 4px rgba(0, 0, 0, 0.1),
+                -2px -2px 4px rgba(255, 255, 255, 0.8);
+            color: #FF6B6B;
+            font-size: 16px;
+        }
+
+        .feature-text {
+            font-size: 14px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .dot.active {
+            background: #4ECDC4;
+            width: 24px;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 32px;
+            height: 100%;
+            position: relative;
+        }
+
+        .login-illustration {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .login-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #333;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            font-size: 16px;
+            color: #666;
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 32px;
+        }
+
+        .forgot-password a {
+            color: #4ECDC4;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .signup-container {
+            text-align: center;
+            margin-top: 32px;
+        }
+
+        .signup-text {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .signup-link {
+            color: #FF6B6B;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        /* Dashboard Screen */
+        .dashboard-screen {
+            display: flex;
+            flex-direction: column;
+            padding: 80px 20px 20px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .dashboard-header {
+            margin-bottom: 24px;
+        }
+
+        .dashboard-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .dashboard-subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .floating-elements {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .floating-card {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 230, 109, 0.4);
+            border: 2px solid rgba(255, 230, 109, 0.8);
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 
+                4px 4px 8px rgba(0, 0, 0, 0.15),
+                -4px -4px 8px rgba(255, 255, 255, 0.8);
+            font-size: 24px;
+            transform: rotate(5deg);
+        }
+
+        .categories {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+        }
+
+        .category-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            box-shadow: 
+                2px 2px 4px rgba(0, 0, 0, 0.1),
+                -2px -2px 4px rgba(255, 255, 255, 0.8);
+            white-space: nowrap;
+        }
+
+        .category-chip.active {
+            background: rgba(78, 205, 196, 0.4);
+            border-color: #4ECDC4;
+        }
+
+        .category-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .category-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .category-chip.active .category-text {
+            color: #4ECDC4;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 900;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            box-shadow: 
+                6px 6px 12px rgba(0, 0, 0, 0.2),
+                -6px -6px 12px rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 8px;
+            bottom: 8px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+            border-radius: 18px;
+            opacity: 0.6;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0), rgba(0,0,0,0.1), rgba(0,0,0,0.2));
+            border-radius: 18px;
+            opacity: 0.3;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .featured-section {
+            margin-bottom: 32px;
+        }
+
+        .featured-card {
+            padding: 24px;
+            background: rgba(255, 107, 107, 0.4);
+            border: 2px solid rgba(255, 107, 107, 0.8);
+            border-radius: 24px;
+            box-shadow: 
+                8px 8px 16px rgba(0, 0, 0, 0.25),
+                -8px -8px 16px rgba(255, 255, 255, 0.9);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .featured-card::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 8px;
+            bottom: 8px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+            border-radius: 22px;
+            opacity: 0.6;
+        }
+
+        .featured-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0), rgba(0,0,0,0.1), rgba(0,0,0,0.2));
+            border-radius: 22px;
+            opacity: 0.3;
+        }
+
+        .featured-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #FF6B6B;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .featured-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .featured-progress {
+            position: relative;
+            z-index: 1;
+        }
+
+        .featured-progress-text {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .featured-progress-bar {
+            height: 6px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .featured-progress-fill {
+            height: 100%;
+            background: #FF6B6B;
+            border-radius: 3px;
+            width: 73%;
+        }
+
+        .fields-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            padding-bottom: 40px;
+        }
+
+        .field-card {
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .field-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                10px 10px 20px rgba(0, 0, 0, 0.25),
+                -10px -10px 20px rgba(255, 255, 255, 0.9);
+        }
+
+        .field-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .field-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .field-subtitle {
+            font-size: 12px;
+            color: #666;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tech { color: #FF6B6B; }
+        .finance { color: #4ECDC4; }
+        .economics { color: #FFE66D; }
+        .culture { color: #45B7D1; }
+        .influence { color: #95E1D3; }
+        .global { color: #F38181; }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .mockup-container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .phone-mockup {
+                width: 320px;
+                height: 680px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mockup-container">
+        <!-- Onboarding Screen -->
+        <div class="phone-mockup">
+            <div class="phone-screen">
+                <div class="status-bar">
+                    <span>9:41</span>
+                    <span>📶 🔋</span>
+                </div>
+                <div class="onboarding-screen">
+                    <button class="skip-button">Skip</button>
+                    
+                    <div class="illustration-circle">
+                        <div class="floating-element floating-1">⭐</div>
+                        <div class="floating-element floating-2">❤️</div>
+                        <div class="floating-element floating-3">🚀</div>
+                    </div>
+                    
+                    <h1 class="onboarding-title">Welcome to MindForge</h1>
+                    <h2 class="onboarding-subtitle">Learn in 3D Style</h2>
+                    <p class="onboarding-description">Experience micro-learning with beautiful claymorphism design that makes learning fun and engaging.</p>
+                    
+                    <div class="features">
+                        <div class="feature">
+                            <div class="feature-icon">✓</div>
+                            <span class="feature-text">5-minute lessons</span>
+                        </div>
+                        <div class="feature">
+                            <div class="feature-icon">✓</div>
+                            <span class="feature-text">Beautiful design</span>
+                        </div>
+                        <div class="feature">
+                            <div class="feature-icon">✓</div>
+                            <span class="feature-text">Track progress</span>
+                        </div>
+                    </div>
+                    
+                    <div class="pagination">
+                        <div class="dot"></div>
+                        <div class="dot active"></div>
+                        <div class="dot"></div>
+                    </div>
+                    
+                    <button class="clay-button">Next →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Screen -->
+        <div class="phone-mockup">
+            <div class="phone-screen">
+                <div class="status-bar">
+                    <span>9:41</span>
+                    <span>📶 🔋</span>
+                </div>
+                <div class="login-screen">
+                    <div class="login-illustration">
+                        <div class="illustration-circle">
+                            <div class="floating-element floating-1">⭐</div>
+                            <div class="floating-element floating-2">❤️</div>
+                            <div class="floating-element floating-3">🚀</div>
+                        </div>
+                    </div>
+                    
+                    <h1 class="login-title">Welcome Back</h1>
+                    <p class="login-subtitle">Continue your learning journey</p>
+                    
+                    <div class="login-form">
+                        <input type="email" class="clay-input" placeholder="Email address">
+                        <input type="password" class="clay-input" placeholder="Password">
+                    </div>
+                    
+                    <div class="forgot-password">
+                        <a href="#">Forgot password?</a>
+                    </div>
+                    
+                    <button class="clay-button">Sign In →</button>
+                    
+                    <div class="signup-container">
+                        <span class="signup-text">New to MindForge?</span>
+                        <a href="#" class="signup-link">Create account</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Screen -->
+        <div class="phone-mockup">
+            <div class="phone-screen">
+                <div class="status-bar">
+                    <span>9:41</span>
+                    <span>📶 🔋</span>
+                </div>
+                <div class="dashboard-screen">
+                    <div class="dashboard-header">
+                        <h1 class="dashboard-title">Learning Fields</h1>
+                        <p class="dashboard-subtitle">Choose your area of focus</p>
+                        
+                        <div class="floating-elements">
+                            <div class="floating-card">⭐</div>
+                            <div class="floating-card">❤️</div>
+                            <div class="floating-card">🚀</div>
+                        </div>
+                    </div>
+                    
+                    <div class="categories">
+                        <div class="category-chip active">
+                            <div class="category-icon">⊞</div>
+                            <span class="category-text">All</span>
+                        </div>
+                        <div class="category-chip">
+                            <div class="category-icon">🔥</div>
+                            <span class="category-text">Trending</span>
+                        </div>
+                        <div class="category-chip">
+                            <div class="category-icon">⊕</div>
+                            <span class="category-text">New</span>
+                        </div>
+                    </div>
+                    
+                    <h2 class="section-title">Your Progress</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">247</div>
+                            <div class="stat-label">Total Lessons</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">62%</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">12</div>
+                            <div class="stat-label">Streak</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">#2</div>
+                            <div class="stat-label">Rank</div>
+                        </div>
+                    </div>
+                    
+                    <div class="featured-section">
+                        <h2 class="section-title">Featured Field</h2>
+                        <div class="featured-card">
+                            <h3 class="featured-title">Technology</h3>
+                            <p class="featured-description">Latest in tech and AI</p>
+                            <div class="featured-progress">
+                                <div class="featured-progress-text">73% Complete</div>
+                                <div class="featured-progress-bar">
+                                    <div class="featured-progress-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h2 class="section-title">All Fields</h2>
+                    <div class="fields-grid">
+                        <div class="field-card clay-card">
+                            <div class="field-icon tech">💻</div>
+                            <div class="field-title">Technology</div>
+                            <div class="field-subtitle">62 lessons • 73% complete</div>
+                        </div>
+                        <div class="field-card clay-card">
+                            <div class="field-icon finance">📈</div>
+                            <div class="field-title">Finance</div>
+                            <div class="field-subtitle">45 lessons • 58% complete</div>
+                        </div>
+                        <div class="field-card clay-card">
+                            <div class="field-icon economics">💰</div>
+                            <div class="field-title">Economics</div>
+                            <div class="field-subtitle">38 lessons • 42% complete</div>
+                        </div>
+                        <div class="field-card clay-card">
+                            <div class="field-icon culture">🌍</div>
+                            <div class="field-title">Culture</div>
+                            <div class="field-subtitle">28 lessons • 85% complete</div>
+                        </div>
+                        <div class="field-card clay-card">
+                            <div class="field-icon influence">💡</div>
+                            <div class="field-title">Influence</div>
+                            <div class="field-subtitle">33 lessons • 67% complete</div>
+                        </div>
+                        <div class="field-card clay-card">
+                            <div class="field-icon global">🌐</div>
+                            <div class="field-title">Global Events</div>
+                            <div class="field-subtitle">41 lessons • 31% complete</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

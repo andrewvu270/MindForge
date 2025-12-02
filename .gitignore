@@ -165,3 +165,5 @@ web-build/
 
 # CocoaPods
 /ios/Pods/
+
+.hypothesis

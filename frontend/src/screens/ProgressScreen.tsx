@@ -6,15 +6,28 @@ import {
   ScrollView,
   Dimensions,
   StatusBar,
+  TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../theme';
 import { BentoCard } from '../components/BentoCard';
 import { ClayStatCard } from '../components/ClayStatCard';
+import StatCard from '../components/StatCard';
+import ProgressChart from '../components/ProgressChart';
 
 const { width } = Dimensions.get('window');
 
 const ProgressScreen = () => {
+  const [selectedPeriod, setSelectedPeriod] = useState('week');
+  
+  const periods = [
+    { id: 'day', name: 'Day' },
+    { id: 'week', name: 'Week' },
+    { id: 'month', name: 'Month' },
+    { id: 'year', name: 'Year' },
+  ];
+
   const [userProgress] = useState({
     overallStats: {
       totalLessonsCompleted: 127,
@@ -24,13 +37,14 @@ const ProgressScreen = () => {
       longestStreak: 28,
       studyTimeToday: 45, // minutes
       studyTimeWeek: 320, // minutes
+      studyTimeMonth: 1240, // minutes
     },
     fieldProgress: [
       {
         fieldId: 'tech',
         fieldName: 'Technology',
         icon: 'hardware-chip-outline',
-        color: theme.colors.vintage.navy,
+        color: '#3B82F6',
         lessonsCompleted: 45,
         totalLessons: 62,
         averageScore: 88,
@@ -40,7 +54,7 @@ const ProgressScreen = () => {
         fieldId: 'finance',
         fieldName: 'Finance',
         icon: 'trending-up-outline',
-        color: theme.colors.vintage.sage,
+        color: '#10B981',
         lessonsCompleted: 32,
         totalLessons: 45,
         averageScore: 82,
@@ -50,7 +64,7 @@ const ProgressScreen = () => {
         fieldId: 'economics',
         fieldName: 'Economics',
         icon: 'cash-outline',
-        color: theme.colors.vintage.sand,
+        color: '#F59E0B',
         lessonsCompleted: 20,
         totalLessons: 38,
         averageScore: 79,
@@ -60,7 +74,7 @@ const ProgressScreen = () => {
         fieldId: 'culture',
         fieldName: 'Culture',
         icon: 'globe-outline',
-        color: theme.colors.vintage.lavender,
+        color: '#8B5CF6',
         lessonsCompleted: 15,
         totalLessons: 28,
         averageScore: 91,
@@ -70,7 +84,7 @@ const ProgressScreen = () => {
         fieldId: 'influence',
         fieldName: 'Influence Skills',
         icon: 'bulb-outline',
-        color: theme.colors.vintage.terracotta,
+        color: '#EF4444',
         lessonsCompleted: 18,
         totalLessons: 33,
         averageScore: 85,
@@ -80,7 +94,7 @@ const ProgressScreen = () => {
         fieldId: 'global',
         fieldName: 'Global Events',
         icon: 'earth-outline',
-        color: theme.colors.vintage.slate,
+        color: '#06B6D4',
         lessonsCompleted: 25,
         totalLessons: 41,
         averageScore: 77,
@@ -133,34 +147,65 @@ const ProgressScreen = () => {
     ],
   });
 
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <Text style={styles.title}>Your Progress</Text>
+      <Text style={styles.subtitle}>Track your learning journey</Text>
+      
+      <View style={styles.periodSelector}>
+        {periods.map((period) => (
+          <TouchableOpacity
+            key={period.id}
+            style={[
+              styles.periodChip,
+              selectedPeriod === period.id && styles.periodChipActive,
+            ]}
+            onPress={() => setSelectedPeriod(period.id)}
+          >
+            <Text style={[
+              styles.periodText,
+              selectedPeriod === period.id && styles.periodTextActive,
+            ]}>
+              {period.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+
   const renderOverallStats = () => (
     <View style={styles.statsContainer}>
-      <Text style={styles.sectionTitle}>Your Progress</Text>
+      <Text style={styles.sectionTitle}>Overview</Text>
 
       <View style={styles.statsGrid}>
-        <ClayStatCard
+        <StatCard
           value={userProgress.overallStats.totalLessonsCompleted.toString()}
           label="Lessons"
-          color="#F4E4E4" // Soft Pink
-          icon={<Ionicons name="book" size={24} color={theme.colors.text} />}
+          icon={<Ionicons name="book" size={24} color={theme.colors.primary} />}
+          color={theme.colors.primary}
+          trend={{ value: '+12%', isPositive: true }}
         />
-        <ClayStatCard
+        <StatCard
           value={userProgress.overallStats.totalQuizzesCompleted.toString()}
           label="Quizzes"
-          color="#E0F0F5" // Soft Blue
-          icon={<Ionicons name="help-circle" size={24} color={theme.colors.text} />}
+          icon={<Ionicons name="help-circle" size={24} color={theme.colors.secondary} />}
+          color={theme.colors.secondary}
+          trend={{ value: '+8%', isPositive: true }}
         />
-        <ClayStatCard
+        <StatCard
           value={`${userProgress.overallStats.averageQuizScore}%`}
           label="Avg Score"
-          color="#F9F3D8" // Soft Yellow
-          icon={<Ionicons name="trophy" size={24} color={theme.colors.text} />}
+          icon={<Ionicons name="trophy" size={24} color={theme.colors.warning} />}
+          color={theme.colors.warning}
+          trend={{ value: '+3%', isPositive: true }}
         />
-        <ClayStatCard
+        <StatCard
           value={userProgress.overallStats.currentStreak.toString()}
           label="Day Streak"
-          color="#E0F5EB" // Soft Teal
-          icon={<Ionicons name="flame" size={24} color={theme.colors.text} />}
+          icon={<Ionicons name="flame" size={24} color={theme.colors.error} />}
+          color={theme.colors.error}
+          trend={{ value: '+2', isPositive: true }}
         />
       </View>
     </View>
@@ -175,19 +220,32 @@ const ProgressScreen = () => {
         title={field.fieldName}
         subtitle={`${field.lessonsCompleted}/${field.totalLessons} lessons`}
         backgroundColor={theme.colors.cardBackground}
-        icon={<Ionicons name={field.icon} size={24} color={theme.colors.text} />}
+        icon={<Ionicons name={field.icon} size={24} color={field.color} />}
         style={styles.fieldCard}
       >
-        <View style={styles.progressBarContainer}>
-          <View style={styles.progressBar}>
-            <View
-              style={[
-                styles.progressFill,
-                { width: `${progress}%`, backgroundColor: field.color }
-              ]}
-            />
+        <View style={styles.fieldContent}>
+          <View style={styles.progressContainer}>
+            <View style={styles.progressBar}>
+              <LinearGradient
+                colors={[field.color, field.color + 'CC']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={[styles.progressFill, { width: `${progress}%` }]}
+              />
+            </View>
+            <Text style={styles.progressText}>{Math.round(progress)}%</Text>
           </View>
-          <Text style={styles.progressText}>{Math.round(progress)}%</Text>
+          
+          <View style={styles.fieldStats}>
+            <View style={styles.fieldStat}>
+              <Text style={styles.fieldStatValue}>{field.averageScore}%</Text>
+              <Text style={styles.fieldStatLabel}>Avg Score</Text>
+            </View>
+            <View style={styles.fieldStat}>
+              <Text style={styles.fieldStatValue}>{field.recentActivity}</Text>
+              <Text style={styles.fieldStatLabel}>Last Active</Text>
+            </View>
+          </View>
         </View>
       </BentoCard>
     );
@@ -198,25 +256,26 @@ const ProgressScreen = () => {
       <Text style={styles.sectionTitle}>Weekly Activity</Text>
 
       <BentoCard
-        title="Activity"
+        title="Study Time"
+        subtitle={`${userProgress.overallStats.studyTimeWeek} minutes this week`}
         backgroundColor={theme.colors.cardBackground}
         style={styles.weeklyCard}
       >
-        <View style={styles.activityChart}>
-          {userProgress.weeklyActivity.map((day, index) => (
-            <View key={day.day} style={styles.dayColumn}>
-              <View
-                style={[
-                  styles.dayBar,
-                  {
-                    height: `${(day.minutes / 65) * 100}%`,
-                    backgroundColor: theme.colors.primary
-                  }
-                ]}
-              />
-              <Text style={styles.dayLabel}>{day.day}</Text>
-            </View>
-          ))}
+        <ProgressChart data={userProgress.weeklyActivity} />
+        
+        <View style={styles.weeklyStats}>
+          <View style={styles.weeklyStat}>
+            <Text style={styles.weeklyStatValue}>320</Text>
+            <Text style={styles.weeklyStatLabel}>Total Minutes</Text>
+          </View>
+          <View style={styles.weeklyStat}>
+            <Text style={styles.weeklyStatValue}>22</Text>
+            <Text style={styles.weeklyStatLabel}>Lessons</Text>
+          </View>
+          <View style={styles.weeklyStat}>
+            <Text style={styles.weeklyStatValue}>45</Text>
+            <Text style={styles.weeklyStatLabel}>Daily Avg</Text>
+          </View>
         </View>
       </BentoCard>
     </View>
@@ -230,6 +289,7 @@ const ProgressScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {renderHeader()}
         {renderOverallStats()}
 
         <View style={styles.fieldsSection}>
@@ -255,8 +315,47 @@ const styles = StyleSheet.create({
     padding: theme.spacing.lg,
     paddingTop: 60,
   },
+  header: {
+    marginBottom: theme.spacing.lg,
+  },
+  title: {
+    fontFamily: theme.typography.fontFamily.black,
+    fontSize: theme.typography.sizes.xxxl,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
+  },
+  subtitle: {
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.sizes.md,
+    color: theme.colors.textLight,
+    marginBottom: theme.spacing.lg,
+  },
+  periodSelector: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+  },
+  periodChip: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.lg,
+    backgroundColor: theme.colors.cardBackground,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  periodChipActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  periodText: {
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.textLight,
+  },
+  periodTextActive: {
+    color: '#FFFFFF',
+  },
   sectionTitle: {
-    fontFamily: theme.typography.fontFamily.serifBold,
+    fontFamily: theme.typography.fontFamily.black,
     fontSize: theme.typography.sizes.xl,
     color: theme.colors.text,
     marginBottom: theme.spacing.md,
@@ -271,30 +370,51 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
     justifyContent: 'space-between',
   },
-
   fieldsSection: {
     marginBottom: theme.spacing.lg,
   },
   fieldCard: {
     marginBottom: theme.spacing.md,
   },
-  progressBarContainer: {
+  fieldContent: {
+    marginTop: theme.spacing.sm,
+  },
+  progressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.md,
-    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
   },
   progressBar: {
     flex: 1,
     height: 8,
     backgroundColor: theme.colors.border,
     borderRadius: 4,
+    overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
     borderRadius: 4,
   },
   progressText: {
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.text,
+  },
+  fieldStats: {
+    flexDirection: 'row',
+    gap: theme.spacing.lg,
+  },
+  fieldStat: {
+    flex: 1,
+  },
+  fieldStatValue: {
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: theme.typography.sizes.md,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
+  },
+  fieldStatLabel: {
     fontFamily: theme.typography.fontFamily.medium,
     fontSize: theme.typography.sizes.sm,
     color: theme.colors.textLight,
@@ -303,30 +423,28 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xl,
   },
   weeklyCard: {
-    padding: theme.spacing.lg,
+    padding: 0,
   },
-  activityChart: {
+  weeklyStats: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    height: 150,
-    paddingTop: theme.spacing.lg,
+    justifyContent: 'space-around',
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
   },
-  dayColumn: {
+  weeklyStat: {
     alignItems: 'center',
-    flex: 1,
-    height: '100%',
-    justifyContent: 'flex-end',
   },
-  dayBar: {
-    width: 8,
-    borderRadius: 4,
+  weeklyStatValue: {
+    fontFamily: theme.typography.fontFamily.black,
+    fontSize: theme.typography.sizes.lg,
+    color: theme.colors.text,
     marginBottom: theme.spacing.xs,
-    opacity: 0.8,
   },
-  dayLabel: {
+  weeklyStatLabel: {
     fontFamily: theme.typography.fontFamily.medium,
-    fontSize: theme.typography.sizes.xs,
+    fontSize: theme.typography.sizes.sm,
     color: theme.colors.textLight,
   },
 });
