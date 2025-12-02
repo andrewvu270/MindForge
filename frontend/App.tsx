@@ -19,6 +19,7 @@ import LearnScreen from './src/screens/LearnScreen';
 import DailyChallengeScreen from './src/screens/DailyChallengeScreen';
 import ProgressScreen from './src/screens/ProgressScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import FrankensteinDemoScreen from './src/screens/FrankensteinDemoScreen';
 import { theme } from './src/theme';
 
 const Tab = createBottomTabNavigator();
@@ -136,6 +137,15 @@ export default function App() {
             options={{
               tabBarIcon: ({ focused, color, size }) => (
                 <Ionicons name={focused ? "person" : "person-outline"} size={size} color={color} />
+              )
+            }}
+          />
+          <Tab.Screen
+            name="Demo"
+            component={FrankensteinDemoScreen}
+            options={{
+              tabBarIcon: ({ focused, color, size }) => (
+                <Ionicons name={focused ? "flask" : "flask-outline"} size={size} color={color} />
               )
             }}
           />

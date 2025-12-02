@@ -93,6 +93,50 @@ class ApiService {
   async getFieldNews(fieldId: string, limit: number = 10): Promise<NewsItem[]> {
     return this.request<NewsItem[]>(`/api/news/${fieldId}?limit=${limit}`);
   }
+
+  // Frankenstein Lesson Generation
+  async generateLesson(params: {
+    field: string;
+    topic: string;
+    num_sources?: number;
+    generate_quiz?: boolean;
+    num_quiz_questions?: number;
+  }): Promise<any> {
+    return this.request<any>('/api/lessons/generate', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
+
+  // Gamification
+  async awardPoints(params: {
+    user_id: string;
+    activity_type: string;
+    difficulty?: string;
+    quiz_score?: number;
+    completion_time_minutes?: number;
+  }): Promise<any> {
+    return this.request<any>('/api/gamification/award-points', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
+
+  async getUserStats(userId: string): Promise<any> {
+    return this.request<any>(`/api/gamification/stats/${userId}`);
+  }
+
+  async getLeaderboard(limit: number = 100): Promise<any[]> {
+    return this.request<any[]>(`/api/gamification/leaderboard?limit=${limit}`);
+  }
+
+  async getAchievements(): Promise<any> {
+    return this.request<any>('/api/gamification/achievements');
+  }
+
+  async getUserAchievements(userId: string): Promise<any> {
+    return this.request<any>(`/api/gamification/achievements/${userId}`);
+  }
 }
 
 export const apiService = new ApiService();
