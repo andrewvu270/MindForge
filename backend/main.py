@@ -16,10 +16,7 @@ load_dotenv()
 
 app = FastAPI(title="MindForge API", version="1.0.0")
 
-# Include routers
-app.include_router(lesson_router)
-app.include_router(gamification_router)
-
+# Add CORS middleware FIRST
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,6 +24,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(lesson_router)
+app.include_router(gamification_router)
 
 # Field definitions (moved to models.py)
 
@@ -135,7 +136,7 @@ async def get_daily_challenge():
         lesson_ids=["lesson_1", "lesson_2", "lesson_3"],
         quiz_ids=["quiz_1"],
         date=date.today(),
-        difficulty_level=2
+        difficulty_level=DifficultyLevel.INTERMEDIATE
     )
 
 # News endpoints
