@@ -4,8 +4,9 @@ Can use MCP in development or direct API in production
 """
 import os
 import logging
+import asyncio
 from typing import List, Optional, Dict, Any
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, OpenAIError, RateLimitError, APITimeoutError
 from datetime import datetime
 
 from .content_models import NormalizedContent
@@ -16,28 +17,131 @@ logger = logging.getLogger(__name__)
 class LLMService:
     """
     Service for AI/LLM operations.
-    Wraps OpenAI API and provides methods for various AI tasks.
+    Wraps OpenAI API with Hugging Face fallback and retry logic.
     """
     
-    def __init__(self, api_key: Optional[str] = None, use_mcp: bool = False):
+    def __init__(
+        self, 
+        api_key: Optional[str] = None, 
+        hf_api_key: Optional[str] = None,
+        use_mcp: bool = False,
+        max_retries: int = 3,
+        retry_delays: List[float] = None
+    ):
         """
         Initialize LLM service.
         
         Args:
             api_key: OpenAI API key (defaults to env var)
+            hf_api_key: Hugging Face API key (defaults to env var)
             use_mcp: Whether to use MCP for development (not implemented yet)
+            max_retries: Maximum number of retry attempts
+            retry_delays: List of delays between retries in seconds
         """
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        self.hf_api_key = hf_api_key or os.getenv("HUGGINGFACE_API_KEY")
         self.use_mcp = use_mcp
+        self.max_retries = max_retries
+        self.retry_delays = retry_delays or [1.0, 2.0, 4.0]  # Exponential backoff
         
+        # Initialize OpenAI client
         if not self.use_mcp:
             if not self.api_key:
-                raise ValueError("OPENAI_API_KEY must be set")
-            self.client = AsyncOpenAI(api_key=self.api_key)
+                logger.warning("OPENAI_API_KEY not set, will rely on Hugging Face fallback")
+            else:
+                self.client = AsyncOpenAI(api_key=self.api_key)
         else:
             # TODO: Implement MCP client for development
             logger.warning("MCP mode not yet implemented, falling back to OpenAI")
-            self.client = AsyncOpenAI(api_key=self.api_key)
+            if self.api_key:
+                self.client = AsyncOpenAI(api_key=self.api_key)
+        
+        # Hugging Face client setup (if needed)
+        self.hf_client = None
+        if self.hf_api_key:
+            # Lazy initialization - only create when needed
+            logger.info("Hugging Face API key configured for fallback")
+    
+    async def _call_with_retry(self, func, *args, **kwargs):
+        """
+        Call an async function with retry logic and error handling.
+        
+        Args:
+            func: Async function to call
+            *args, **kwargs: Arguments to pass to function
+            
+        Returns:
+            Function result
+            
+        Raises:
+            Exception: If all retries fail
+        """
+        last_error = None
+        
+        for attempt in range(self.max_retries):
+            try:
+                return await func(*args, **kwargs)
+                
+            except RateLimitError as e:
+                last_error = e
+                logger.warning(f"Rate limit hit on attempt {attempt + 1}/{self.max_retries}")
+                if attempt < self.max_retries - 1:
+                    delay = self.retry_delays[min(attempt, len(self.retry_delays) - 1)]
+                    logger.info(f"Retrying in {delay} seconds...")
+                    await asyncio.sleep(delay)
+                    
+            except APITimeoutError as e:
+                last_error = e
+                logger.warning(f"API timeout on attempt {attempt + 1}/{self.max_retries}")
+                if attempt < self.max_retries - 1:
+                    delay = self.retry_delays[min(attempt, len(self.retry_delays) - 1)]
+                    logger.info(f"Retrying in {delay} seconds...")
+                    await asyncio.sleep(delay)
+                    
+            except OpenAIError as e:
+                last_error = e
+                logger.error(f"OpenAI error on attempt {attempt + 1}/{self.max_retries}: {e}")
+                if attempt < self.max_retries - 1:
+                    delay = self.retry_delays[min(attempt, len(self.retry_delays) - 1)]
+                    await asyncio.sleep(delay)
+                else:
+                    # Try Hugging Face fallback on final failure
+                    if self.hf_api_key:
+                        logger.info("Attempting Hugging Face fallback...")
+                        return await self._huggingface_fallback(func.__name__, *args, **kwargs)
+                    
+            except Exception as e:
+                last_error = e
+                logger.error(f"Unexpected error on attempt {attempt + 1}/{self.max_retries}: {e}")
+                if attempt >= self.max_retries - 1:
+                    break
+                delay = self.retry_delays[min(attempt, len(self.retry_delays) - 1)]
+                await asyncio.sleep(delay)
+        
+        # All retries failed
+        raise last_error or Exception("All retry attempts failed")
+    
+    async def _huggingface_fallback(self, operation: str, *args, **kwargs):
+        """
+        Fallback to Hugging Face API when OpenAI fails.
+        
+        Args:
+            operation: Name of the operation (for logging)
+            *args, **kwargs: Operation arguments
+            
+        Returns:
+            Fallback result
+            
+        Raises:
+            NotImplementedError: Hugging Face integration not yet implemented
+        """
+        logger.warning(f"Hugging Face fallback for {operation} not yet fully implemented")
+        # TODO: Implement actual Hugging Face API calls
+        # For now, raise an error to indicate fallback is needed
+        raise NotImplementedError(
+            "Hugging Face fallback is configured but not yet implemented. "
+            "Please ensure OpenAI API is available."
+        )
     
     async def synthesize_lesson(
         self, 
@@ -56,13 +160,14 @@ class LLMService:
         Returns:
             Dict with title, summary, learning_objectives, sources
         """
-        # Build prompt with all sources
-        sources_text = "\n\n".join([
-            f"Source {i+1} ({content.source}):\nTitle: {content.title}\nContent: {content.content}"
-            for i, content in enumerate(contents)
-        ])
-        
-        prompt = f"""You are an expert educator creating a microlearning lesson in the field of {field}.
+        async def _synthesize():
+            # Build prompt with all sources
+            sources_text = "\n\n".join([
+                f"Source {i+1} ({content.source}):\nTitle: {content.title}\nContent: {content.content}"
+                for i, content in enumerate(contents)
+            ])
+            
+            prompt = f"""You are an expert educator creating a microlearning lesson in the field of {field}.
 
 You have been given content from {len(contents)} different sources with different formats (discussions, news, data, etc.).
 
@@ -87,7 +192,6 @@ Format your response as JSON:
 
 Remember: Synthesize and integrate - don't just concatenate. Find connections between sources."""
 
-        try:
             response = await self.client.chat.completions.create(
                 model="gpt-4o-mini",  # Using mini for cost efficiency
                 messages=[
@@ -112,9 +216,11 @@ Remember: Synthesize and integrate - don't just concatenate. Find connections be
             ]
             
             return result
-            
+        
+        try:
+            return await self._call_with_retry(_synthesize)
         except Exception as e:
-            logger.error(f"Failed to synthesize lesson: {e}")
+            logger.error(f"Failed to synthesize lesson after retries: {e}")
             raise
     
     async def generate_quiz(
@@ -132,7 +238,8 @@ Remember: Synthesize and integrate - don't just concatenate. Find connections be
         Returns:
             List of question dictionaries
         """
-        prompt = f"""Create {num_questions} multiple choice quiz questions based on this lesson:
+        async def _generate():
+            prompt = f"""Create {num_questions} multiple choice quiz questions based on this lesson:
 
 {lesson_content}
 
@@ -154,7 +261,6 @@ Format as JSON array:
     ...
 ]"""
 
-        try:
             response = await self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
@@ -175,9 +281,11 @@ Format as JSON array:
                 return result
             else:
                 return []
-                
+        
+        try:
+            return await self._call_with_retry(_generate)
         except Exception as e:
-            logger.error(f"Failed to generate quiz: {e}")
+            logger.error(f"Failed to generate quiz after retries: {e}")
             raise
     
     async def analyze_reflection(
@@ -195,14 +303,15 @@ Format as JSON array:
         Returns:
             Dict with feedback, quality_score, insights
         """
-        history_context = ""
-        if user_history:
-            history_context = "\n\nPrevious reflections:\n" + "\n".join([
-                f"- {r.get('response', '')[:100]}..."
-                for r in user_history[-3:]  # Last 3 reflections
-            ])
-        
-        prompt = f"""Analyze this reflection on influence skills and provide constructive feedback:
+        async def _analyze():
+            history_context = ""
+            if user_history:
+                history_context = "\n\nPrevious reflections:\n" + "\n".join([
+                    f"- {r.get('response', '')[:100]}..."
+                    for r in user_history[-3:]  # Last 3 reflections
+                ])
+            
+            prompt = f"""Analyze this reflection on influence skills and provide constructive feedback:
 
 Reflection: {reflection_text}
 {history_context}
@@ -221,7 +330,6 @@ Format as JSON:
     "suggestion": "specific suggestion"
 }}"""
 
-        try:
             response = await self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
@@ -234,9 +342,11 @@ Format as JSON:
             
             import json
             return json.loads(response.choices[0].message.content)
-            
+        
+        try:
+            return await self._call_with_retry(_analyze)
         except Exception as e:
-            logger.error(f"Failed to analyze reflection: {e}")
+            logger.error(f"Failed to analyze reflection after retries: {e}")
             raise
     
     async def recommend_lessons(
@@ -256,7 +366,8 @@ Format as JSON:
         Returns:
             List of lesson IDs
         """
-        progress_summary = f"""
+        async def _recommend():
+            progress_summary = f"""
 User Progress:
 - Completed lessons: {user_progress.get('lessons_completed', 0)}
 - Fields studied: {', '.join(user_progress.get('fields', []))}
@@ -264,12 +375,12 @@ User Progress:
 - Current streak: {user_progress.get('streak', 0)} days
 """
 
-        lessons_summary = "\n".join([
-            f"- {lesson['id']}: {lesson['title']} (Field: {lesson['field']}, Difficulty: {lesson['difficulty']})"
-            for lesson in available_lessons[:20]  # Limit to avoid token limits
-        ])
-        
-        prompt = f"""{progress_summary}
+            lessons_summary = "\n".join([
+                f"- {lesson['id']}: {lesson['title']} (Field: {lesson['field']}, Difficulty: {lesson['difficulty']})"
+                for lesson in available_lessons[:20]  # Limit to avoid token limits
+            ])
+            
+            prompt = f"""{progress_summary}
 
 Available Lessons:
 {lessons_summary}
@@ -283,7 +394,6 @@ Recommend {num_recommendations} lessons that:
 Return JSON array of lesson IDs:
 {{"lesson_ids": ["id1", "id2", ...]}}"""
 
-        try:
             response = await self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
@@ -297,7 +407,9 @@ Return JSON array of lesson IDs:
             import json
             result = json.loads(response.choices[0].message.content)
             return result.get("lesson_ids", [])
-            
+        
+        try:
+            return await self._call_with_retry(_recommend)
         except Exception as e:
-            logger.error(f"Failed to recommend lessons: {e}")
+            logger.error(f"Failed to recommend lessons after retries: {e}")
             raise

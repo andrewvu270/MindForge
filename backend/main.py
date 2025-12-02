@@ -11,6 +11,9 @@ from models import *
 from seed_data import get_seed_data
 from api.lesson_endpoints import router as lesson_router
 from api.gamification_endpoints import router as gamification_router
+from api.quiz_endpoints import router as quiz_router
+from api.reflection_endpoints import router as reflection_router
+from api.scheduling_endpoints import router as scheduling_router
 
 load_dotenv()
 
@@ -28,6 +31,9 @@ app.add_middleware(
 # Include routers
 app.include_router(lesson_router)
 app.include_router(gamification_router)
+app.include_router(quiz_router)
+app.include_router(reflection_router)
+app.include_router(scheduling_router)
 
 # Field definitions (moved to models.py)
 

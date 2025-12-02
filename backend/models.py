@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 from datetime import datetime, date
 from enum import Enum
 
@@ -123,3 +123,139 @@ TABLES = {
     "news_items": NewsItem,
     "users": User
 }
+
+
+# ============================================
+# Frankenstein Multi-Source Learning Models
+# ============================================
+
+class SourceAttribution(BaseModel):
+    """Source attribution for synthesized lessons"""
+    name: str  # Source name (e.g., "hackernews", "reddit")
+    title: str  # Original content title
+    url: Optional[str] = None
+
+class SynthesizedLesson(BaseModel):
+    """Lesson generated from multiple external sources"""
+    id: str
+    category_id: str
+    title: str
+    summary: str  # AI-generated summary (<200 words)
+    sources: List[SourceAttribution]  # Source attribution
+    learning_objectives: List[str]
+    key_concepts: List[str]
+    estimated_minutes: int = 15
+    difficulty_level: DifficultyLevel = DifficultyLevel.BEGINNER
+    points: int = 10
+    is_published: bool = True
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+class Reflection(BaseModel):
+    """User reflection on influence skills"""
+    id: str
+    user_id: str
+    prompt: str
+    response: str
+    ai_feedback: Optional[str] = None
+    quality_score: Optional[float] = None  # 0-100
+    insights: Optional[List[str]] = None
+    suggestion: Optional[str] = None
+    submitted_at: datetime
+
+class ReflectionFeedback(BaseModel):
+    """AI-generated feedback for a reflection"""
+    feedback: str
+    quality_score: float  # 0-100
+    insights: List[str]
+    suggestion: str
+
+class Achievement(BaseModel):
+    """Achievement that users can unlock"""
+    id: str
+    name: str
+    description: str
+    icon: str
+    criteria: Dict[str, Any]  # Flexible criteria (e.g., {"type": "streak", "value": 7})
+    points_reward: int = 0
+    created_at: Optional[datetime] = None
+
+class UserAchievement(BaseModel):
+    """User's unlocked achievement"""
+    user_id: str
+    achievement_id: str
+    unlocked_at: datetime
+
+class LeaderboardEntry(BaseModel):
+    """Entry in the leaderboard"""
+    rank: int
+    user_id: str
+    username: str
+    display_name: Optional[str] = None
+    total_points: int
+    current_streak: int
+    longest_streak: int
+    lessons_completed: int
+    achievements_earned: int
+
+class SessionType(str, Enum):
+    """Types of scheduled sessions"""
+    LESSON = "lesson"
+    QUIZ = "quiz"
+    REFLECTION = "reflection"
+
+class ScheduledSession(BaseModel):
+    """Scheduled learning session"""
+    id: str
+    user_id: str
+    session_type: SessionType
+    content_id: Optional[str] = None  # lesson_id or synthesized_lesson_id
+    scheduled_time: datetime
+    completed: bool = False
+    completed_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+
+class SchedulePreferences(BaseModel):
+    """User's scheduling preferences"""
+    user_id: str
+    preferred_days: List[str]  # ["Monday", "Tuesday", ...]
+    preferred_time: str  # "09:00:00"
+    sessions_per_week: int = 3
+    lesson_frequency: int = 2
+    quiz_frequency: int = 2
+    reflection_frequency: int = 1
+    notifications_enabled: bool = True
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+class ReflectionPrompt(BaseModel):
+    """Reflection prompt for influence skills"""
+    id: str
+    prompt: str
+    category: str = "influence"
+    difficulty: DifficultyLevel = DifficultyLevel.BEGINNER
+    created_at: Optional[datetime] = None
+
+class UserStats(BaseModel):
+    """Aggregated user statistics"""
+    user_id: str
+    total_points: int
+    current_streak: int
+    longest_streak: int
+    lessons_completed: int
+    quizzes_completed: int
+    reflections_completed: int
+    achievements_earned: int
+    average_quiz_score: float
+    fields_studied: List[str]
+
+# Update TABLES dictionary with new models
+TABLES.update({
+    "synthesized_lessons": SynthesizedLesson,
+    "reflections": Reflection,
+    "achievements": Achievement,
+    "user_achievements": UserAchievement,
+    "scheduled_sessions": ScheduledSession,
+    "schedule_preferences": SchedulePreferences,
+    "reflection_prompts": ReflectionPrompt
+})
