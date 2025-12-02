@@ -47,10 +47,10 @@ class ApiService {
   }
 
   // Lessons
-  async getLessons(fieldId?: string, difficulty?: number): Promise<Lesson[]> {
+  async getLessons(fieldId?: string, difficulty?: string): Promise<Lesson[]> {
     const params = new URLSearchParams();
     if (fieldId) params.append('field_id', fieldId);
-    if (difficulty) params.append('difficulty', difficulty.toString());
+    if (difficulty) params.append('difficulty', difficulty);
     
     const queryString = params.toString();
     return this.request<Lesson[]>(`/api/lessons${queryString ? `?${queryString}` : ''}`);

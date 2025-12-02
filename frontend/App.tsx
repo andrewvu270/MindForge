@@ -1,42 +1,144 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { View } from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
+import { Ionicons, Feather } from '@expo/vector-icons';
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_700Bold,
+  Inter_900Black,
+} from '@expo-google-fonts/inter';
 
-import HomeScreen from './src/screens/HomeScreen';
+import MainFeedScreen from './src/screens/MainFeedScreen';
 import LearnScreen from './src/screens/LearnScreen';
 import DailyChallengeScreen from './src/screens/DailyChallengeScreen';
 import ProgressScreen from './src/screens/ProgressScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import { theme } from './src/theme';
 
 const Tab = createBottomTabNavigator();
 
+SplashScreen.preventAutoHideAsync();
+
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_700Bold,
+    Inter_900Black,
+  });
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        <StatusBar style="light" backgroundColor="#0A0E27" />
+    <SafeAreaProvider onLayout={onLayoutRootView}>
+      <NavigationContainer
+        theme={{
+          dark: false,
+          colors: {
+            primary: theme.colors.primary,
+            background: theme.colors.background,
+            card: theme.colors.cardBackground,
+            text: theme.colors.text,
+            border: theme.colors.border,
+            notification: theme.colors.secondary,
+          },
+        }}
+      >
+        <StatusBar style="dark" backgroundColor={theme.colors.background} />
         <Tab.Navigator
           screenOptions={{
             tabBarStyle: {
-              backgroundColor: '#1A1F2E',
-              borderTopColor: '#252B3D',
+              backgroundColor: theme.colors.cardBackground,
+              borderTopColor: theme.colors.borderLight,
               borderTopWidth: 1,
+              elevation: 0,
+              shadowColor: theme.colors.shadow,
+              shadowOffset: { width: 0, height: -2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 8,
+              paddingBottom: 8,
+              paddingTop: 8,
+              height: 70,
             },
-            tabBarActiveTintColor: '#00FFF0',
-            tabBarInactiveTintColor: '#666',
+            tabBarActiveTintColor: theme.colors.primary,
+            tabBarInactiveTintColor: theme.colors.textLight,
             headerStyle: {
-              backgroundColor: '#0A0E27',
+              backgroundColor: theme.colors.background,
+              elevation: 0,
+              shadowOpacity: 0,
+              borderBottomWidth: 0,
             },
-            headerTintColor: '#00FFF0',
+            headerTintColor: theme.colors.text,
+            headerTitleStyle: {
+              fontFamily: theme.typography.fontFamily.bold,
+              fontSize: 20,
+            },
+            tabBarLabelStyle: {
+              fontFamily: theme.typography.fontFamily.medium,
+              fontSize: 11,
+            },
           }}
         >
-          <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarIcon: '🏠' }} />
-          <Tab.Screen name="Learn" component={LearnScreen} options={{ tabBarIcon: '📚' }} />
-          <Tab.Screen name="DailyChallenge" component={DailyChallengeScreen} options={{ tabBarIcon: '⚡' }} />
-          <Tab.Screen name="Progress" component={ProgressScreen} options={{ tabBarIcon: '📊' }} />
-          <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarIcon: '👤' }} />
+          <Tab.Screen
+            name="Feed"
+            component={MainFeedScreen}
+            options={{
+              headerShown: false,
+              tabBarIcon: ({ focused, color, size }) => (
+                <Ionicons name={focused ? "home" : "home-outline"} size={size} color={color} />
+              )
+            }}
+          />
+          <Tab.Screen
+            name="Learn"
+            component={LearnScreen}
+            options={{
+              tabBarIcon: ({ focused, color, size }) => (
+                <Ionicons name={focused ? "library" : "library-outline"} size={size} color={color} />
+              )
+            }}
+          />
+          <Tab.Screen
+            name="Challenge"
+            component={DailyChallengeScreen}
+            options={{
+              tabBarIcon: ({ focused, color, size }) => (
+                <Ionicons name={focused ? "flash" : "flash-outline"} size={size} color={color} />
+              )
+            }}
+          />
+          <Tab.Screen
+            name="Progress"
+            component={ProgressScreen}
+            options={{
+              tabBarIcon: ({ focused, color, size }) => (
+                <Feather name="bar-chart-2" size={size} color={color} />
+              )
+            }}
+          />
+          <Tab.Screen
+            name="Profile"
+            component={ProfileScreen}
+            options={{
+              tabBarIcon: ({ focused, color, size }) => (
+                <Ionicons name={focused ? "person" : "person-outline"} size={size} color={color} />
+              )
+            }}
+          />
         </Tab.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

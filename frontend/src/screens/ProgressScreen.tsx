@@ -5,7 +5,10 @@ import {
   StyleSheet,
   ScrollView,
   Dimensions,
+  StatusBar,
 } from 'react-native';
+import { theme } from '../theme';
+import { BentoCard } from '../components/BentoCard';
 
 const { width } = Dimensions.get('window');
 
@@ -25,7 +28,7 @@ const ProgressScreen = () => {
         fieldId: 'tech',
         fieldName: 'Technology',
         icon: '🤖',
-        color: '#00FFF0',
+        color: theme.colors.info,
         lessonsCompleted: 45,
         totalLessons: 62,
         averageScore: 88,
@@ -35,7 +38,7 @@ const ProgressScreen = () => {
         fieldId: 'finance',
         fieldName: 'Finance',
         icon: '📈',
-        color: '#FF6B35',
+        color: theme.colors.success,
         lessonsCompleted: 32,
         totalLessons: 45,
         averageScore: 82,
@@ -45,7 +48,7 @@ const ProgressScreen = () => {
         fieldId: 'economics',
         fieldName: 'Economics',
         icon: '💰',
-        color: '#00FF88',
+        color: theme.colors.warning,
         lessonsCompleted: 20,
         totalLessons: 38,
         averageScore: 79,
@@ -55,7 +58,7 @@ const ProgressScreen = () => {
         fieldId: 'culture',
         fieldName: 'Culture',
         icon: '🌍',
-        color: '#FF00FF',
+        color: theme.colors.accent,
         lessonsCompleted: 15,
         totalLessons: 28,
         averageScore: 91,
@@ -65,7 +68,7 @@ const ProgressScreen = () => {
         fieldId: 'influence',
         fieldName: 'Influence Skills',
         icon: '💡',
-        color: '#FFD700',
+        color: theme.colors.warning,
         lessonsCompleted: 18,
         totalLessons: 33,
         averageScore: 85,
@@ -75,7 +78,7 @@ const ProgressScreen = () => {
         fieldId: 'global',
         fieldName: 'Global Events',
         icon: '🌐',
-        color: '#00BFFF',
+        color: theme.colors.secondary,
         lessonsCompleted: 25,
         totalLessons: 41,
         averageScore: 77,
@@ -130,154 +133,113 @@ const ProgressScreen = () => {
 
   const renderOverallStats = () => (
     <View style={styles.statsContainer}>
-      <Text style={styles.sectionTitle}>📊 Your Progress</Text>
-      
+      <Text style={styles.sectionTitle}>Your Progress</Text>
+
       <View style={styles.statsGrid}>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{userProgress.overallStats.totalLessonsCompleted}</Text>
-          <Text style={styles.statLabel}>Lessons Completed</Text>
-        </View>
-        
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{userProgress.overallStats.totalQuizzesCompleted}</Text>
-          <Text style={styles.statLabel}>Quizzes Completed</Text>
-        </View>
-        
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{userProgress.overallStats.averageQuizScore}%</Text>
-          <Text style={styles.statLabel}>Average Score</Text>
-        </View>
-        
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{userProgress.overallStats.currentStreak}</Text>
-          <Text style={styles.statLabel}>Current Streak 🔥</Text>
-        </View>
-      </View>
-      
-      <View style={styles.studyTimeContainer}>
-        <View style={styles.studyTimeCard}>
-          <Text style={styles.studyTimeNumber}>{userProgress.overallStats.studyTimeToday}</Text>
-          <Text style={styles.studyTimeLabel}>Minutes Today</Text>
-        </View>
-        <View style={styles.studyTimeCard}>
-          <Text style={styles.studyTimeNumber}>{userProgress.overallStats.studyTimeWeek}</Text>
-          <Text style={styles.studyTimeLabel}>Minutes This Week</Text>
-        </View>
+        <BentoCard
+          title={userProgress.overallStats.totalLessonsCompleted.toString()}
+          subtitle="Lessons"
+          backgroundColor={theme.colors.info}
+          size="small"
+          style={styles.statCard}
+        />
+        <BentoCard
+          title={userProgress.overallStats.totalQuizzesCompleted.toString()}
+          subtitle="Quizzes"
+          backgroundColor={theme.colors.success}
+          size="small"
+          style={styles.statCard}
+        />
+        <BentoCard
+          title={`${userProgress.overallStats.averageQuizScore}%`}
+          subtitle="Avg Score"
+          backgroundColor={theme.colors.warning}
+          size="small"
+          style={styles.statCard}
+        />
+        <BentoCard
+          title={userProgress.overallStats.currentStreak.toString()}
+          subtitle="Day Streak"
+          backgroundColor={theme.colors.warning}
+          size="small"
+          style={styles.statCard}
+        />
       </View>
     </View>
   );
 
   const renderFieldProgress = (field: any) => {
     const progress = (field.lessonsCompleted / field.totalLessons) * 100;
-    
+
     return (
-      <View key={field.fieldId} style={styles.fieldProgressCard}>
-        <View style={styles.fieldHeader}>
-          <Text style={styles.fieldIcon}>{field.icon}</Text>
-          <View style={styles.fieldInfo}>
-            <Text style={styles.fieldName}>{field.fieldName}</Text>
-            <Text style={styles.fieldStats}>
-              {field.lessonsCompleted}/{field.totalLessons} lessons • {field.averageScore}% avg
-            </Text>
+      <BentoCard
+        key={field.fieldId}
+        title={field.fieldName}
+        subtitle={`${field.lessonsCompleted}/${field.totalLessons} lessons`}
+        backgroundColor={theme.colors.cardBackground}
+        icon={<Text style={{ fontSize: 24 }}>{field.icon}</Text>}
+        style={styles.fieldCard}
+      >
+        <View style={styles.progressBarContainer}>
+          <View style={styles.progressBar}>
+            <View
+              style={[
+                styles.progressFill,
+                { width: `${progress}%`, backgroundColor: field.color }
+              ]}
+            />
           </View>
-          <Text style={styles.fieldActivity}>{field.recentActivity}</Text>
+          <Text style={styles.progressText}>{Math.round(progress)}%</Text>
         </View>
-        
-        <View style={styles.progressBar}>
-          <View 
-            style={[
-              styles.progressFill, 
-              { width: `${progress}%`, backgroundColor: field.color }
-            ]} 
-          />
-        </View>
-        
-        <Text style={styles.progressText}>{Math.round(progress)}% Complete</Text>
-      </View>
+      </BentoCard>
     );
   };
 
   const renderWeeklyActivity = () => (
     <View style={styles.weeklyContainer}>
-      <Text style={styles.sectionTitle}>📈 Weekly Activity</Text>
-      
-      <View style={styles.activityChart}>
-        {userProgress.weeklyActivity.map((day, index) => (
-          <View key={day.day} style={styles.dayColumn}>
-            <Text style={styles.dayMinutes}>{day.minutes}m</Text>
-            <View 
-              style={[
-                styles.dayBar, 
-                { height: `${(day.minutes / 65) * 100}%` }
-              ]} 
-            />
-            <Text style={styles.dayLabel}>{day.day}</Text>
-            <Text style={styles.dayLessons}>{day.lessons} lessons</Text>
-          </View>
-        ))}
-      </View>
-      
-      <View style={styles.weeklySummary}>
-        <Text style={styles.summaryText}>
-          Total: {userProgress.weeklyActivity.reduce((sum, day) => sum + day.minutes, 0)} minutes • 
-          {userProgress.weeklyActivity.reduce((sum, day) => sum + day.lessons, 0)} lessons
-        </Text>
-      </View>
-    </View>
-  );
+      <Text style={styles.sectionTitle}>Weekly Activity</Text>
 
-  const renderAchievements = () => (
-    <View style={styles.achievementsContainer}>
-      <Text style={styles.sectionTitle}>🏆 Achievements</Text>
-      
-      <View style={styles.achievementsGrid}>
-        {userProgress.achievements.map((achievement) => (
-          <View 
-            key={achievement.id} 
-            style={[
-              styles.achievementCard,
-              !achievement.earned && styles.lockedAchievement
-            ]}
-          >
-            <Text style={styles.achievementIcon}>{achievement.icon}</Text>
-            <Text style={styles.achievementTitle}>{achievement.title}</Text>
-            <Text style={styles.achievementDescription}>{achievement.description}</Text>
-            
-            {achievement.earned ? (
-              <Text style={styles.earnedDate}>Earned {achievement.earnedDate}</Text>
-            ) : (
-              <View style={styles.progressContainer}>
-                <Text style={styles.achievementProgressText}>
-                  {achievement.progress || 0}/{achievement.total || 1}
-                </Text>
-                <View style={styles.miniProgressBar}>
-                  <View 
-                    style={[
-                      styles.miniProgressFill,
-                      { width: `${((achievement.progress || 0) / (achievement.total || 1)) * 100}%` }
-                    ]} 
-                  />
-                </View>
-              </View>
-            )}
-          </View>
-        ))}
-      </View>
+      <BentoCard
+        title="Activity"
+        backgroundColor={theme.colors.cardBackground}
+        style={styles.weeklyCard}
+      >
+        <View style={styles.activityChart}>
+          {userProgress.weeklyActivity.map((day, index) => (
+            <View key={day.day} style={styles.dayColumn}>
+              <View
+                style={[
+                  styles.dayBar,
+                  {
+                    height: `${(day.minutes / 65) * 100}%`,
+                    backgroundColor: theme.colors.primary
+                  }
+                ]}
+              />
+              <Text style={styles.dayLabel}>{day.day}</Text>
+            </View>
+          ))}
+        </View>
+      </BentoCard>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {renderOverallStats()}
-        
+
         <View style={styles.fieldsSection}>
-          <Text style={styles.sectionTitle}>📚 Field Progress</Text>
+          <Text style={styles.sectionTitle}>Field Progress</Text>
           {userProgress.fieldProgress.map(renderFieldProgress)}
         </View>
-        
+
         {renderWeeklyActivity()}
-        {renderAchievements()}
       </ScrollView>
     </View>
   );
@@ -286,228 +248,91 @@ const ProgressScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0E27',
+    backgroundColor: theme.colors.background,
   },
   scrollView: {
     flex: 1,
-    padding: 20,
+  },
+  scrollContent: {
+    padding: theme.spacing.lg,
+    paddingTop: 60,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFF',
-    marginBottom: 15,
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: theme.typography.sizes.xl,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.md,
+    marginTop: theme.spacing.sm,
   },
   statsContainer: {
-    backgroundColor: '#252B3D',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
+    marginBottom: theme.spacing.lg,
   },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 20,
+    gap: theme.spacing.md,
   },
   statCard: {
-    width: '48%',
-    backgroundColor: '#1A1F2E',
-    borderRadius: 12,
-    padding: 15,
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#00FFF0',
-    marginBottom: 5,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#999',
-    textAlign: 'center',
-  },
-  studyTimeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  studyTimeCard: {
-    width: '48%',
-    backgroundColor: '#1A1F2E',
-    borderRadius: 12,
-    padding: 15,
-    alignItems: 'center',
-  },
-  studyTimeNumber: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFD700',
-    marginBottom: 5,
-  },
-  studyTimeLabel: {
-    fontSize: 12,
-    color: '#999',
-    textAlign: 'center',
+    width: (width - theme.spacing.lg * 2 - theme.spacing.md) / 2,
+    marginBottom: 0,
+    minHeight: 100,
   },
   fieldsSection: {
-    marginBottom: 20,
+    marginBottom: theme.spacing.lg,
   },
-  fieldProgressCard: {
-    backgroundColor: '#252B3D',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 12,
+  fieldCard: {
+    marginBottom: theme.spacing.md,
   },
-  fieldHeader: {
+  progressBarContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
-  },
-  fieldIcon: {
-    fontSize: 20,
-    marginRight: 10,
-  },
-  fieldInfo: {
-    flex: 1,
-  },
-  fieldName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFF',
-    marginBottom: 3,
-  },
-  fieldStats: {
-    fontSize: 12,
-    color: '#999',
-  },
-  fieldActivity: {
-    fontSize: 11,
-    color: '#666',
+    gap: theme.spacing.md,
+    marginTop: theme.spacing.sm,
   },
   progressBar: {
-    height: 6,
-    backgroundColor: '#1A1F2E',
-    borderRadius: 3,
-    marginBottom: 5,
+    flex: 1,
+    height: 8,
+    backgroundColor: theme.colors.border,
+    borderRadius: 4,
   },
   progressFill: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: 4,
   },
   progressText: {
-    fontSize: 12,
-    color: '#00FFF0',
-    textAlign: 'right',
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.textLight,
   },
   weeklyContainer: {
-    backgroundColor: '#252B3D',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
+    marginBottom: theme.spacing.xl,
+  },
+  weeklyCard: {
+    padding: theme.spacing.lg,
   },
   activityChart: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    height: 120,
-    marginBottom: 15,
+    height: 150,
+    paddingTop: theme.spacing.lg,
   },
   dayColumn: {
-    flex: 1,
     alignItems: 'center',
-  },
-  dayMinutes: {
-    fontSize: 10,
-    color: '#00FFF0',
-    marginBottom: 5,
+    flex: 1,
+    height: '100%',
+    justifyContent: 'flex-end',
   },
   dayBar: {
-    width: 20,
-    backgroundColor: '#00FFF0',
-    borderRadius: 10,
-    marginBottom: 5,
+    width: 8,
+    borderRadius: 4,
+    marginBottom: theme.spacing.xs,
+    opacity: 0.8,
   },
   dayLabel: {
-    fontSize: 11,
-    color: '#FFF',
-    marginBottom: 3,
-  },
-  dayLessons: {
-    fontSize: 9,
-    color: '#999',
-  },
-  weeklySummary: {
-    alignItems: 'center',
-  },
-  summaryText: {
-    fontSize: 12,
-    color: '#CCC',
-  },
-  achievementsContainer: {
-    marginBottom: 20,
-  },
-  achievementsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  achievementCard: {
-    width: '48%',
-    backgroundColor: '#252B3D',
-    borderRadius: 12,
-    padding: 15,
-    alignItems: 'center',
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#00FFF0',
-  },
-  lockedAchievement: {
-    borderColor: '#666',
-    opacity: 0.7,
-  },
-  achievementIcon: {
-    fontSize: 24,
-    marginBottom: 8,
-  },
-  achievementTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFF',
-    textAlign: 'center',
-    marginBottom: 5,
-  },
-  achievementDescription: {
-    fontSize: 11,
-    color: '#999',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  earnedDate: {
-    fontSize: 10,
-    color: '#00FF88',
-    textAlign: 'center',
-  },
-  progressContainer: {
-    alignItems: 'center',
-    width: '100%',
-  },
-  achievementProgressText: {
-    fontSize: 10,
-    color: '#FFD700',
-    marginBottom: 5,
-  },
-  miniProgressBar: {
-    width: '100%',
-    height: 4,
-    backgroundColor: '#1A1F2E',
-    borderRadius: 2,
-  },
-  miniProgressFill: {
-    height: '100%',
-    backgroundColor: '#FFD700',
-    borderRadius: 2,
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.sizes.xs,
+    color: theme.colors.textLight,
   },
 });
 

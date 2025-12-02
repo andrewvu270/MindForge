@@ -6,6 +6,10 @@ import os
 from datetime import datetime, date
 from dotenv import load_dotenv
 
+from database import db
+from models import *
+from seed_data import get_seed_data
+
 load_dotenv()
 
 app = FastAPI(title="MindForge API", version="1.0.0")
@@ -18,83 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Field definitions
-class Field(BaseModel):
-    id: str
-    name: str
-    description: str
-    icon: str
-    color: str
-    total_lessons: int
-
-# Lesson system
-class Lesson(BaseModel):
-    id: str
-    title: str
-    content: str
-    field_id: str
-    difficulty_level: int  # 1-5
-    estimated_minutes: int
-    learning_objectives: List[str]
-    key_concepts: List[str]
-
-# Quiz system for reinforcement
-class QuizQuestion(BaseModel):
-    id: str
-    lesson_id: str
-    question: str
-    question_type: str  # 'multiple_choice', 'true_false', 'fill_blank'
-    options: Optional[List[str]] = None
-    correct_answer: str
-    explanation: str
-
-class QuizSubmission(BaseModel):
-    lesson_id: str
-    answers: Dict[str, str]  # question_id -> answer
-
-class QuizResult(BaseModel):
-    quiz_id: str
-    score: int
-    total_questions: int
-    percentage: float
-    correct_answers: List[str]
-    incorrect_answers: List[str]
-    feedback: Dict[str, str]  # question_id -> explanation
-    completed_at: datetime
-
-# User progress tracking
-class UserProgress(BaseModel):
-    user_id: str
-    field_id: str
-    lessons_completed: int
-    total_lessons: int
-    quiz_scores: List[float]
-    average_score: float
-    streak_days: int
-    last_study_date: date
-
-# Daily challenge
-class DailyChallenge(BaseModel):
-    id: str
-    title: str
-    description: str
-    field_id: str
-    lesson_ids: List[str]
-    quiz_ids: List[str]
-    date: date
-    difficulty_level: int
-
-# News integration
-class NewsItem(BaseModel):
-    id: str
-    title: str
-    summary: str
-    content: str
-    field_id: str
-    source: str
-    published_at: datetime
-    reading_time_minutes: int
-    relevance_score: float
+# Field definitions (moved to models.py)
 
 @app.get("/")
 async def root():
@@ -103,51 +31,66 @@ async def root():
 # Fields endpoints
 @app.get("/api/fields", response_model=List[Field])
 async def get_fields():
-    # TODO: Implement database query
-    return [
-        Field(id="tech", name="Technology", description="Latest in tech and AI", icon="🤖", color="#00FFF0", total_lessons=62),
-        Field(id="finance", name="Finance", description="Markets and investing", icon="📈", color="#FF6B35", total_lessons=45),
-        Field(id="economics", name="Economics", description="Economic principles and trends", icon="💰", color="#00FF88", total_lessons=38),
-        Field(id="culture", name="Culture", description="Arts and society", icon="🌍", color="#FF00FF", total_lessons=28),
-        Field(id="influence", name="Influence Skills", description="Communication and leadership", icon="💡", color="#FFD700", total_lessons=33),
-        Field(id="global", name="Global Events", description="World news and politics", icon="🌐", color="#00BFFF", total_lessons=41)
-    ]
+    try:
+        client = db.get_client()
+        response = client.table("fields").select("*").execute()
+        return response.data
+    except Exception as e:
+        # Fallback to seed data if database not available
+        return get_seed_data()["fields"]
 
 # Lessons endpoints
 @app.get("/api/lessons", response_model=List[Lesson])
-async def get_lessons(field_id: Optional[str] = None, difficulty: Optional[int] = None):
-    # TODO: Implement database query with filters
-    return []
+async def get_lessons(field_id: Optional[str] = None, difficulty: Optional[str] = None):
+    try:
+        client = db.get_client()
+        query = client.table("lessons").select("*")
+        
+        if field_id:
+            query = query.eq("field_id", field_id)
+        if difficulty:
+            query = query.eq("difficulty_level", difficulty)
+            
+        response = query.execute()
+        return response.data
+    except Exception as e:
+        # Fallback to seed data
+        seed_lessons = get_seed_data()["lessons"]
+        if field_id:
+            seed_lessons = [l for l in seed_lessons if l.field_id == field_id]
+        if difficulty:
+            seed_lessons = [l for l in seed_lessons if l.difficulty_level == difficulty]
+        return seed_lessons
 
 @app.get("/api/lessons/{lesson_id}", response_model=Lesson)
 async def get_lesson(lesson_id: str):
-    # TODO: Implement database query
-    return {
-        "id": lesson_id,
-        "title": "Introduction to Blockchain Technology",
-        "content": "Blockchain is a distributed ledger technology...",
-        "field_id": "tech",
-        "difficulty_level": 2,
-        "estimated_minutes": 15,
-        "learning_objectives": ["Understand blockchain basics", "Identify key use cases"],
-        "key_concepts": ["Distributed ledger", "Cryptography", "Consensus mechanisms"]
-    }
+    try:
+        client = db.get_client()
+        response = client.table("lessons").select("*").eq("id", lesson_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Lesson not found")
+        return response.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        # Fallback to seed data
+        seed_lessons = get_seed_data()["lessons"]
+        lesson = next((l for l in seed_lessons if l.id == lesson_id), None)
+        if not lesson:
+            raise HTTPException(status_code=404, detail="Lesson not found")
+        return lesson
 
 # Quiz endpoints
 @app.get("/api/quiz/{lesson_id}", response_model=List[QuizQuestion])
 async def get_quiz(lesson_id: str):
-    # TODO: Implement database query
-    return [
-        QuizQuestion(
-            id="q1",
-            lesson_id=lesson_id,
-            question="What is the primary purpose of blockchain technology?",
-            question_type="multiple_choice",
-            options=["Secure data storage", "Fast transactions", "Decentralized trust", "Mining cryptocurrency"],
-            correct_answer="Decentralized trust",
-            explanation="Blockchain's main purpose is to create trust without central authorities."
-        )
-    ]
+    try:
+        client = db.get_client()
+        response = client.table("quiz_questions").select("*").eq("lesson_id", lesson_id).execute()
+        return response.data
+    except Exception as e:
+        # Fallback to seed data
+        seed_questions = get_seed_data()["quiz_questions"]
+        return [q for q in seed_questions if q.lesson_id == lesson_id]
 
 @app.post("/api/quiz/submit", response_model=QuizResult)
 async def submit_quiz(submission: QuizSubmission):

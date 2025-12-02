@@ -6,9 +6,12 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  StatusBar,
 } from 'react-native';
+import { theme } from '../theme';
+import { BentoCard } from '../components/BentoCard';
 
-const DailyChallengeScreen = ({ navigation }) => {
+const DailyChallengeScreen = ({ navigation }: { navigation: any }) => {
   const [challenge] = useState({
     id: 'daily_001',
     title: 'AI & Machine Learning Fundamentals',
@@ -46,7 +49,7 @@ const DailyChallengeScreen = ({ navigation }) => {
   });
 
   const [currentStep, setCurrentStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState([]);
+  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
 
   const handleStartChallenge = () => {
     Alert.alert(
@@ -64,17 +67,19 @@ const DailyChallengeScreen = ({ navigation }) => {
     navigation.navigate('LessonDetail', { lessonId: firstLesson.id });
   };
 
-  const handleCompleteStep = (stepId) => {
+  const handleCompleteStep = (stepId: string) => {
     setCompletedSteps([...completedSteps, stepId]);
   };
 
   const renderChallengeHeader = () => (
-    <View style={styles.challengeHeader}>
-      <Text style={styles.challengeTitle}>⚡ Daily Challenge</Text>
-      <Text style={styles.challengeSubtitle}>{challenge.title}</Text>
-      <Text style={styles.challengeDescription}>{challenge.description}</Text>
-      
-      <View style={styles.challengeMeta}>
+    <BentoCard
+      title="Daily Challenge"
+      subtitle={challenge.title}
+      backgroundColor={theme.colors.accent}
+      style={styles.headerCard}
+    >
+      <Text style={styles.description}>{challenge.description}</Text>
+      <View style={styles.metaContainer}>
         <View style={styles.metaItem}>
           <Text style={styles.metaIcon}>🎯</Text>
           <Text style={styles.metaText}>{challenge.difficulty}</Text>
@@ -88,81 +93,73 @@ const DailyChallengeScreen = ({ navigation }) => {
           <Text style={styles.metaText}>{challenge.lessons.length} lessons</Text>
         </View>
       </View>
-    </View>
+    </BentoCard>
   );
 
-  const renderLessonStep = (lesson, index) => {
+  const renderLessonStep = (lesson: any, index: number) => {
     const isCompleted = completedSteps.includes(lesson.id);
     const isCurrent = index === currentStep;
-    
+
     return (
-      <View key={lesson.id} style={[styles.stepCard, isCompleted && styles.completedStep]}>
-        <View style={styles.stepHeader}>
-          <View style={styles.stepNumber}>
-            <Text style={styles.stepNumberText}>{index + 1}</Text>
+      <BentoCard
+        key={lesson.id}
+        title={lesson.title}
+        subtitle={`${lesson.duration}`}
+        backgroundColor={isCompleted ? theme.colors.success : theme.colors.cardBackground}
+        style={styles.stepCard}
+        icon={
+          <View style={[styles.stepNumber, isCompleted && styles.completedStepNumber]}>
+            <Text style={styles.stepNumberText}>{isCompleted ? '✓' : index + 1}</Text>
           </View>
-          <View style={styles.stepInfo}>
-            <Text style={styles.stepTitle}>{lesson.title}</Text>
-            <Text style={styles.stepDuration}>⏱️ {lesson.duration}</Text>
-          </View>
-          {isCompleted && (
-            <View style={styles.completedBadge}>
-              <Text style={styles.completedText}>✅</Text>
-            </View>
-          )}
-        </View>
-        
+        }
+      >
         {!isCompleted && (
           <TouchableOpacity
-            style={[styles.stepButton, isCurrent && styles.currentStepButton]}
+            style={[styles.actionButton, isCurrent && styles.primaryButton]}
             onPress={() => navigation.navigate('LessonDetail', { lessonId: lesson.id })}
           >
-            <Text style={styles.stepButtonText}>
+            <Text style={[styles.actionButtonText, isCurrent && styles.primaryButtonText]}>
               {isCurrent ? 'Continue' : 'Start Lesson'}
             </Text>
           </TouchableOpacity>
         )}
-      </View>
+      </BentoCard>
     );
   };
 
   const renderQuizStep = () => {
     const isCompleted = completedSteps.includes(challenge.quiz.id);
     const canStartQuiz = completedSteps.length === challenge.lessons.length;
-    
+
     return (
-      <View key={challenge.quiz.id} style={[styles.stepCard, styles.quizCard, isCompleted && styles.completedStep]}>
-        <View style={styles.stepHeader}>
-          <View style={styles.stepNumber}>
-            <Text style={styles.stepNumberText}>📝</Text>
+      <BentoCard
+        key={challenge.quiz.id}
+        title={challenge.quiz.title}
+        subtitle={`${challenge.quiz.questions} questions • ${challenge.quiz.timeLimit}`}
+        backgroundColor={isCompleted ? theme.colors.success : theme.colors.warning}
+        style={styles.stepCard}
+        icon={
+          <View style={[styles.stepNumber, isCompleted && styles.completedStepNumber]}>
+            <Text style={styles.stepNumberText}>{isCompleted ? '✓' : '📝'}</Text>
           </View>
-          <View style={styles.stepInfo}>
-            <Text style={styles.stepTitle}>{challenge.quiz.title}</Text>
-            <Text style={styles.stepDuration}>📊 {challenge.quiz.questions} questions • ⏱️ {challenge.quiz.timeLimit}</Text>
-          </View>
-          {isCompleted && (
-            <View style={styles.completedBadge}>
-              <Text style={styles.completedText}>✅</Text>
-            </View>
-          )}
-        </View>
-        
+        }
+      >
         {!isCompleted && (
           <TouchableOpacity
             style={[
-              styles.stepButton, 
+              styles.actionButton,
               styles.quizButton,
               !canStartQuiz && styles.disabledButton
             ]}
             onPress={() => canStartQuiz && navigation.navigate('Quiz', { lessonId: challenge.quiz.id })}
             disabled={!canStartQuiz}
           >
-            <Text style={styles.stepButtonText}>
+            <Text style={styles.actionButtonText}>
               {canStartQuiz ? 'Start Quiz' : 'Complete lessons first'}
             </Text>
           </TouchableOpacity>
         )}
-      </View>
+      </BentoCard>
     );
   };
 
@@ -170,11 +167,16 @@ const DailyChallengeScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {renderChallengeHeader()}
-        
+
         <View style={styles.progressSection}>
-          <Text style={styles.progressTitle}>Challenge Progress</Text>
+          <Text style={styles.sectionTitle}>Challenge Progress</Text>
           <View style={styles.progressBar}>
             <View style={[styles.progressFill, { width: `${progress}%` }]} />
           </View>
@@ -200,180 +202,131 @@ const DailyChallengeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0E27',
+    backgroundColor: theme.colors.background,
   },
   scrollView: {
     flex: 1,
-    padding: 20,
   },
-  challengeHeader: {
-    backgroundColor: '#252B3D',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 2,
-    borderColor: '#00FFF0',
+  scrollContent: {
+    padding: theme.spacing.lg,
+    paddingTop: 60,
   },
-  challengeTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#00FFF0',
-    marginBottom: 8,
+  headerCard: {
+    marginBottom: theme.spacing.xl,
   },
-  challengeSubtitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#FFF',
-    marginBottom: 8,
+  description: {
+    fontFamily: theme.typography.fontFamily.regular,
+    fontSize: theme.typography.sizes.md,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.md,
+    opacity: 0.8,
   },
-  challengeDescription: {
-    fontSize: 14,
-    color: '#CCC',
-    lineHeight: 20,
-    marginBottom: 15,
-  },
-  challengeMeta: {
+  metaContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
   },
   metaItem: {
     alignItems: 'center',
   },
   metaIcon: {
     fontSize: 16,
-    marginBottom: 3,
+    marginBottom: 4,
   },
   metaText: {
-    fontSize: 12,
-    color: '#999',
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.sizes.xs,
+    color: theme.colors.text,
   },
   progressSection: {
-    backgroundColor: '#252B3D',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 20,
+    marginBottom: theme.spacing.xl,
   },
-  progressTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFF',
-    marginBottom: 10,
+  sectionTitle: {
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: theme.typography.sizes.xl,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.md,
   },
   progressBar: {
-    height: 8,
-    backgroundColor: '#1A1F2E',
-    borderRadius: 4,
-    marginBottom: 8,
+    height: 12,
+    backgroundColor: theme.colors.border,
+    borderRadius: 6,
+    marginBottom: theme.spacing.xs,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#00FFF0',
-    borderRadius: 4,
+    backgroundColor: theme.colors.info,
+    borderRadius: 6,
   },
   progressText: {
-    fontSize: 14,
-    color: '#00FFF0',
-    textAlign: 'center',
-    fontWeight: '600',
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.textLight,
+    textAlign: 'right',
   },
   stepsSection: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFF',
-    marginBottom: 15,
+    marginBottom: theme.spacing.xl,
   },
   stepCard: {
-    backgroundColor: '#252B3D',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: '#333',
-  },
-  completedStep: {
-    borderColor: '#00FF88',
-    backgroundColor: '#1A2522',
-  },
-  quizCard: {
-    borderColor: '#FFD700',
-  },
-  stepHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: theme.spacing.md,
   },
   stepNumber: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#00FFF0',
+    backgroundColor: theme.colors.text,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+  },
+  completedStepNumber: {
+    backgroundColor: theme.colors.background,
   },
   stepNumberText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#0A0E27',
+    fontFamily: theme.typography.fontFamily.bold,
+    color: theme.colors.background,
+    fontSize: theme.typography.sizes.sm,
   },
-  stepInfo: {
-    flex: 1,
-  },
-  stepTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFF',
-    marginBottom: 3,
-  },
-  stepDuration: {
-    fontSize: 12,
-    color: '#999',
-  },
-  completedBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#00FF88',
-    justifyContent: 'center',
+  actionButton: {
+    backgroundColor: theme.colors.background,
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
     alignItems: 'center',
+    marginTop: theme.spacing.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
-  completedText: {
-    fontSize: 12,
-  },
-  stepButton: {
-    backgroundColor: '#00FFF0',
-    borderRadius: 8,
-    padding: 10,
-    alignItems: 'center',
-  },
-  currentStepButton: {
-    backgroundColor: '#FFD700',
+  primaryButton: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
   },
   quizButton: {
-    backgroundColor: '#FFD700',
+    backgroundColor: theme.colors.background,
   },
   disabledButton: {
-    backgroundColor: '#666',
+    opacity: 0.5,
   },
-  stepButtonText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#0A0E27',
+  actionButtonText: {
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.text,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
   },
   startButton: {
-    backgroundColor: '#00FFF0',
-    borderRadius: 12,
-    padding: 15,
+    backgroundColor: theme.colors.primary,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.lg,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: theme.spacing.xl,
+    ...theme.shadows.medium,
   },
   startButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#0A0E27',
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: theme.typography.sizes.lg,
+    color: '#FFFFFF',
   },
 });
 

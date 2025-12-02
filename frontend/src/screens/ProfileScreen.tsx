@@ -1,68 +1,79 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { theme } from '../theme';
+import { BentoCard } from '../components/BentoCard';
 
 const ProfileScreen = () => {
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.profileHeader}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>👤</Text>
+            <Ionicons name="person" size={40} color={theme.colors.text} />
           </View>
           <Text style={styles.profileName}>Alex Chen</Text>
           <Text style={styles.profileTitle}>Level 12 • Knowledge Architect</Text>
         </View>
-        
-        <View style={styles.achievements}>
-          <Text style={styles.sectionTitle}>🏆 Recent Achievements</Text>
-          
-          <View style={styles.achievementCard}>
-            <Text style={styles.achievementIcon}>⚡</Text>
-            <View style={styles.achievementInfo}>
-              <Text style={styles.achievementName}>Market Prophet</Text>
-              <Text style={styles.achievementDesc}>Predicted 7/10 market moves</Text>
-            </View>
-          </View>
-          
-          <View style={styles.achievementCard}>
-            <Text style={styles.achievementIcon}>📚</Text>
-            <View style={styles.achievementInfo}>
-              <Text style={styles.achievementName}>Tech Expert</Text>
-              <Text style={styles.achievementDesc}>Completed 50+ tech lessons</Text>
-            </View>
-          </View>
-          
-          <View style={styles.achievementCard}>
-            <Text style={styles.achievementIcon}>🔥</Text>
-            <View style={styles.achievementInfo}>
-              <Text style={styles.achievementName}>Week Warrior</Text>
-              <Text style={styles.achievementDesc}>7-day learning streak</Text>
-            </View>
-          </View>
+
+        <Text style={styles.sectionTitle}>Recent Achievements</Text>
+        <View style={styles.grid}>
+          <BentoCard
+            title="Market Prophet"
+            subtitle="Predicted 7/10 market moves"
+            backgroundColor={theme.colors.warning}
+            icon={<Ionicons name="flash" size={24} color={theme.colors.text} />}
+            size="small"
+            style={styles.card}
+          />
+          <BentoCard
+            title="Tech Expert"
+            subtitle="Completed 50+ tech lessons"
+            backgroundColor={theme.colors.info}
+            icon={<Ionicons name="school" size={24} color={theme.colors.text} />}
+            size="small"
+            style={styles.card}
+          />
+          <BentoCard
+            title="Week Warrior"
+            subtitle="7-day learning streak"
+            backgroundColor={theme.colors.warning}
+            icon={<Ionicons name="flame" size={24} color={theme.colors.text} />}
+            size="small"
+            style={styles.card}
+          />
         </View>
-        
-        <View style={styles.leaderboard}>
-          <Text style={styles.sectionTitle}>📈 Leaderboard</Text>
-          
+
+        <Text style={styles.sectionTitle}>Leaderboard</Text>
+        <BentoCard
+          title="Leaderboard"
+          backgroundColor={theme.colors.cardBackground}
+          style={styles.leaderboardCard}
+        >
           <View style={styles.leaderboardItem}>
-            <Text style={styles.rank}>#1</Text>
+            <Text style={[styles.rank, { color: theme.colors.warning }]}>#1</Text>
             <Text style={styles.playerName}>Sarah</Text>
             <Text style={styles.playerScore}>3,200 pts</Text>
           </View>
-          
+
           <View style={[styles.leaderboardItem, styles.currentUser]}>
-            <Text style={styles.rank}>#2</Text>
-            <Text style={styles.playerName}>You</Text>
-            <Text style={styles.playerScore}>2,450 pts</Text>
+            <Text style={[styles.rank, { color: theme.colors.primary }]}>#2</Text>
+            <Text style={[styles.playerName, { fontWeight: 'bold' }]}>You</Text>
+            <Text style={[styles.playerScore, { fontWeight: 'bold' }]}>2,450 pts</Text>
           </View>
-          
+
           <View style={styles.leaderboardItem}>
-            <Text style={styles.rank}>#3</Text>
+            <Text style={[styles.rank, { color: theme.colors.textLight }]}>#3</Text>
             <Text style={styles.playerName}>Mike</Text>
             <Text style={styles.playerScore}>2,100 pts</Text>
           </View>
-        </View>
-        
+        </BentoCard>
+
         <TouchableOpacity style={styles.settingsButton}>
           <Text style={styles.settingsButtonText}>⚙️ Settings</Text>
         </TouchableOpacity>
@@ -74,117 +85,101 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0E27',
+    backgroundColor: theme.colors.background,
   },
   scrollView: {
     flex: 1,
-    padding: 20,
+  },
+  scrollContent: {
+    padding: theme.spacing.lg,
+    paddingTop: 60,
   },
   profileHeader: {
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: theme.spacing.xl,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#252B3D',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: theme.colors.secondary,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#00FFF0',
-    marginBottom: 15,
+    marginBottom: theme.spacing.md,
+    ...theme.shadows.soft,
   },
   avatarText: {
-    fontSize: 32,
+    fontSize: 40,
   },
   profileName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFF',
-    marginBottom: 5,
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: theme.typography.sizes.xl,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
   },
   profileTitle: {
-    fontSize: 14,
-    color: '#666',
-  },
-  achievements: {
-    marginBottom: 30,
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.textLight,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFF',
-    marginBottom: 15,
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: theme.typography.sizes.lg,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.md,
+    marginTop: theme.spacing.sm,
   },
-  achievementCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#252B3D',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#333',
+  grid: {
+    gap: theme.spacing.md,
+    marginBottom: theme.spacing.xl,
   },
-  achievementIcon: {
-    fontSize: 24,
-    marginRight: 15,
+  card: {
+    marginBottom: 0,
   },
-  achievementInfo: {
-    flex: 1,
-  },
-  achievementName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#FFF',
-    marginBottom: 3,
-  },
-  achievementDesc: {
-    fontSize: 12,
-    color: '#666',
-  },
-  leaderboard: {
-    marginBottom: 30,
+  leaderboardCard: {
+    marginBottom: theme.spacing.xl,
+    padding: 0,
   },
   leaderboardItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#252B3D',
+    borderBottomColor: theme.colors.border,
   },
   currentUser: {
-    backgroundColor: '#252B3D',
-    borderRadius: 8,
-    paddingHorizontal: 10,
+    backgroundColor: theme.colors.info + '20', // 20% opacity
   },
   rank: {
-    width: 30,
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#00FFF0',
+    width: 40,
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: theme.typography.sizes.md,
   },
   playerName: {
     flex: 1,
-    fontSize: 14,
-    color: '#CCC',
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.sizes.md,
+    color: theme.colors.text,
   },
   playerScore: {
-    fontSize: 14,
-    color: '#666',
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.textLight,
   },
   settingsButton: {
-    backgroundColor: '#1A1F2E',
-    borderRadius: 8,
-    padding: 15,
+    backgroundColor: theme.colors.cardBackground,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: theme.colors.border,
+    marginBottom: theme.spacing.xl,
   },
   settingsButtonText: {
-    color: '#CCC',
-    fontSize: 14,
+    fontFamily: theme.typography.fontFamily.medium,
+    color: theme.colors.text,
+    fontSize: theme.typography.sizes.md,
   },
 });
 

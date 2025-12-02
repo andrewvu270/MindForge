@@ -1,7 +1,10 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["ES2017", "DOM"],
+    "lib": [
+      "ES2017",
+      "DOM"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -15,15 +18,36 @@
     "jsx": "react-jsx",
     "baseUrl": "./src",
     "paths": {
-      "@/*": ["*"],
-      "@/components/*": ["components/*"],
-      "@/screens/*": ["screens/*"],
-      "@/services/*": ["services/*"],
-      "@/utils/*": ["utils/*"],
-      "@/types/*": ["types/*"]
+      "@/*": [
+        "*"
+      ],
+      "@/components/*": [
+        "components/*"
+      ],
+      "@/screens/*": [
+        "screens/*"
+      ],
+      "@/services/*": [
+        "services/*"
+      ],
+      "@/utils/*": [
+        "utils/*"
+      ],
+      "@/types/*": [
+        "types/*"
+      ]
     },
-    "types": ["node", "react", "react-native"]
+    "types": [
+      "node",
+      "react"
+    ]
   },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+  "extends": "expo/tsconfig.base"
 }

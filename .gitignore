@@ -145,3 +145,23 @@ venv.bak/
 # Temporary files
 *.tmp
 *.temp
+
+# Expo
+.expo/
+dist/
+web-build/
+.expo-shared/
+
+# Metro
+.metro-health-check*
+
+# React Native
+.expo-shared/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# CocoaPods
+/ios/Pods/

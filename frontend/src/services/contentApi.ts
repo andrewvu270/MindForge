@@ -1,5 +1,5 @@
 // External API Integrations for Content
-import { Lesson, Category } from '@/types';
+import { Lesson } from '@/types';
 
 export interface ExternalContent {
   title: string;
@@ -16,12 +16,12 @@ class ContentApiService {
     try {
       const response = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
       const storyIds = await response.json();
-      
+
       const stories = await Promise.all(
         storyIds.slice(0, 10).map(async (id: number) => {
           const storyResponse = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`);
           const story = await storyResponse.json();
-          
+
           return {
             title: story.title,
             content: story.text || story.title,
@@ -32,7 +32,7 @@ class ContentApiService {
           };
         })
       );
-      
+
       return stories.filter(Boolean);
     } catch (error) {
       console.error('Hacker News API error:', error);
@@ -45,7 +45,7 @@ class ContentApiService {
     try {
       const response = await fetch(`https://www.reddit.com/r/${subreddit}/hot.json?limit=10`);
       const data = await response.json();
-      
+
       return data.data.children.map((post: any) => ({
         title: post.data.title,
         content: post.data.selftext || post.data.title,
@@ -68,7 +68,7 @@ class ContentApiService {
     try {
       const response = await fetch(`https://financialmodelingprep.com/api/v3/stock_news?apikey=${apiKey}&limit=10`);
       const news = await response.json();
-      
+
       return news.map((item: any) => ({
         title: item.title,
         content: item.text,
@@ -88,7 +88,7 @@ class ContentApiService {
     try {
       const response = await fetch(`https://api.rss2json.com/api.json?rss_url=${encodeURIComponent(feedUrl)}`);
       const data = await response.json();
-      
+
       return data.items.map((item: any) => ({
         title: item.title,
         content: item.description || item.content,

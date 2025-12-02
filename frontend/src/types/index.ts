@@ -24,10 +24,12 @@ export interface Lesson {
   title: string;
   content: string;
   field_id: string;
-  difficulty_level: number; // 1-5
+  difficulty_level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   estimated_minutes: number;
   learning_objectives: string[];
   key_concepts: string[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface QuizQuestion {
@@ -38,6 +40,7 @@ export interface QuizQuestion {
   options?: string[];
   correct_answer: string;
   explanation: string;
+  created_at?: string;
 }
 
 export interface QuizSubmission {
@@ -75,7 +78,8 @@ export interface DailyChallenge {
   lesson_ids: string[];
   quiz_ids: string[];
   date: string;
-  difficulty_level: number;
+  difficulty_level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  created_at?: string;
 }
 
 export interface NewsItem {
@@ -85,9 +89,11 @@ export interface NewsItem {
   content: string;
   field_id: string;
   source: string;
+  url?: string;
   published_at: string;
   reading_time_minutes: number;
   relevance_score: number;
+  created_at?: string;
 }
 
 // API Response Types

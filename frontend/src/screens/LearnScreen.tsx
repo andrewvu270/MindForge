@@ -1,118 +1,110 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
-  FlatList,
+  StatusBar,
 } from 'react-native';
+import { theme } from '../theme';
+import { BentoCard } from '../components/BentoCard';
+import { apiService } from '../services/api';
+import { Field } from '../types';
 
 const LearnScreen = ({ navigation }: { navigation: any }) => {
-  const [fields] = useState([
-    {
-      id: 'tech',
-      name: 'Technology',
-      description: 'Latest in tech and AI',
-      icon: '🤖',
-      color: '#00FFF0',
-      total_lessons: 62,
-      progress: 45,
-    },
-    {
-      id: 'finance',
-      name: 'Finance',
-      description: 'Markets and investing',
-      icon: '📈',
-      color: '#FF6B35',
-      total_lessons: 45,
-      progress: 32,
-    },
-    {
-      id: 'economics',
-      name: 'Economics',
-      description: 'Economic principles and trends',
-      icon: '💰',
-      color: '#00FF88',
-      total_lessons: 38,
-      progress: 20,
-    },
-    {
-      id: 'culture',
-      name: 'Culture',
-      description: 'Arts and society',
-      icon: '🌍',
-      color: '#FF00FF',
-      total_lessons: 28,
-      progress: 15,
-    },
-    {
-      id: 'influence',
-      name: 'Influence Skills',
-      description: 'Communication and leadership',
-      icon: '💡',
-      color: '#FFD700',
-      total_lessons: 33,
-      progress: 18,
-    },
-    {
-      id: 'global',
-      name: 'Global Events',
-      description: 'World news and politics',
-      icon: '🌐',
-      color: '#00BFFF',
-      total_lessons: 41,
-      progress: 25,
-    },
-  ]);
+  const [fields, setFields] = useState<Field[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const renderFieldCard = (field: any) => (
-    <TouchableOpacity
-      key={field.id}
-      style={[styles.fieldCard, { borderColor: field.color }]}
-      onPress={() => navigation.navigate('Learn', { fieldId: field.id })}
-    >
-      <View style={styles.fieldHeader}>
-        <Text style={styles.fieldIcon}>{field.icon}</Text>
-        <View style={styles.fieldInfo}>
-          <Text style={styles.fieldName}>{field.name}</Text>
-          <Text style={styles.fieldDescription}>{field.description}</Text>
-        </View>
-      </View>
-      
-      <View style={styles.fieldStats}>
-        <View style={styles.progressContainer}>
-          <Text style={styles.progressText}>
-            {field.progress}/{field.total_lessons} lessons
-          </Text>
-          <View style={styles.progressBar}>
-            <View 
-              style={[
-                styles.progressFill, 
-                { 
-                  width: `${(field.progress / field.total_lessons) * 100}%`,
-                  backgroundColor: field.color 
-                }
-              ]} 
-            />
-          </View>
-        </View>
-        <Text style={styles.percentageText}>
-          {Math.round((field.progress / field.total_lessons) * 100)}%
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const data = await apiService.getFields();
+      setFields(data);
+    } catch (error) {
+      console.error('Error loading fields:', error);
+      // Fallback data if API fails or is empty
+      setFields([
+        {
+          id: 'tech',
+          name: 'Technology',
+          description: 'Latest in tech and AI',
+          icon: '🤖',
+          color: theme.colors.info,
+          total_lessons: 62,
+        },
+        {
+          id: 'finance',
+          name: 'Finance',
+          description: 'Markets and investing',
+          icon: '📈',
+          color: theme.colors.success,
+          total_lessons: 45,
+        },
+        {
+          id: 'economics',
+          name: 'Economics',
+          description: 'Economic principles',
+          icon: '💰',
+          color: theme.colors.warning,
+          total_lessons: 38,
+        },
+        {
+          id: 'culture',
+          name: 'Culture',
+          description: 'Arts and society',
+          icon: '🌍',
+          color: theme.colors.accent,
+          total_lessons: 28,
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <Text style={styles.title}>📚 Learning Fields</Text>
-        <Text style={styles.subtitle}>Choose your area of focus</Text>
-        
-        <View style={styles.fields}>
-          {fields.map(renderFieldCard)}
+      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>Learning Fields</Text>
+          <Text style={styles.subtitle}>Choose your area of focus</Text>
         </View>
+
+        {loading ? (
+          <Text style={styles.loadingText}>Loading fields...</Text>
+        ) : (
+          <View style={styles.grid}>
+            {fields.map((field, index) => (
+              <BentoCard
+                key={field.id}
+                title={field.name}
+                subtitle={`${field.total_lessons} lessons`}
+                backgroundColor={[
+                  theme.colors.info,
+                  theme.colors.success,
+                  theme.colors.warning,
+                  theme.colors.accent,
+                  theme.colors.secondary,
+                  theme.colors.warning
+                ][index % 6]}
+                onPress={() => navigation.navigate('Learn', { fieldId: field.id })}
+                style={styles.card}
+              >
+                <Text style={styles.description} numberOfLines={2}>
+                  {field.description}
+                </Text>
+              </BentoCard>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -121,82 +113,48 @@ const LearnScreen = ({ navigation }: { navigation: any }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0E27',
+    backgroundColor: theme.colors.background,
   },
   scrollView: {
     flex: 1,
-    padding: 20,
+  },
+  scrollContent: {
+    padding: theme.spacing.lg,
+    paddingTop: 60,
+  },
+  header: {
+    marginBottom: theme.spacing.xl,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#00FFF0',
-    marginBottom: 5,
+    fontFamily: theme.typography.fontFamily.black,
+    fontSize: theme.typography.sizes.xxl,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 30,
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.sizes.md,
+    color: theme.colors.textLight,
   },
-  fields: {
-    gap: 15,
+  grid: {
+    gap: theme.spacing.md,
   },
-  fieldCard: {
-    backgroundColor: '#252B3D',
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 2,
-    borderColor: '#333',
+  card: {
+    marginBottom: theme.spacing.md,
   },
-  fieldHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 15,
+  description: {
+    fontFamily: theme.typography.fontFamily.regular,
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.text,
+    opacity: 0.8,
+    marginTop: theme.spacing.sm,
   },
-  fieldIcon: {
-    fontSize: 28,
-    marginRight: 15,
-  },
-  fieldInfo: {
-    flex: 1,
-  },
-  fieldName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFF',
-    marginBottom: 3,
-  },
-  fieldDescription: {
-    fontSize: 13,
-    color: '#999',
-  },
-  fieldStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  progressContainer: {
-    flex: 1,
-    marginRight: 15,
-  },
-  progressText: {
-    fontSize: 12,
-    color: '#CCC',
-    marginBottom: 5,
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: '#1A1F2E',
-    borderRadius: 3,
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  percentageText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#FFF',
+  loadingText: {
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.sizes.md,
+    color: theme.colors.textLight,
+    textAlign: 'center',
+    marginTop: theme.spacing.xl,
   },
 });
 

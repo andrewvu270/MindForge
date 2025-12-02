@@ -6,136 +6,164 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  Animated,
+  StatusBar,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import { apiService } from '../services/api';
+import { Field, Lesson, DailyChallenge } from '../types';
+import { theme } from '../theme';
+import { BentoCard } from '../components/BentoCard';
 
 const { height } = Dimensions.get('window');
 
 const HomeScreen = ({ navigation }: { navigation: any }) => {
-  const [dailyChallenge, setDailyChallenge] = useState({
-    id: 'daily_001',
-    title: 'AI & Machine Learning Basics',
-    description: 'Master fundamental concepts in artificial intelligence',
-    field: 'Technology',
-    lessonsCount: 3,
-    estimatedTime: '45 min',
-    difficulty: 'Intermediate',
-  });
+  const [dailyChallenge, setDailyChallenge] = useState<DailyChallenge | null>(null);
+  const [recentLessons, setRecentLessons] = useState<Lesson[]>([]);
+  const [fields, setFields] = useState<Field[]>([]);
+  const [loading, setLoading] = useState(true);
+  const scrollY = new Animated.Value(0);
 
-  const [recentLessons, setRecentLessons] = useState([
-    {
-      id: '1',
-      title: 'Understanding Blockchain Technology',
-      field: 'Technology',
-      difficulty: 'Beginner',
-      duration: '15 min',
-      objectives: ['Learn distributed ledgers', 'Understand consensus mechanisms'],
-      completed: false,
-    },
-    {
-      id: '2',
-      title: 'Introduction to Stock Market Analysis',
-      field: 'Finance',
-      difficulty: 'Intermediate',
-      duration: '20 min',
-      objectives: ['Technical analysis basics', 'Market indicators'],
-      completed: true,
-    },
-    {
-      id: '3',
-      title: 'Global Economic Trends 2024',
-      field: 'Economics',
-      difficulty: 'Advanced',
-      duration: '25 min',
-      objectives: ['Inflation impacts', 'GDP forecasting'],
-      completed: false,
-    },
-  ]);
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const renderDailyChallengeCard = () => (
-    <TouchableOpacity 
-      style={[styles.card, styles.dailyChallengeCard]}
-      onPress={() => navigation.navigate('DailyChallenge')}
-    >
-      <View style={styles.challengeHeader}>
-        <Text style={styles.challengeTitle}>⚡ Daily Challenge</Text>
-        <Text style={styles.challengeSubtitle}>{dailyChallenge.title}</Text>
-      </View>
-      
-      <View style={styles.challengeContent}>
-        <Text style={styles.challengeDescription}>{dailyChallenge.description}</Text>
-        <View style={styles.challengeMeta}>
-          <Text style={styles.metaText}>📚 {dailyChallenge.lessonsCount} lessons</Text>
-          <Text style={styles.metaText}>⏱️ {dailyChallenge.estimatedTime}</Text>
-          <Text style={styles.metaText}>🎯 {dailyChallenge.difficulty}</Text>
-        </View>
-      </View>
+  const loadData = async () => {
+    try {
+      const [fieldsData, lessonsData, challengeData] = await Promise.all([
+        apiService.getFields(),
+        apiService.getLessons(),
+        apiService.getDailyChallenge()
+      ]);
 
-      <View style={styles.challengeFooter}>
-        <Text style={styles.challengeField}>{dailyChallenge.field}</Text>
-        <Text style={styles.startButton}>Start Challenge →</Text>
-      </View>
-    </TouchableOpacity>
-  );
+      setFields(fieldsData);
+      setRecentLessons(lessonsData.slice(0, 3));
+      setDailyChallenge(challengeData);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const renderLessonCard = (lesson: any) => (
-    <View key={lesson.id} style={styles.card}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>{lesson.title}</Text>
-        <View style={styles.cardMeta}>
-          <Text style={styles.cardField}>{lesson.field}</Text>
-          <Text style={styles.cardDifficulty}>{lesson.difficulty}</Text>
-          <Text style={styles.cardDuration}>⏱️ {lesson.duration}</Text>
-        </View>
-      </View>
-      
-      <View style={styles.cardContent}>
-        <Text style={styles.objectivesTitle}>Learning Objectives:</Text>
-        {lesson.objectives.map((objective: any, index: number) => (
-          <Text key={index} style={styles.objectiveItem}>• {objective}</Text>
-        ))}
-      </View>
+  const renderDailyChallengeCard = () => {
+    if (!dailyChallenge) return null;
 
-      <View style={styles.cardActions}>
-        {lesson.completed ? (
-          <View style={styles.completedBadge}>
-            <Text style={styles.completedText}>✅ Completed</Text>
+    const field = fields.find(f => f.id === dailyChallenge.field_id);
+
+    return (
+      <BentoCard
+        title="Daily Challenge"
+        subtitle={dailyChallenge.title}
+        backgroundColor={theme.colors.accent}
+        textColor={theme.colors.text}
+        size="large"
+        onPress={() => navigation.navigate('DailyChallenge')}
+        icon={<Ionicons name="flash" size={32} color={theme.colors.text} />}
+      >
+        <View style={styles.challengeContent}>
+          <Text style={styles.challengeDescription} numberOfLines={2}>
+            {dailyChallenge.description}
+          </Text>
+          <View style={styles.tagContainer}>
+            <View style={[styles.tag, { backgroundColor: 'rgba(255,255,255,0.5)' }]}>
+              <Text style={styles.tagText}>📚 {dailyChallenge.lesson_ids.length} lessons</Text>
+            </View>
+            <View style={[styles.tag, { backgroundColor: 'rgba(255,255,255,0.5)' }]}>
+              <Text style={styles.tagText}>🎯 {dailyChallenge.difficulty_level}</Text>
+            </View>
           </View>
-        ) : (
-          <>
-            <TouchableOpacity 
-              style={[styles.actionButton, styles.primaryAction]}
-              onPress={() => navigation.navigate('LessonDetail', { lessonId: lesson.id })}
-            >
-              <Text style={styles.actionText}>📖 Start Lesson</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.actionButton, styles.secondaryAction]}
-              onPress={() => navigation.navigate('Quiz', { lessonId: lesson.id })}
-            >
-              <Text style={styles.actionText}>📝 Practice Quiz</Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </View>
-    </View>
-  );
+        </View>
+      </BentoCard>
+    );
+  };
+
+  const renderLessonCard = (lesson: Lesson) => {
+    const field = fields.find(f => f.id === lesson.field_id);
+
+    return (
+      <BentoCard
+        key={lesson.id}
+        title={lesson.title}
+        subtitle={`${field?.name || 'Unknown'} • ${lesson.estimated_minutes} min`}
+        backgroundColor={theme.colors.cardBackground}
+        onPress={() => navigation.navigate('LessonDetail', { lessonId: lesson.id })}
+        style={{ marginBottom: theme.spacing.md }}
+      >
+        <View style={styles.lessonFooter}>
+          <View style={[styles.tag, { backgroundColor: theme.colors.info }]}>
+            <Text style={styles.tagText}>{lesson.difficulty_level}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.playButton}
+            onPress={() => navigation.navigate('LessonDetail', { lessonId: lesson.id })}
+          >
+            <Text style={styles.playButtonText}>Start</Text>
+          </TouchableOpacity>
+        </View>
+      </BentoCard>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
+      <Animated.ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
+      >
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>🧠 MindForge</Text>
-          <Text style={styles.headerSubtitle}>Serious Learning. Real Knowledge.</Text>
+          <Text style={styles.headerTitle}>MindForge</Text>
+          <Text style={styles.headerSubtitle}>Ready to learn?</Text>
         </View>
 
-        <View style={styles.content}>
-          <Text style={styles.sectionTitle}>Today's Challenge</Text>
-          {renderDailyChallengeCard()}
-          
-          <Text style={styles.sectionTitle}>Continue Learning</Text>
-          {recentLessons.map(renderLessonCard)}
-        </View>
-      </ScrollView>
+        {loading ? (
+          <Text style={styles.loadingText}>Loading...</Text>
+        ) : (
+          <View style={styles.grid}>
+            <View style={styles.fullWidthItem}>
+              {renderDailyChallengeCard()}
+            </View>
+
+            <Text style={styles.sectionTitle}>Explore</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.horizontalScroll}
+              contentContainerStyle={styles.horizontalScrollContent}
+            >
+              {fields.map((field, index) => (
+                <BentoCard
+                  key={field.id}
+                  title={field.name}
+                  subtitle={`${field.total_lessons} lessons`}
+                  backgroundColor={[
+                    theme.colors.info,
+                    theme.colors.success,
+                    theme.colors.warning,
+                    theme.colors.secondary,
+                    theme.colors.warning
+                  ][index % 5]}
+                  size="small"
+                  style={{ width: 160, marginRight: theme.spacing.md }}
+                />
+              ))}
+            </ScrollView>
+
+            <Text style={styles.sectionTitle}>Continue Learning</Text>
+            <View style={styles.listContainer}>
+              {recentLessons.map(renderLessonCard)}
+            </View>
+          </View>
+        )}
+      </Animated.ScrollView>
     </View>
   );
 };
@@ -143,169 +171,99 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0E27',
+    backgroundColor: theme.colors.background,
   },
   scrollView: {
     flex: 1,
   },
+  scrollContent: {
+    padding: theme.spacing.lg,
+    paddingTop: 60,
+  },
   header: {
-    padding: 20,
-    alignItems: 'center',
+    marginBottom: theme.spacing.xl,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#00FFF0',
-    marginBottom: 5,
+    fontFamily: theme.typography.fontFamily.black,
+    fontSize: theme.typography.sizes.display,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: '#666',
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.sizes.lg,
+    color: theme.colors.textLight,
   },
-  content: {
-    paddingHorizontal: 20,
-    paddingBottom: 100,
+  grid: {
+    flex: 1,
+  },
+  fullWidthItem: {
+    marginBottom: theme.spacing.xl,
   },
   sectionTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#FFF',
-    marginBottom: 15,
-    marginTop: 10,
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: theme.typography.sizes.xl,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.md,
+    marginTop: theme.spacing.sm,
   },
-  card: {
-    backgroundColor: '#252B3D',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#333',
+  horizontalScroll: {
+    marginBottom: theme.spacing.xl,
+    marginHorizontal: -theme.spacing.lg,
   },
-  dailyChallengeCard: {
-    borderColor: '#00FFF0',
-    borderWidth: 2,
+  horizontalScrollContent: {
+    paddingHorizontal: theme.spacing.lg,
   },
-  challengeHeader: {
-    marginBottom: 15,
+  listContainer: {
+    gap: theme.spacing.md,
   },
-  challengeTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#00FFF0',
-    marginBottom: 5,
-  },
-  challengeSubtitle: {
-    fontSize: 16,
-    color: '#FFF',
-    fontWeight: '600',
+  loadingText: {
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.sizes.md,
+    color: theme.colors.textLight,
+    textAlign: 'center',
+    marginTop: theme.spacing.xl,
   },
   challengeContent: {
-    marginBottom: 15,
+    marginTop: theme.spacing.sm,
   },
   challengeDescription: {
-    fontSize: 14,
-    color: '#CCC',
-    marginBottom: 10,
-    lineHeight: 20,
+    fontFamily: theme.typography.fontFamily.regular,
+    fontSize: theme.typography.sizes.md,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.md,
+    opacity: 0.8,
   },
-  challengeMeta: {
+  tagContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: theme.spacing.sm,
   },
-  metaText: {
-    fontSize: 12,
-    color: '#999',
+  tag: {
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 4,
+    borderRadius: theme.borderRadius.sm,
   },
-  challengeFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  tagText: {
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.sizes.xs,
+    color: theme.colors.text,
   },
-  challengeField: {
-    fontSize: 14,
-    color: '#00FFF0',
-    fontWeight: '600',
-  },
-  startButton: {
-    fontSize: 14,
-    color: '#FFF',
-    fontWeight: 'bold',
-  },
-  cardHeader: {
-    marginBottom: 15,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFF',
-    marginBottom: 8,
-  },
-  cardMeta: {
+  lessonFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: theme.spacing.md,
   },
-  cardField: {
-    fontSize: 12,
-    color: '#00FFF0',
-    fontWeight: '600',
+  playButton: {
+    backgroundColor: theme.colors.text,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.md,
   },
-  cardDifficulty: {
-    fontSize: 12,
-    color: '#FFD700',
-  },
-  cardDuration: {
-    fontSize: 12,
-    color: '#999',
-  },
-  cardContent: {
-    marginBottom: 15,
-  },
-  objectivesTitle: {
-    fontSize: 14,
-    color: '#FFF',
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  objectiveItem: {
-    fontSize: 13,
-    color: '#CCC',
-    marginBottom: 3,
-    paddingLeft: 5,
-  },
-  cardActions: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  actionButton: {
-    flex: 1,
-    borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
-  },
-  primaryAction: {
-    backgroundColor: '#00FFF0',
-  },
-  secondaryAction: {
-    backgroundColor: '#1A1F2E',
-    borderWidth: 1,
-    borderColor: '#00FFF0',
-  },
-  actionText: {
-    fontSize: 13,
-    fontWeight: 'bold',
-  },
-  completedBadge: {
-    flex: 1,
-    backgroundColor: '#00FF88',
-    borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
-  },
-  completedText: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: '#0A0E27',
+  playButtonText: {
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.background,
   },
 });
 
