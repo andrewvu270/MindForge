@@ -51,6 +51,16 @@ export const theme = {
       purple: '#B5B2C2', // Lavender
       black: '#2F3E46', // Navy
     },
+    // Wes Anderson Clay Palette
+    clay: {
+      pink: '#F5C0C0', // Grand Budapest Pink
+      blue: '#96C5F7', // Mendl's Blue
+      yellow: '#F2D06B', // Moonrise Kingdom Yellow
+      teal: '#3B8EA5', // Zissou Blue
+      red: '#D95030', // Tenenbaum Red
+      mint: '#A8D5BA', // Soft Mint
+      cream: '#FDFBF7',
+    },
   },
   gradients: {
     primary: ['#2F3E46', '#354F52'], // Navy gradient
@@ -133,6 +143,16 @@ export const theme = {
       shadowOpacity: 0.15,
       shadowRadius: 40,
       elevation: 15,
+    },
+    clay: {
+      shadowColor: '#000000',
+      shadowOffset: {
+        width: 8,
+        height: 8,
+      },
+      shadowOpacity: 0.15,
+      shadowRadius: 16,
+      elevation: 10,
     },
   },
 };

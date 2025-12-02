@@ -17,6 +17,7 @@ export interface Field {
   icon: string;
   color: string;
   total_lessons: number;
+  image?: any;
 }
 
 export interface Lesson {

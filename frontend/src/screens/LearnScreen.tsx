@@ -5,10 +5,12 @@ import {
   StyleSheet,
   ScrollView,
   StatusBar,
+  ImageSourcePropType,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme';
 import { BentoCard } from '../components/BentoCard';
+import { ClayCard } from '../components/ClayCard';
 import { apiService } from '../services/api';
 import { Field } from '../types';
 
@@ -21,49 +23,65 @@ const LearnScreen = ({ navigation }: { navigation: any }) => {
   }, []);
 
   const loadData = async () => {
-    try {
-      const data = await apiService.getFields();
-      setFields(data);
-    } catch (error) {
-      console.error('Error loading fields:', error);
-      // Fallback data if API fails or is empty
-      setFields([
-        {
-          id: 'tech',
-          name: 'Technology',
-          description: 'Latest in tech and AI',
-          icon: 'hardware-chip-outline',
-          color: theme.colors.vintage.navy,
-          total_lessons: 62,
-        },
-        {
-          id: 'finance',
-          name: 'Finance',
-          description: 'Markets and investing',
-          icon: 'trending-up-outline',
-          color: theme.colors.vintage.sage,
-          total_lessons: 45,
-        },
-        {
-          id: 'economics',
-          name: 'Economics',
-          description: 'Economic principles',
-          icon: 'cash-outline',
-          color: theme.colors.vintage.sand,
-          total_lessons: 38,
-        },
-        {
-          id: 'culture',
-          name: 'Culture',
-          description: 'Arts and society',
-          icon: 'globe-outline',
-          color: theme.colors.vintage.lavender,
-          total_lessons: 28,
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
+    // For UI demo purposes, we'll use local data to ensure correct images and colors
+    // In a real app, we would merge this with API data
+    setLoading(false);
+    setFields([
+      {
+        id: 'tech',
+        name: 'Technology',
+        description: 'Latest in tech and AI',
+        icon: 'hardware-chip-outline',
+        color: '#F4E4E4',
+        total_lessons: 62,
+        image: require('../assets/clay/scene_tech.png'),
+      },
+      {
+        id: 'finance',
+        name: 'Finance',
+        description: 'Markets and investing',
+        icon: 'trending-up-outline',
+        color: '#E0F0F5',
+        total_lessons: 45,
+        image: require('../assets/clay/scene_finance.png'),
+      },
+      {
+        id: 'economics',
+        name: 'Economics',
+        description: 'Economic principles',
+        icon: 'cash-outline',
+        color: '#F9F3D8',
+        total_lessons: 38,
+        image: require('../assets/clay/scene_finance.png'), // Shared image
+      },
+      {
+        id: 'culture',
+        name: 'Culture',
+        description: 'Arts and society',
+        icon: 'globe-outline',
+        color: '#E0F5EB',
+        total_lessons: 28,
+        image: require('../assets/clay/scene_culture.png'),
+      },
+      {
+        id: 'influence',
+        name: 'Influence Skills',
+        description: 'Persuasion mastery',
+        icon: 'bulb-outline',
+        color: '#F5E0E0',
+        total_lessons: 33,
+        image: require('../assets/clay/scene_culture.png'), // Shared image
+      },
+      {
+        id: 'global',
+        name: 'Global Events',
+        description: 'World affairs',
+        icon: 'earth-outline',
+        color: '#E0F5E8',
+        total_lessons: 41,
+        image: require('../assets/clay/scene_global.png'),
+      },
+    ]);
   };
 
   return (
@@ -84,20 +102,17 @@ const LearnScreen = ({ navigation }: { navigation: any }) => {
         ) : (
           <View style={styles.grid}>
             {fields.map((field, index) => (
-              <BentoCard
-                key={field.id}
-                title={field.name}
-                subtitle={`${field.total_lessons} lessons`}
-                variant="vibrant"
-                backgroundColor={field.color || theme.colors.primary}
-                icon={<Ionicons name={field.icon as any || 'book-outline'} size={32} color="#FFFFFF" />}
-                onPress={() => navigation.navigate('Learn', { fieldId: field.id })}
-                style={styles.card}
-              >
-                <Text style={styles.description} numberOfLines={2}>
-                  {field.description}
-                </Text>
-              </BentoCard>
+              <View key={field.id} style={styles.cardWrapper}>
+                <ClayCard
+                  title={field.name}
+                  subtitle={`${field.total_lessons} LESSONS`}
+                  description={field.description}
+                  color={field.color}
+                  image={field.image}
+                  icon={field.icon}
+                  onPress={() => navigation.navigate('Learn', { fieldId: field.id })}
+                />
+              </View>
             ))}
           </View>
         )}
@@ -133,16 +148,19 @@ const styles = StyleSheet.create({
     color: theme.colors.textLight,
   },
   grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: theme.spacing.md,
+    justifyContent: 'space-between',
   },
-  card: {
-    marginBottom: theme.spacing.md,
+  cardWrapper: {
+    width: '48%', // 2 columns with gap
+    marginBottom: 40, // Extra space for pop-out images
   },
   description: {
     fontFamily: theme.typography.fontFamily.medium,
     fontSize: theme.typography.sizes.sm,
-    color: '#FFFFFF',
-    opacity: 0.9,
+    color: 'rgba(0,0,0,0.6)',
     marginTop: theme.spacing.sm,
   },
   loadingText: {

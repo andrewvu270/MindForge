@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ViewStyle, TouchableOpacity, ImageSourcePropType, StyleProp } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle, TouchableOpacity, ImageSourcePropType, StyleProp, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../theme';
 
@@ -12,10 +12,11 @@ interface BentoCardProps {
     style?: StyleProp<ViewStyle>;
     onPress?: () => void;
     size?: 'small' | 'medium' | 'large';
-    variant?: 'default' | 'course' | 'vibrant';
+    variant?: 'default' | 'course' | 'vibrant' | 'clay';
     imageGradient?: string[];
     progress?: number;
     tag?: string;
+    image?: ImageSourcePropType;
     children?: React.ReactNode;
 }
 
@@ -32,6 +33,7 @@ export const BentoCard: React.FC<BentoCardProps> = ({
     imageGradient,
     progress,
     tag,
+    image,
     children,
 }) => {
     const Container = (onPress ? TouchableOpacity : View) as React.ElementType;
@@ -43,6 +45,7 @@ export const BentoCard: React.FC<BentoCardProps> = ({
                 { backgroundColor },
                 size === 'large' && styles.largeCard,
                 size === 'small' && styles.smallCard,
+                variant === 'clay' && styles.clayCard,
                 style,
             ]}
             onPress={onPress}
@@ -66,11 +69,21 @@ export const BentoCard: React.FC<BentoCardProps> = ({
                 </View>
             )}
 
-            <View style={styles.content}>
-                {(variant === 'default' || variant === 'vibrant') && icon && (
+            <View style={[
+                styles.content,
+                size === 'small' && styles.smallContent
+            ]}>
+                {variant === 'clay' && image && (
+                    <View style={styles.clayImageContainer}>
+                        <Image source={image} style={styles.clayImage} resizeMode="contain" />
+                    </View>
+                )}
+
+                {(variant === 'default' || variant === 'vibrant' || variant === 'clay') && icon && !image && (
                     <View style={[
                         styles.iconContainer,
-                        variant === 'vibrant' && styles.vibrantIconContainer
+                        variant === 'vibrant' && styles.vibrantIconContainer,
+                        variant === 'clay' && styles.clayIconContainer
                     ]}>
                         {icon}
                     </View>
@@ -82,7 +95,8 @@ export const BentoCard: React.FC<BentoCardProps> = ({
                             styles.title,
                             { color: textColor },
                             variant === 'course' && styles.courseTitle,
-                            variant === 'vibrant' && styles.vibrantTitle
+                            variant === 'vibrant' && styles.vibrantTitle,
+                            variant === 'clay' && styles.clayTitle
                         ]}
                         numberOfLines={2}
                     >
@@ -92,7 +106,8 @@ export const BentoCard: React.FC<BentoCardProps> = ({
                         <Text style={[
                             styles.subtitle,
                             { color: textColor, opacity: 0.7 },
-                            variant === 'vibrant' && styles.vibrantSubtitle
+                            variant === 'vibrant' && styles.vibrantSubtitle,
+                            variant === 'clay' && styles.claySubtitle
                         ]}>
                             {subtitle}
                         </Text>
@@ -123,7 +138,8 @@ const styles = StyleSheet.create({
         borderRadius: theme.borderRadius.lg,
         ...theme.shadows.soft,
         marginBottom: theme.spacing.md,
-        overflow: 'hidden',
+        marginBottom: theme.spacing.md,
+        // overflow: 'hidden', // Removed to allow clay images to pop out
     },
     largeCard: {
         minHeight: 200,
@@ -136,6 +152,9 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: theme.spacing.lg,
         justifyContent: 'space-between',
+    },
+    smallContent: {
+        padding: theme.spacing.lg,
     },
     courseImageContainer: {
         height: 120,
@@ -202,6 +221,44 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: theme.spacing.lg,
+    },
+    clayCard: {
+        borderRadius: 32,
+        borderWidth: 4,
+        borderColor: 'rgba(255,255,255,0.4)',
+        ...theme.shadows.clay,
+    },
+    clayTitle: {
+        fontFamily: theme.typography.fontFamily.serifBold,
+        fontSize: theme.typography.sizes.lg,
+        color: theme.colors.text,
+    },
+    claySubtitle: {
+        fontFamily: theme.typography.fontFamily.medium,
+        fontSize: theme.typography.sizes.sm,
+        color: 'rgba(0,0,0,0.6)',
+    },
+    clayIconContainer: {
+        backgroundColor: 'rgba(255,255,255,0.5)',
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: theme.spacing.lg,
+    },
+    clayImageContainer: {
+        position: 'absolute',
+        top: -30,
+        right: -10,
+        width: 140,
+        height: 140,
+        zIndex: 10,
+        elevation: 10,
+    },
+    clayImage: {
+        width: '100%',
+        height: '100%',
     },
     progressContainer: {
         marginTop: theme.spacing.sm,

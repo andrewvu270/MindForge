@@ -10,6 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme';
 import { BentoCard } from '../components/BentoCard';
+import { ClayStatCard } from '../components/ClayStatCard';
 
 const { width } = Dimensions.get('window');
 
@@ -137,33 +138,29 @@ const ProgressScreen = () => {
       <Text style={styles.sectionTitle}>Your Progress</Text>
 
       <View style={styles.statsGrid}>
-        <BentoCard
-          title={userProgress.overallStats.totalLessonsCompleted.toString()}
-          subtitle="Lessons"
-          backgroundColor={theme.colors.info}
-          size="small"
-          style={styles.statCard}
+        <ClayStatCard
+          value={userProgress.overallStats.totalLessonsCompleted.toString()}
+          label="Lessons"
+          color="#F4E4E4" // Soft Pink
+          icon={<Ionicons name="book" size={24} color={theme.colors.text} />}
         />
-        <BentoCard
-          title={userProgress.overallStats.totalQuizzesCompleted.toString()}
-          subtitle="Quizzes"
-          backgroundColor={theme.colors.success}
-          size="small"
-          style={styles.statCard}
+        <ClayStatCard
+          value={userProgress.overallStats.totalQuizzesCompleted.toString()}
+          label="Quizzes"
+          color="#E0F0F5" // Soft Blue
+          icon={<Ionicons name="help-circle" size={24} color={theme.colors.text} />}
         />
-        <BentoCard
-          title={`${userProgress.overallStats.averageQuizScore}%`}
-          subtitle="Avg Score"
-          backgroundColor={theme.colors.warning}
-          size="small"
-          style={styles.statCard}
+        <ClayStatCard
+          value={`${userProgress.overallStats.averageQuizScore}%`}
+          label="Avg Score"
+          color="#F9F3D8" // Soft Yellow
+          icon={<Ionicons name="trophy" size={24} color={theme.colors.text} />}
         />
-        <BentoCard
-          title={userProgress.overallStats.currentStreak.toString()}
-          subtitle="Day Streak"
-          backgroundColor={theme.colors.warning}
-          size="small"
-          style={styles.statCard}
+        <ClayStatCard
+          value={userProgress.overallStats.currentStreak.toString()}
+          label="Day Streak"
+          color="#E0F5EB" // Soft Teal
+          icon={<Ionicons name="flame" size={24} color={theme.colors.text} />}
         />
       </View>
     </View>
@@ -272,12 +269,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: theme.spacing.md,
+    justifyContent: 'space-between',
   },
-  statCard: {
-    width: (width - theme.spacing.lg * 2 - theme.spacing.md) / 2,
-    marginBottom: 0,
-    minHeight: 100,
-  },
+
   fieldsSection: {
     marginBottom: theme.spacing.lg,
   },
