@@ -10,13 +10,15 @@ from database import db
 from models import *
 from seed_data import get_seed_data
 from api.lesson_endpoints import router as lesson_router
+from api.gamification_endpoints import router as gamification_router
 
 load_dotenv()
 
 app = FastAPI(title="MindForge API", version="1.0.0")
 
-# Include new lesson generation endpoints
+# Include routers
 app.include_router(lesson_router)
+app.include_router(gamification_router)
 
 app.add_middleware(
     CORSMiddleware,
