@@ -102,7 +102,7 @@ const MainFeedScreen = ({ navigation }: { navigation: any }) => {
     );
 
     const renderDailyChallenge = () => {
-        if (!dailyChallenge) return null;
+        if (!dailyChallenge || !dailyChallenge.title || !dailyChallenge.description) return null;
 
         return (
             <Animated.View entering={FadeInDown.delay(100).duration(600)}>
@@ -120,20 +120,20 @@ const MainFeedScreen = ({ navigation }: { navigation: any }) => {
                                 <Ionicons name="flash" size={24} color={theme.colors.primary} />
                             </View>
                             <View style={styles.challengeInfo}>
-                                <Text style={styles.challengeTitle}>{dailyChallenge.title}</Text>
+                                <Text style={styles.challengeTitle}>{dailyChallenge.title || ''}</Text>
                                 <Text style={styles.challengeSubtitle} numberOfLines={2}>
-                                    {dailyChallenge.description}
+                                    {dailyChallenge.description || ''}
                                 </Text>
                             </View>
                         </View>
                         <View style={styles.challengeMeta}>
                             <View style={styles.metaItem}>
                                 <Feather name="book-open" size={14} color={theme.colors.textLight} />
-                                <Text style={styles.metaText}>{dailyChallenge.lesson_ids.length} lessons</Text>
+                                <Text style={styles.metaText}>{dailyChallenge.lesson_ids?.length || 0} lessons</Text>
                             </View>
                             <View style={styles.metaItem}>
                                 <Feather name="target" size={14} color={theme.colors.textLight} />
-                                <Text style={styles.metaText}>{dailyChallenge.difficulty_level}</Text>
+                                <Text style={styles.metaText}>{dailyChallenge.difficulty_level || 'intermediate'}</Text>
                             </View>
                         </View>
                     </LinearGradient>
@@ -142,70 +142,78 @@ const MainFeedScreen = ({ navigation }: { navigation: any }) => {
         );
     };
 
-    const renderFieldsSection = () => (
-        <Animated.View entering={FadeInDown.delay(200).duration(600)}>
-            <SectionHeader title="Explore Fields" size="medium" />
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.fieldsScroll}
-            >
-                {fields.map((field, index) => (
-                    <TouchableOpacity
-                        key={field.id}
-                        style={styles.fieldCard}
-                        onPress={() => navigation.navigate('Learn', { fieldId: field.id })}
-                        activeOpacity={0.9}
-                    >
-                        <LinearGradient
-                            colors={theme.gradients.card}
-                            style={styles.fieldGradient}
-                        >
-                            <View style={styles.fieldIconContainer}>
-                                <Ionicons
-                                    name={getFieldIcon(field.name)}
-                                    size={32}
-                                    color={theme.colors.primary}
-                                />
-                            </View>
-                            <Text style={styles.fieldName}>{field.name}</Text>
-                            <Text style={styles.fieldCount}>{field.total_lessons} lessons</Text>
-                        </LinearGradient>
-                    </TouchableOpacity>
-                ))}
-            </ScrollView>
-        </Animated.View>
-    );
-
-    const renderRecentLessons = () => (
-        <Animated.View entering={FadeInDown.delay(300).duration(600)}>
-            <SectionHeader title="Continue Learning" size="medium" />
-            {recentLessons.map((lesson, index) => (
-                <Animated.View
-                    key={lesson.id}
-                    entering={FadeInDown.delay(350 + index * 50).duration(600)}
+    const renderFieldsSection = () => {
+        if (!fields || fields.length === 0) return null;
+        
+        return (
+            <Animated.View entering={FadeInDown.delay(200).duration(600)}>
+                <SectionHeader title="Explore Fields" size="medium" />
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.fieldsScroll}
                 >
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate('LessonDetail', { lessonId: lesson.id })}
-                        activeOpacity={0.9}
+                    {fields.map((field, index) => (
+                        <TouchableOpacity
+                            key={field.id}
+                            style={styles.fieldCard}
+                            onPress={() => navigation.navigate('Learn', { fieldId: field.id })}
+                            activeOpacity={0.9}
+                        >
+                            <LinearGradient
+                                colors={theme.gradients.card}
+                                style={styles.fieldGradient}
+                            >
+                                <View style={styles.fieldIconContainer}>
+                                    <Ionicons
+                                        name={getFieldIcon(field.name)}
+                                        size={32}
+                                        color={theme.colors.primary}
+                                    />
+                                </View>
+                                <Text style={styles.fieldName}>{field.name || ''}</Text>
+                                <Text style={styles.fieldCount}>{field.total_lessons || 0} lessons</Text>
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+            </Animated.View>
+        );
+    };
+
+    const renderRecentLessons = () => {
+        if (!recentLessons || recentLessons.length === 0) return null;
+        
+        return (
+            <Animated.View entering={FadeInDown.delay(300).duration(600)}>
+                <SectionHeader title="Continue Learning" size="medium" />
+                {recentLessons.map((lesson, index) => (
+                    <Animated.View
+                        key={lesson.id}
+                        entering={FadeInDown.delay(350 + index * 50).duration(600)}
                     >
-                        <View style={styles.lessonCard}>
-                            <View style={styles.lessonIconContainer}>
-                                <Feather name="book" size={20} color={theme.colors.primary} />
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('LessonDetail', { lessonId: lesson.id })}
+                            activeOpacity={0.9}
+                        >
+                            <View style={styles.lessonCard}>
+                                <View style={styles.lessonIconContainer}>
+                                    <Feather name="book" size={20} color={theme.colors.primary} />
+                                </View>
+                                <View style={styles.lessonInfo}>
+                                    <Text style={styles.lessonTitle}>{lesson.title || ''}</Text>
+                                    <Text style={styles.lessonMeta}>
+                                        {lesson.estimated_minutes || 0} min • {lesson.difficulty_level || 'beginner'}
+                                    </Text>
+                                </View>
+                                <Feather name="chevron-right" size={20} color={theme.colors.textLight} />
                             </View>
-                            <View style={styles.lessonInfo}>
-                                <Text style={styles.lessonTitle}>{lesson.title}</Text>
-                                <Text style={styles.lessonMeta}>
-                                    {lesson.estimated_minutes} min • {lesson.difficulty_level}
-                                </Text>
-                            </View>
-                            <Feather name="chevron-right" size={20} color={theme.colors.textLight} />
-                        </View>
-                    </TouchableOpacity>
-                </Animated.View>
-            ))}
-        </Animated.View>
-    );
+                        </TouchableOpacity>
+                    </Animated.View>
+                ))}
+            </Animated.View>
+        );
+    };
 
     const renderQuickStats = () => (
         <Animated.View entering={FadeInDown.delay(400).duration(600)}>

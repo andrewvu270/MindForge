@@ -11,6 +11,10 @@ from .content_models import NormalizedContent
 from .adapters.hackernews_adapter import HackerNewsAdapter
 from .adapters.reddit_adapter import RedditAdapter
 from .adapters.finance_adapter import FinanceAdapter
+from .adapters.fred_adapter import FREDAdapter
+from .adapters.googlebooks_adapter import GoogleBooksAdapter
+from .adapters.youtube_adapter import YouTubeAdapter
+from .adapters.bbcnews_adapter import BBCNewsAdapter
 from .adapters.wikipedia_adapter import WikipediaAdapter
 from .adapters.rss_adapter import RSSAdapter
 
@@ -25,14 +29,20 @@ class ContentOrchestrator:
     
     # Field to adapter mappings
     FIELD_ADAPTERS = {
-        "tech": ["hackernews", "reddit", "wikipedia"],
-        "technology": ["hackernews", "reddit", "wikipedia"],
-        "finance": ["finance", "rss", "wikipedia"],
-        "economics": ["wikipedia", "rss"],
-        "culture": ["reddit", "wikipedia"],
-        "influence": ["reddit", "wikipedia"],
-        "global": ["rss", "wikipedia"],
-        "world": ["rss", "wikipedia"]
+        "tech": ["hackernews", "reddit", "youtube", "bbc_news", "wikipedia"],
+        "technology": ["hackernews", "reddit", "youtube", "bbc_news", "wikipedia"],
+        "ai": ["hackernews", "reddit", "youtube", "google_books", "wikipedia"],
+        "finance": ["finance", "fred", "bbc_news", "wikipedia"],
+        "economics": ["fred", "finance", "bbc_news", "wikipedia"],
+        "business": ["finance", "bbc_news", "reddit", "wikipedia"],
+        "culture": ["reddit", "bbc_news", "google_books", "wikipedia"],
+        "influence": ["reddit", "google_books", "youtube", "wikipedia"],
+        "global": ["bbc_news", "rss", "wikipedia"],
+        "world": ["bbc_news", "rss", "wikipedia"],
+        "news": ["bbc_news", "rss", "reddit", "wikipedia"],
+        "books": ["google_books", "reddit", "wikipedia"],
+        "video": ["youtube", "reddit", "wikipedia"],
+        "education": ["youtube", "google_books", "reddit", "wikipedia"]
     }
     
     def __init__(self):
@@ -41,6 +51,10 @@ class ContentOrchestrator:
             "hackernews": HackerNewsAdapter(),
             "reddit": RedditAdapter(),
             "finance": FinanceAdapter(),
+            "fred": FREDAdapter(),
+            "google_books": GoogleBooksAdapter(),
+            "youtube": YouTubeAdapter(),
+            "bbc_news": BBCNewsAdapter(),
             "wikipedia": WikipediaAdapter(),
             "rss": RSSAdapter()
         }

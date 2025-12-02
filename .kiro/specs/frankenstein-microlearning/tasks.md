@@ -29,25 +29,25 @@
   - Normalize to NormalizedContent format
   - _Requirements: 1.6, 1.14_
 
-- [ ] 1.5 Implement FRED API adapter
+- [x] 1.5 Implement FRED API adapter
   - Fetch economic indicators
   - Convert numeric data to simplified explanations
   - Normalize to NormalizedContent format
   - _Requirements: 1.7, 1.14_
 
-- [ ] 1.6 Implement Google Books API adapter
+- [x] 1.6 Implement Google Books API adapter
   - Search and fetch book excerpts
   - Extract relevant passages
   - Normalize to NormalizedContent format
   - _Requirements: 1.8_
 
-- [ ] 1.7 Implement YouTube Data API adapter
+- [x] 1.7 Implement YouTube Data API adapter
   - Fetch video metadata
   - Extract transcripts/captions using YouTube API
   - Normalize transcript text to NormalizedContent format
   - _Requirements: 1.9, 1.13_
 
-- [ ] 1.8 Implement BBC News API adapter
+- [x] 1.8 Implement BBC News API adapter
   - Fetch latest news articles
   - Extract article content
   - Normalize to NormalizedContent format
@@ -81,7 +81,7 @@
   - Add fallback mechanisms
   - _Requirements: 1.1, 1.2, 1.11, 1.12_
 
-- [ ] 2.1 Create ContentOrchestrator class
+- [x] 2.1 Create ContentOrchestrator class
   - Implement fetch_multi_source() method
   - Add parallel API calling using asyncio
   - Implement source selection logic based on field

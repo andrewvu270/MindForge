@@ -103,7 +103,10 @@ async def get_quiz(lesson_id: str):
 async def submit_quiz(submission: QuizSubmission):
     # TODO: Implement quiz grading and result calculation
     return QuizResult(
+        id=f"result_{submission.lesson_id}_{submission.user_id}",
         quiz_id=f"quiz_{submission.lesson_id}",
+        user_id=submission.user_id,
+        lesson_id=submission.lesson_id,
         score=3,
         total_questions=5,
         percentage=60.0,
@@ -136,7 +139,8 @@ async def get_daily_challenge():
         lesson_ids=["lesson_1", "lesson_2", "lesson_3"],
         quiz_ids=["quiz_1"],
         date=date.today(),
-        difficulty_level=DifficultyLevel.INTERMEDIATE
+        difficulty_level=DifficultyLevel.INTERMEDIATE,
+        created_at=datetime.now()
     )
 
 # News endpoints
