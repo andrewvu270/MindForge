@@ -9,10 +9,14 @@ from dotenv import load_dotenv
 from database import db
 from models import *
 from seed_data import get_seed_data
+from api.lesson_endpoints import router as lesson_router
 
 load_dotenv()
 
 app = FastAPI(title="MindForge API", version="1.0.0")
+
+# Include new lesson generation endpoints
+app.include_router(lesson_router)
 
 app.add_middleware(
     CORSMiddleware,
