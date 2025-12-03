@@ -154,7 +154,6 @@ export default function LearnRead() {
         {/* Animated Divider */}
         <div className="my-12 flex justify-center">
           <LottieAnimation
-            topic="learning"
             fallbackType="blob"
             fallbackColor="coral"
           />

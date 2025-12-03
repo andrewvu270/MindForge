@@ -35,6 +35,7 @@ allowed_origins = [
     "http://localhost:8081",
     "http://localhost:19006",
     "https://mind-forge-backend.vercel.app",
+    "https://mindforger.vercel.app",
 ]
 
 # Add any additional origins from environment variable
