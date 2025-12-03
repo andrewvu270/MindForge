@@ -5,7 +5,7 @@ import logging
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any, Optional
-from backend.services.progress_service import get_progress_service
+from services.progress_service import get_progress_service
 
 logger = logging.getLogger(__name__)
 

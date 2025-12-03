@@ -12,7 +12,7 @@ from services.gamification_service import (
     ActivityType,
     DifficultyLevel
 )
-from backend.services.progress_service import get_progress_service
+from services.progress_service import get_progress_service
 
 logger = logging.getLogger(__name__)
 

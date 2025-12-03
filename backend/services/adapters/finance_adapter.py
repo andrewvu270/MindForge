@@ -2,7 +2,13 @@
 Finance Data Adapter using yfinance
 Fetches stock market data and converts to readable insights
 """
-import yfinance as yf
+try:
+    import yfinance as yf
+    YFINANCE_AVAILABLE = True
+except ImportError:
+    YFINANCE_AVAILABLE = False
+    yf = None
+
 import logging
 from typing import List, Optional
 from datetime import datetime, timedelta
@@ -69,6 +75,10 @@ class FinanceAdapter(SourceAdapter):
         Returns:
             List of financial data dictionaries
         """
+        if not YFINANCE_AVAILABLE:
+            logger.warning("yfinance not available, skipping finance data fetch")
+            return []
+        
         async def _fetch_data():
             tickers = self._get_tickers_for_topic(topic)[:limit]
             results = []

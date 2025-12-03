@@ -179,7 +179,7 @@ async def get_lesson(lesson_id: str):
 async def complete_lesson(lesson_id: str, user_id: str = "user_1"):
     """Mark a lesson as completed for a user. (Legacy endpoint - use /api/progress instead)"""
     try:
-        from backend.services.progress_service import get_progress_service
+        from services.progress_service import get_progress_service
         progress_service = get_progress_service()
         result = progress_service.complete_lesson(user_id, lesson_id, time_spent_seconds=300)
         return result

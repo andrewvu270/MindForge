@@ -10,10 +10,16 @@ class DatabaseService:
     def __init__(self):
         self.supabase_url = os.getenv("SUPABASE_URL")
         self.supabase_key = os.getenv("SUPABASE_ANON_KEY")
-        if not self.supabase_url or not self.supabase_key:
-            raise ValueError("SUPABASE_URL and SUPABASE_ANON_KEY must be set in environment variables")
-        
-        self.client: Client = create_client(self.supabase_url, self.supabase_key)
+        self._client: Optional[Client] = None
+    
+    @property
+    def client(self) -> Client:
+        """Lazy initialization of Supabase client"""
+        if self._client is None:
+            if not self.supabase_url or not self.supabase_key:
+                raise ValueError("SUPABASE_URL and SUPABASE_ANON_KEY must be set in environment variables")
+            self._client = create_client(self.supabase_url, self.supabase_key)
+        return self._client
     
     # Categories (Fields)
     async def get_categories(self) -> List[Dict[str, Any]]:
