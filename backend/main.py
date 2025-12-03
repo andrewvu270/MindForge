@@ -28,9 +28,22 @@ load_dotenv()
 app = FastAPI(title="MindForge API", version="1.0.0")
 
 # Add CORS middleware FIRST
+# Allow localhost for development and your deployed frontends
+allowed_origins = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:8081",
+    "http://localhost:19006",
+    "https://mind-forge-backend.vercel.app",
+]
+
+# Add any additional origins from environment variable
+if os.getenv("ALLOWED_ORIGINS"):
+    allowed_origins.extend(os.getenv("ALLOWED_ORIGINS").split(","))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins if os.getenv("VERCEL") else ["*"],  # Allow all in local dev
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
