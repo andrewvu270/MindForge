@@ -492,31 +492,6 @@ async def generate_flashcards(request: FlashcardGenerationRequest):
         )
 
 
-@router.get("/flashcards/{lesson_id}")
-async def get_flashcards_for_lesson(lesson_id: str):
-    """
-    Get flashcards for a specific lesson.
-    
-    Args:
-        lesson_id: Lesson ID
-        
-    Returns:
-        Flashcards
-    """
-    try:
-        client = db.client
-        response = client.table("flashcards").select("*").eq("lesson_id", lesson_id).execute()
-        
-        return {"flashcards": response.data, "count": len(response.data)}
-        
-    except Exception as e:
-        logger.error(f"Failed to fetch flashcards for lesson {lesson_id}: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to fetch flashcards: {str(e)}"
-        )
-
-
 @router.get("/flashcards")
 async def get_all_flashcards(field_id: Optional[str] = None, limit: int = 50):
     """
@@ -554,3 +529,28 @@ async def get_all_flashcards(field_id: Optional[str] = None, limit: int = 50):
         logger.error(traceback.format_exc())
         # Return empty result instead of 500 error
         return {"flashcards": [], "count": 0, "error": str(e)}
+
+
+@router.get("/flashcards/{lesson_id}")
+async def get_flashcards_for_lesson(lesson_id: str):
+    """
+    Get flashcards for a specific lesson.
+    
+    Args:
+        lesson_id: Lesson ID
+        
+    Returns:
+        Flashcards
+    """
+    try:
+        client = db.client
+        response = client.table("flashcards").select("*").eq("lesson_id", lesson_id).execute()
+        
+        return {"flashcards": response.data, "count": len(response.data)}
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch flashcards for lesson {lesson_id}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch flashcards: {str(e)}"
+        )

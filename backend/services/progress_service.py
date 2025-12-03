@@ -16,15 +16,32 @@ class ProgressService:
     def __init__(self):
         from supabase import create_client
         supabase_url = os.getenv("SUPABASE_URL")
-        supabase_key = os.getenv("SUPABASE_KEY")
+        supabase_key = os.getenv("SUPABASE_ANON_KEY") or os.getenv("SUPABASE_KEY")
         
         if not supabase_url or not supabase_key:
-            raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set")
+            logger.warning("SUPABASE_URL and SUPABASE_ANON_KEY not set, progress tracking will be limited")
+            self.client = None
+            return
         
         self.client: Client = create_client(supabase_url, supabase_key)
     
     def get_user_stats(self, user_id: str) -> Dict[str, Any]:
         """Get comprehensive user statistics."""
+        if not self.client:
+            logger.warning("Supabase client not initialized, returning default stats")
+            return {
+                "user_id": user_id,
+                "total_points": 0,
+                "lessons_completed": 0,
+                "quizzes_completed": 0,
+                "perfect_scores": 0,
+                "current_streak": 0,
+                "longest_streak": 0,
+                "total_study_time_minutes": 0,
+                "average_quiz_score": 0.0,
+                "last_activity_date": None,
+            }
+        
         try:
             # Get or create user stats
             stats_response = self.client.table("user_stats").select("*").eq("user_id", user_id).execute()
