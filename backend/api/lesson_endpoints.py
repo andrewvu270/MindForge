@@ -90,23 +90,46 @@ async def generate_lesson(request: LessonGenerationRequest):
         
         # Step 3: Store synthesized lesson in database
         lesson_id = str(uuid.uuid4())
+        
+        # Map field name to field_id and field_name
+        field_mapping = {
+            "technology": {"id": "tech", "name": "Technology"},
+            "tech": {"id": "tech", "name": "Technology"},
+            "finance": {"id": "finance", "name": "Finance"},
+            "economics": {"id": "economics", "name": "Economics"},
+            "culture": {"id": "culture", "name": "Culture"},
+            "influence": {"id": "influence", "name": "Influence"},
+            "global_events": {"id": "global", "name": "Global Events"},
+            "global": {"id": "global", "name": "Global Events"},
+        }
+        field_info = field_mapping.get(request.field.lower(), {"id": "tech", "name": "Technology"})
+        
         try:
             client = db.client
             
-            # Map field name to category_id (simplified - in production, query categories table)
-            field_to_category = {
-                "technology": "tech",
-                "finance": "finance",
-                "economics": "economics",
-                "culture": "culture",
-                "influence": "influence",
-                "global_events": "events"
+            # Store in main lessons table so it shows up in lessons list
+            lesson_data = {
+                "id": lesson_id,
+                "field_id": field_info["id"],
+                "field_name": field_info["name"],
+                "title": lesson.get("title"),
+                "content": lesson.get("summary", ""),
+                "sources": lesson.get("sources", []),
+                "learning_objectives": lesson.get("learning_objectives", []),
+                "key_concepts": lesson.get("key_concepts", []),
+                "estimated_minutes": 15,
+                "difficulty_level": "beginner",
+                "is_auto_generated": False,  # User-generated via Frankenstein
+                "created_at": datetime.now().isoformat()
             }
-            category_id = field_to_category.get(request.field.lower(), "tech")
             
+            client.table("lessons").insert(lesson_data).execute()
+            logger.info(f"Stored lesson in main lessons table with ID: {lesson_id}")
+            
+            # Also store in synthesized_lessons for tracking
             synthesized_lesson_data = {
                 "id": lesson_id,
-                "category_id": category_id,
+                "category_id": field_info["id"],
                 "title": lesson.get("title"),
                 "summary": lesson.get("summary"),
                 "sources": lesson.get("sources", []),
@@ -120,8 +143,10 @@ async def generate_lesson(request: LessonGenerationRequest):
                 "updated_at": datetime.now().isoformat()
             }
             
-            client.table("synthesized_lessons").insert(synthesized_lesson_data).execute()
-            logger.info(f"Stored synthesized lesson with ID: {lesson_id}")
+            try:
+                client.table("synthesized_lessons").insert(synthesized_lesson_data).execute()
+            except Exception as synth_err:
+                logger.warning(f"Failed to store in synthesized_lessons: {synth_err}")
             
         except Exception as e:
             logger.warning(f"Failed to store lesson in database: {e}")
@@ -141,8 +166,13 @@ async def generate_lesson(request: LessonGenerationRequest):
             else:
                 logger.warning(f"Quiz generation failed: {quiz_response.error}")
         
-        # Add lesson_id to response
+        # Add lesson_id and content to response
         lesson["id"] = lesson_id
+        lesson["content"] = lesson.get("summary", "")  # Ensure content is available
+        lesson["field_id"] = field_info["id"]
+        lesson["field_name"] = field_info["name"]
+        lesson["estimated_minutes"] = 15
+        lesson["difficulty_level"] = "beginner"
         
         # Build response
         return LessonGenerationResponse(

@@ -17,6 +17,8 @@ import Progress from './pages/Progress';
 import Flashcards from './pages/Flashcards';
 import Feed from './pages/Feed';
 import DailyChallenge from './pages/DailyChallenge';
+import Curriculum from './pages/Curriculum';
+import { LottieLoader } from './components/LottieEnhanced';
 
 interface User {
   email: string;
@@ -59,7 +61,7 @@ function App() {
   if (loading) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-coral border-t-transparent rounded-full animate-spin" />
+        <LottieLoader message="Loading MindForge..." />
       </div>
     );
   }
@@ -88,6 +90,7 @@ function App() {
         <Route path="/flashcards/:field" element={<ProtectedRoute user={user}><Flashcards /></ProtectedRoute>} />
         <Route path="/feed" element={<ProtectedRoute user={user}><Feed /></ProtectedRoute>} />
         <Route path="/daily" element={<ProtectedRoute user={user}><DailyChallenge /></ProtectedRoute>} />
+        <Route path="/curriculum" element={<ProtectedRoute user={user}><Curriculum /></ProtectedRoute>} />
 
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/" replace />} />

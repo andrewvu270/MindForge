@@ -307,12 +307,12 @@ class TTSService:
             try:
                 async with session.get(
                     f"{self.coqui_url}/",
-                    timeout=aiohttp.ClientTimeout(total=3)
+                    timeout=aiohttp.ClientTimeout(total=1)  # Reduced to 1 second
                 ) as response:
                     if response.status != 200:
                         raise Exception("Coqui TTS not responding")
             except Exception as e:
-                raise Exception(f"Coqui TTS connection failed: {e}")
+                raise Exception(f"Coqui TTS server not available: {e}")
             
             # Generate speech
             params = {

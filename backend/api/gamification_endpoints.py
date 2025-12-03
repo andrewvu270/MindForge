@@ -12,6 +12,7 @@ from services.gamification_service import (
     ActivityType,
     DifficultyLevel
 )
+from backend.services.progress_service import get_progress_service
 
 logger = logging.getLogger(__name__)
 
@@ -56,10 +57,6 @@ class UserStatsResponse(BaseModel):
     reflections_submitted: int
     unlocked_achievements: List[str]
     rank: Optional[int] = None
-
-
-# In-memory storage for demo (replace with database in production)
-user_stats_db: Dict[str, Dict] = {}
 
 
 @router.post("/award-points", response_model=AwardPointsResponse)
@@ -143,7 +140,7 @@ async def award_points(request: AwardPointsRequest):
 @router.get("/stats/{user_id}", response_model=UserStatsResponse)
 async def get_user_stats(user_id: str):
     """
-    Get user's gamification stats.
+    Get user's gamification stats from database.
     
     Args:
         user_id: User ID
@@ -151,8 +148,30 @@ async def get_user_stats(user_id: str):
     Returns:
         User statistics
     """
-    if user_id not in user_stats_db:
-        # Return default stats for new user
+    try:
+        progress_service = get_progress_service()
+        stats = progress_service.get_user_stats(user_id)
+        
+        # Get achievements (if implemented)
+        unlocked_achievements = []
+        
+        # Calculate rank (simplified - would need all users for real ranking)
+        rank = None
+        
+        return UserStatsResponse(
+            user_id=user_id,
+            total_points=stats.get("total_points", 0),
+            current_streak=stats.get("current_streak", 0),
+            longest_streak=stats.get("longest_streak", 0),
+            lessons_completed=stats.get("lessons_completed", 0),
+            quizzes_completed=stats.get("quizzes_completed", 0),
+            reflections_submitted=0,  # TODO: Add reflections count
+            unlocked_achievements=unlocked_achievements,
+            rank=rank
+        )
+    except Exception as e:
+        logger.error(f"Error getting user stats: {e}")
+        # Return default stats on error
         return UserStatsResponse(
             user_id=user_id,
             total_points=0,
@@ -164,27 +183,6 @@ async def get_user_stats(user_id: str):
             unlocked_achievements=[],
             rank=None
         )
-    
-    user_stats = user_stats_db[user_id]
-    
-    # Calculate rank
-    all_points = [stats["total_points"] for stats in user_stats_db.values()]
-    rank = gamification_service.leaderboard_manager.calculate_rank(
-        user_points=user_stats["total_points"],
-        all_user_points=all_points
-    )
-    
-    return UserStatsResponse(
-        user_id=user_stats["user_id"],
-        total_points=user_stats["total_points"],
-        current_streak=user_stats["current_streak"],
-        longest_streak=user_stats["longest_streak"],
-        lessons_completed=user_stats["lessons_completed"],
-        quizzes_completed=user_stats["quizzes_completed"],
-        reflections_submitted=user_stats["reflections_submitted"],
-        unlocked_achievements=user_stats["unlocked_achievements"],
-        rank=rank
-    )
 
 
 @router.get("/leaderboard", response_model=List[LeaderboardEntry])

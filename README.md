@@ -15,9 +15,12 @@ AI-powered microlearning platform that synthesizes content from multiple sources
 
 - **Frontend**: React (Vite, TypeScript, TailwindCSS), React Native (Expo)
 - **Backend**: FastAPI (Python 3.11+)
-- **Database**: Supabase (PostgreSQL + Storage)
-- **AI**: Groq (FREE 14,400 req/day), HuggingFace, Pollinations.ai, OpenAI (fallback)
-- **Media**: FFmpeg, Lottie animations, Clay mascots
+- **Database**: Supabase (PostgreSQL + Bucket Storage)
+- **LLM**: Groq (llama-3.3-70b-versatile), OpenAI (gpt-4o-mini fallback)
+- **ML**: Text-to-image (HuggingFace FLUX.1-schnell/SDXL, Ollama Cloud, Pollinations), Text-to-speech (Coqui TTS, eSpeak fallback)
+- **Content APIs**: Wikipedia, YouTube, Google Books, BBC News (NewsAPI), FRED, NASA, Reddit, Hacker News, arXiv, Yahoo Finance, RSS
+- **Agents**: LessonSynthesis Agent, QuizGeneration Agent, ReflectionAnalysis Agent, Recommendation Agent, APISelector Agent, ContentSmart Agent, VideoPlanning Agent
+- **Animations**: LottieFiles, MagicUI
 
 ## Quick Start
 

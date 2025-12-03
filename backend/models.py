@@ -257,6 +257,36 @@ class UserStats(BaseModel):
     average_quiz_score: float
     fields_studied: List[str]
 
+class PathLesson(BaseModel):
+    """A lesson within a learning path"""
+    title: str
+    description: str
+    difficulty: str
+    key_topics: List[str]
+    order: int
+    is_completed: bool = False
+
+class LearningPath(BaseModel):
+    """Structured curriculum for a field"""
+    id: str
+    field_id: str
+    title: str
+    description: str
+    lessons: List[PathLesson]
+    total_lessons: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+class Flashcard(BaseModel):
+    """Flashcard for spaced repetition"""
+    id: str
+    lesson_id: str
+    front: str
+    back: str
+    difficulty: str = "medium"
+    topic: str = "General"
+    created_at: Optional[datetime] = None
+
 # Update TABLES dictionary with new models
 TABLES.update({
     "synthesized_lessons": SynthesizedLesson,
@@ -265,5 +295,7 @@ TABLES.update({
     "user_achievements": UserAchievement,
     "scheduled_sessions": ScheduledSession,
     "schedule_preferences": SchedulePreferences,
-    "reflection_prompts": ReflectionPrompt
+    "reflection_prompts": ReflectionPrompt,
+    "learning_paths": LearningPath,
+    "flashcards": Flashcard
 })

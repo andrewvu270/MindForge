@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { apiService } from '../services/api';
+import { LottieLoader } from '../components/LottieEnhanced';
 
 interface LessonCard {
   id: string;
@@ -30,7 +31,7 @@ export default function Learn() {
 
   const generateCards = (lesson: any): LessonCard[] => {
     const cards: LessonCard[] = [];
-    
+
     // 1. Hook - Why should I care?
     cards.push({
       id: 'intro',
@@ -147,7 +148,7 @@ export default function Learn() {
   if (loading) {
     return (
       <div className="min-h-screen bg-charcoal flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-warm-white border-t-transparent rounded-full animate-spin" />
+        <LottieLoader message="Loading lesson..." />
       </div>
     );
   }
@@ -205,9 +206,8 @@ export default function Learn() {
           {/* Card */}
           <div className={`rounded-3xl p-8 min-h-[420px] flex flex-col ${getCardStyle(card.type)}`}>
             {/* Card Type Label */}
-            <div className={`text-xs font-medium uppercase tracking-wide mb-4 ${
-              card.type === 'intro' ? 'text-coral' : 'text-charcoal/40'
-            }`}>
+            <div className={`text-xs font-medium uppercase tracking-wide mb-4 ${card.type === 'intro' ? 'text-coral' : 'text-charcoal/40'
+              }`}>
               {card.type === 'intro' && 'Today\'s lesson'}
               {card.type === 'context' && 'Setting the scene'}
               {card.type === 'insight' && 'Key insight'}
@@ -219,9 +219,8 @@ export default function Learn() {
 
             {/* Title */}
             {card.title && (
-              <h2 className={`text-2xl font-semibold mb-4 ${
-                card.type === 'intro' ? 'text-white' : 'text-charcoal'
-              }`}>
+              <h2 className={`text-2xl font-semibold mb-4 ${card.type === 'intro' ? 'text-white' : 'text-charcoal'
+                }`}>
                 {card.title}
               </h2>
             )}
@@ -246,9 +245,8 @@ export default function Learn() {
                   ))}
                 </div>
               ) : (
-                <p className={`text-lg leading-relaxed ${
-                  card.type === 'intro' ? 'text-white/80' : 'text-charcoal/80'
-                }`}>
+                <p className={`text-lg leading-relaxed ${card.type === 'intro' ? 'text-white/80' : 'text-charcoal/80'
+                  }`}>
                   {card.content}
                 </p>
               )}
@@ -264,7 +262,7 @@ export default function Learn() {
 
           {/* Navigation */}
           <div className="flex justify-between items-center mt-8">
-            <button 
+            <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
               className="p-3 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-white"
@@ -275,14 +273,14 @@ export default function Learn() {
             </button>
 
             {currentIndex === cards.length - 1 ? (
-              <button 
+              <button
                 onClick={handleComplete}
                 className="px-8 py-3 bg-coral text-white rounded-xl font-medium hover:bg-coral/90 transition-colors"
               >
                 Test your knowledge
               </button>
             ) : (
-              <button 
+              <button
                 onClick={handleNext}
                 className="px-8 py-3 bg-white text-charcoal rounded-xl font-medium hover:bg-white/90 transition-colors"
               >
@@ -290,7 +288,7 @@ export default function Learn() {
               </button>
             )}
 
-            <button 
+            <button
               onClick={handleNext}
               disabled={currentIndex === cards.length - 1}
               className="p-3 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-white"

@@ -242,12 +242,13 @@ Sources:
 Return ONLY valid JSON with NO additional text, explanations, or formatting:
 {{
     "title": "clear engaging title",
-    "summary": "integrated educational summary under {max_words} words",
+    "summary": "brief overview under 50 words",
+    "content": "Detailed lesson content in Markdown format. Structure with: # Introduction, ## Core Concepts, ## Real-world Application, ## Conclusion. Use bullet points and bold text for emphasis. Do NOT use emojis.",
     "learning_objectives": ["objective 1", "objective 2", "objective 3"],
     "key_concepts": ["concept 1", "concept 2", "concept 3"]
 }}
 
-CRITICAL: Return ONLY the JSON object. No preamble, no explanation, no markdown formatting, no code blocks."""
+CRITICAL: Return ONLY the JSON object. No preamble, no explanation, no markdown formatting (except inside the content string), no code blocks."""
 
             response = await self._call_llm(
                 messages=[
@@ -330,12 +331,39 @@ Format as JSON array:
             result = json.loads(response.choices[0].message.content)
             
             # Handle different response formats
+            questions = []
             if isinstance(result, dict) and "questions" in result:
-                return result["questions"]
+                questions = result["questions"]
             elif isinstance(result, list):
-                return result
-            else:
-                return []
+                questions = result
+            
+            # Convert correct_answer from text to index for database compatibility
+            for question in questions:
+                if "correct_answer" in question and "options" in question:
+                    correct_answer = question["correct_answer"]
+                    options = question["options"]
+                    
+                    # If correct_answer is text, find its index in options
+                    if isinstance(correct_answer, str):
+                        try:
+                            # Try exact match first
+                            if correct_answer in options:
+                                question["correct_answer"] = options.index(correct_answer)
+                            else:
+                                # Try matching without letter prefix (e.g., "option 1" matches "A) option 1")
+                                for i, option in enumerate(options):
+                                    if correct_answer in option or option in correct_answer:
+                                        question["correct_answer"] = i
+                                        break
+                                else:
+                                    # Default to first option if no match found
+                                    logger.warning(f"Could not match correct_answer '{correct_answer}' to options, defaulting to 0")
+                                    question["correct_answer"] = 0
+                        except Exception as e:
+                            logger.warning(f"Error converting correct_answer to index: {e}, defaulting to 0")
+                            question["correct_answer"] = 0
+            
+            return questions
         
         try:
             return await self._call_with_retry(_generate)
@@ -499,3 +527,68 @@ Return JSON array of lesson IDs:
         except Exception as e:
             logger.error(f"Failed to recommend lessons after retries: {e}")
             raise
+
+    async def generate_curriculum(
+        self,
+        field: str,
+        num_lessons: int = 5
+    ) -> List[Dict[str, Any]]:
+        """
+        Generate a structured curriculum (path of lessons) for a field.
+        
+        Args:
+            field: Field of study (e.g., "Technology", "Finance")
+            num_lessons: Number of lessons in the path
+            
+        Returns:
+            List of lesson topics with descriptions and difficulty
+        """
+        async def _generate():
+            prompt = f"""Create a structured learning path (curriculum) for {field} with {num_lessons} lessons.
+The path should progress from Beginner to Intermediate to Advanced.
+
+Return ONLY valid JSON array:
+[
+    {{
+        "title": "Lesson Title",
+        "description": "Brief description of what will be covered",
+        "difficulty": "Beginner",
+        "key_topics": ["topic 1", "topic 2"]
+    }},
+    ...
+]"""
+
+            response = await self._call_llm(
+                messages=[
+                    {"role": "system", "content": "You are an expert curriculum designer."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                response_format={"type": "json_object"}
+            )
+            
+            import json
+            result = json.loads(response.choices[0].message.content)
+            
+            if isinstance(result, dict) and "lessons" in result:
+                return result["lessons"]
+            elif isinstance(result, list):
+                return result
+            else:
+                return []
+        
+        try:
+            return await self._call_with_retry(_generate)
+        except Exception as e:
+            logger.error(f"Failed to generate curriculum: {e}")
+            return []
+
+# Singleton instance
+_llm_service = None
+
+def get_llm_service() -> LLMService:
+    """Get or create the LLM service singleton"""
+    global _llm_service
+    if _llm_service is None:
+        _llm_service = LLMService()
+    return _llm_service

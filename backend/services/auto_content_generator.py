@@ -114,6 +114,11 @@ class AutoContentGenerator:
         lessons = []
         topics = self.field_topics.get(field_id, [])
         
+        # If no topics defined for this field, use generic topics
+        if not topics:
+            logger.warning(f"No topics defined for field {field_id}, using generic topics")
+            topics = ['latest trends', 'key concepts', 'fundamentals', 'advanced topics', 'practical applications']
+        
         for i in range(count):
             try:
                 # Pick a topic (rotate through topics)
@@ -532,13 +537,13 @@ class AutoContentGenerator:
             lesson: Lesson data to store
         """
         import asyncio
-        max_retries = 3
+        max_retries = 5  # Increased from 3 to 5
         
         for attempt in range(max_retries):
             try:
                 # Use upsert to handle duplicate keys (update if exists)
                 db.client.table('lessons').upsert(lesson, on_conflict='id').execute()
-                logger.info(f"Stored lesson {lesson['id']} in database")
+                logger.info(f"✅ Stored lesson {lesson['id']} in database")
                 return
             except Exception as e:
                 error_str = str(e)
@@ -547,12 +552,19 @@ class AutoContentGenerator:
                     lesson['id'] = str(uuid.uuid4())
                     logger.warning(f"Duplicate key, retrying with new ID: {lesson['id']}")
                     continue
-                    
+                
+                # Check if it's a timeout error
+                is_timeout = 'timeout' in error_str.lower() or 'timed out' in error_str.lower()
+                
                 logger.warning(f"Store attempt {attempt + 1}/{max_retries} failed: {e}")
+                
                 if attempt < max_retries - 1:
-                    await asyncio.sleep(2 ** attempt)  # Exponential backoff: 1s, 2s, 4s
+                    # Longer backoff for timeout errors: 2s, 4s, 8s, 16s
+                    wait_time = (2 ** (attempt + 1)) if is_timeout else (2 ** attempt)
+                    logger.info(f"Retrying in {wait_time}s...")
+                    await asyncio.sleep(wait_time)
                 else:
-                    logger.error(f"Failed to store lesson after {max_retries} attempts: {e}")
+                    logger.error(f"❌ Failed to store lesson after {max_retries} attempts: {e}")
                     raise
     
     def determine_difficulty(self, lesson_content: Dict) -> str:

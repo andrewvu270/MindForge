@@ -36,7 +36,7 @@ const LessonDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const loadLessonAndQuiz = async () => {
     try {
       setLoading(true);
-      
+
       // Get lesson details
       const lessonData = await apiService.getLesson(lessonId);
       setLesson(lessonData);
@@ -65,15 +65,64 @@ const LessonDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     }
   };
 
-  const formatContent = (content: string) => {
-    // Simple markdown-like parsing
-    return content
-      .replace(/### (.*)/g, '\n\n$1\n')
-      .replace(/## (.*)/g, '\n\n$1\n')
-      .replace(/# (.*)/g, '\n\n$1\n')
-      .replace(/\*\*(.*?)\*\*/g, '$1')
-      .replace(/\*(.*?)\*/g, '$1')
-      .replace(/`(.*?)`/g, '$1');
+  const MarkdownRenderer = ({ content }: { content: string }) => {
+    // Strip emojis (simple range check for common emoji ranges)
+    const cleanContent = content.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/gu, '');
+
+    const lines = cleanContent.split('\n');
+
+    return (
+      <View>
+        {lines.map((line, index) => {
+          // Headers
+          if (line.startsWith('# ')) {
+            return <Text key={index} style={styles.h1}>{line.replace('# ', '')}</Text>;
+          }
+          if (line.startsWith('## ')) {
+            return <Text key={index} style={styles.h2}>{line.replace('## ', '')}</Text>;
+          }
+          if (line.startsWith('### ')) {
+            return <Text key={index} style={styles.h3}>{line.replace('### ', '')}</Text>;
+          }
+
+          // Bullet points
+          if (line.trim().startsWith('- ')) {
+            return (
+              <View key={index} style={styles.bulletItem}>
+                <Text style={styles.bulletPoint}>•</Text>
+                <Text style={styles.bulletText}>{parseBold(line.trim().replace('- ', ''))}</Text>
+              </View>
+            );
+          }
+
+          // Empty lines
+          if (line.trim() === '') {
+            return <View key={index} style={{ height: 10 }} />;
+          }
+
+          // Paragraphs
+          return (
+            <Text key={index} style={styles.paragraph}>
+              {parseBold(line)}
+            </Text>
+          );
+        })}
+      </View>
+    );
+  };
+
+  const parseBold = (text: string) => {
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return (
+          <Text key={index} style={styles.boldText}>
+            {part.slice(2, -2)}
+          </Text>
+        );
+      }
+      return <Text key={index}>{part}</Text>;
+    });
   };
 
   if (loading) {
@@ -117,9 +166,9 @@ const LessonDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               <Text style={styles.pointsBadge}>🏆 {lesson.points} pts</Text>
             </View>
           </View>
-          
+
           <Text style={styles.lessonTitle}>{lesson.title}</Text>
-          
+
           <View style={styles.lessonStats}>
             <Text style={styles.readingTime}>⏱️ {lesson.reading_time} minutes</Text>
             <Text style={styles.quizCount}>📝 {quizzes.length} questions</Text>
@@ -128,9 +177,7 @@ const LessonDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Content */}
         <View style={styles.contentContainer}>
-          <Text style={styles.contentText}>
-            {formatContent(lesson.content)}
-          </Text>
+          <MarkdownRenderer content={lesson.content} />
         </View>
 
         {/* Tags */}
@@ -270,6 +317,54 @@ const styles = StyleSheet.create({
   contentText: {
     fontSize: 15,
     color: '#FFF',
+    lineHeight: 24,
+  },
+  h1: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#00FFF0',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  h2: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FFF',
+    marginTop: 15,
+    marginBottom: 8,
+  },
+  h3: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#CCC',
+    marginTop: 10,
+    marginBottom: 6,
+  },
+  paragraph: {
+    fontSize: 16,
+    color: '#E0E0E0',
+    lineHeight: 24,
+    marginBottom: 10,
+  },
+  boldText: {
+    fontWeight: 'bold',
+    color: '#FFF',
+  },
+  bulletItem: {
+    flexDirection: 'row',
+    marginBottom: 6,
+    paddingLeft: 10,
+  },
+  bulletPoint: {
+    fontSize: 16,
+    color: '#00FFF0',
+    marginRight: 8,
+    marginTop: 2,
+  },
+  bulletText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#E0E0E0',
     lineHeight: 24,
   },
   tagsContainer: {

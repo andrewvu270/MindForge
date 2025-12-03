@@ -4,6 +4,8 @@ import { apiService } from '../services/api';
 import Navbar from '../components/Navbar';
 import ClayMascot from '../components/ClayMascot';
 import Confetti from '../components/Confetti';
+import StreakIcon from '../components/StreakIcon';
+import { LottieLoader } from '../components/LottieEnhanced';
 
 interface Challenge {
   id: string;
@@ -28,17 +30,23 @@ export default function DailyChallenge() {
 
   const loadDailyChallenge = async () => {
     try {
-      const stats = await apiService.getUserStats('user_1');
+      const [stats, challengeProgress] = await Promise.all([
+        apiService.getUserStats('user_1'),
+        apiService.getDailyChallengeProgress('user_1'),
+      ]);
+      
       setStreak(stats?.current_streak || 0);
 
-      // In production, this would come from the backend based on user's progress
+      // Build challenges based on actual progress
+      const completedTasks = challengeProgress?.completed_tasks || [];
+      
       setChallenges([
         {
           id: '1',
           type: 'watch',
           title: 'Watch today\'s briefing',
-          description: 'Scroll through 3 video lessons',
-          completed: false,
+          description: `Complete ${challengeProgress?.lessons_today || 0}/1 lessons`,
+          completed: completedTasks.includes('watch'),
           duration: 5,
         },
         {
@@ -46,7 +54,7 @@ export default function DailyChallenge() {
           type: 'flashcards',
           title: 'Review 10 flashcards',
           description: 'Reinforce what you\'ve learned',
-          completed: false,
+          completed: completedTasks.includes('flashcards'),
           field: 'Technology',
           duration: 3,
         },
@@ -54,16 +62,16 @@ export default function DailyChallenge() {
           id: '3',
           type: 'quiz',
           title: 'Pass a quiz',
-          description: 'Test your knowledge on any topic',
-          completed: false,
+          description: `Complete ${challengeProgress?.quizzes_today || 0}/1 quizzes`,
+          completed: completedTasks.includes('quiz'),
           duration: 5,
         },
         {
           id: '4',
           type: 'reflection',
           title: 'Daily reflection',
-          description: 'Connect learning to your life',
-          completed: false,
+          description: `Submit ${challengeProgress?.reflections_today || 0}/1 reflections`,
+          completed: completedTasks.includes('reflection'),
           duration: 5,
         },
       ]);
@@ -140,9 +148,7 @@ export default function DailyChallenge() {
     return (
       <div className="min-h-screen bg-cream">
         <Navbar />
-        <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-coral border-t-transparent rounded-full animate-spin" />
-        </div>
+        <LottieLoader message="Loading challenges..." />
       </div>
     );
   }
@@ -155,9 +161,9 @@ export default function DailyChallenge() {
       <div className="max-w-2xl mx-auto px-6 py-12">
         {/* Header */}
         <div className="text-center mb-8 animate-slide-up">
-          <ClayMascot 
-            field="Technology" 
-            size="md" 
+          <ClayMascot
+            field="Technology"
+            size="md"
             animation={allCompleted ? 'celebrate' : 'wave'}
             className="mx-auto mb-4"
           />
@@ -173,10 +179,16 @@ export default function DailyChallenge() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted mb-1">Current streak</p>
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-baseline gap-3">
                 <span className="text-4xl font-semibold text-charcoal animate-float">{streak}</span>
                 <span className="text-muted">days</span>
-                {allCompleted && <span className="text-2xl">🔥</span>}
+                {streak > 0 && (
+                  <StreakIcon
+                    days={streak}
+                    size="md"
+                    intensity={allCompleted ? 'max' : undefined}
+                  />
+                )}
               </div>
             </div>
             <div className="text-right">
@@ -193,9 +205,8 @@ export default function DailyChallenge() {
             </div>
             <div className="h-2 bg-cream-dark rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${
-                  allCompleted ? 'bg-sage animate-pulse' : 'bg-coral'
-                }`}
+                className={`h-full rounded-full transition-all duration-500 ${allCompleted ? 'bg-sage animate-pulse' : 'bg-coral'
+                  }`}
                 style={{ width: `${(completedCount / challenges.length) * 100}%` }}
               />
             </div>
@@ -204,7 +215,7 @@ export default function DailyChallenge() {
 
         {/* Challenges */}
         <div className="space-y-3 mb-8 stagger">
-          {challenges.map((challenge, index) => {
+          {challenges.map((challenge) => {
             const color = getColor(challenge.type);
             return (
               <div

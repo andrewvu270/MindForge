@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import ClayMascot from '../components/ClayMascot';
+import { LottieLoader } from '../components/LottieEnhanced';
 
 interface FeedItem {
   id: string;
@@ -36,22 +37,22 @@ export default function Feed() {
     try {
       setLoading(true);
       const lessons = await apiService.getLessons('');
-      
+
       // Filter lessons based on selected criteria
       let filteredLessons = lessons;
-      
+
       if (selectedFields.length > 0) {
-        filteredLessons = filteredLessons.filter((lesson: any) => 
+        filteredLessons = filteredLessons.filter((lesson: any) =>
           selectedFields.includes(lesson.field_name)
         );
       }
-      
+
       if (selectedDifficulties.length > 0) {
-        filteredLessons = filteredLessons.filter((lesson: any) => 
+        filteredLessons = filteredLessons.filter((lesson: any) =>
           selectedDifficulties.includes(lesson.difficulty_level)
         );
       }
-      
+
       // Transform lessons into feed items (load more for infinite scroll)
       const feedItems: FeedItem[] = filteredLessons.slice(0, 20).map((lesson: any) => ({
         id: `feed-${lesson.id}`,
@@ -64,7 +65,7 @@ export default function Feed() {
         summary: lesson.content?.slice(0, 150) + '...' || '',
         sources: lesson.sources?.length || 3,
       }));
-      
+
       setItems(feedItems);
     } catch (error) {
       console.error('Error loading feed:', error);
@@ -74,16 +75,16 @@ export default function Feed() {
   };
 
   const toggleField = (field: string) => {
-    setSelectedFields(prev => 
-      prev.includes(field) 
+    setSelectedFields(prev =>
+      prev.includes(field)
         ? prev.filter(f => f !== field)
         : [...prev, field]
     );
   };
 
   const toggleDifficulty = (difficulty: string) => {
-    setSelectedDifficulties(prev => 
-      prev.includes(difficulty) 
+    setSelectedDifficulties(prev =>
+      prev.includes(difficulty)
         ? prev.filter(d => d !== difficulty)
         : [...prev, difficulty]
     );
@@ -123,7 +124,7 @@ export default function Feed() {
   if (loading) {
     return (
       <div className="h-screen bg-charcoal flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-coral border-t-transparent rounded-full animate-spin" />
+        <LottieLoader message="Loading feed..." />
       </div>
     );
   }
@@ -132,7 +133,7 @@ export default function Feed() {
     <div className="h-screen bg-charcoal overflow-hidden">
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-50 px-4 py-4 flex items-center justify-between bg-gradient-to-b from-charcoal/80 to-transparent">
-        <button 
+        <button
           onClick={() => navigate('/dashboard')}
           className="p-2 rounded-full hover:bg-white/10 text-white"
         >
@@ -141,7 +142,7 @@ export default function Feed() {
           </svg>
         </button>
         <span className="text-white font-medium">Video Feed</span>
-        <button 
+        <button
           onClick={() => setShowFilters(!showFilters)}
           className="p-2 rounded-full hover:bg-white/10 text-white relative"
         >
@@ -163,7 +164,7 @@ export default function Feed() {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-white font-medium text-sm">Fields</h3>
                 {selectedFields.length > 0 && (
-                  <button 
+                  <button
                     onClick={() => setSelectedFields([])}
                     className="text-coral text-xs hover:underline"
                   >
@@ -176,11 +177,10 @@ export default function Feed() {
                   <button
                     key={field}
                     onClick={() => toggleField(field)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      selectedFields.includes(field)
-                        ? 'bg-coral text-white'
-                        : 'bg-white/10 text-white/70 hover:bg-white/20'
-                    }`}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedFields.includes(field)
+                      ? 'bg-coral text-white'
+                      : 'bg-white/10 text-white/70 hover:bg-white/20'
+                      }`}
                   >
                     {field}
                   </button>
@@ -193,7 +193,7 @@ export default function Feed() {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-white font-medium text-sm">Difficulty</h3>
                 {selectedDifficulties.length > 0 && (
-                  <button 
+                  <button
                     onClick={() => setSelectedDifficulties([])}
                     className="text-coral text-xs hover:underline"
                   >
@@ -206,11 +206,10 @@ export default function Feed() {
                   <button
                     key={difficulty}
                     onClick={() => toggleDifficulty(difficulty)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      selectedDifficulties.includes(difficulty)
-                        ? 'bg-sage text-white'
-                        : 'bg-white/10 text-white/70 hover:bg-white/20'
-                    }`}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedDifficulties.includes(difficulty)
+                      ? 'bg-sage text-white'
+                      : 'bg-white/10 text-white/70 hover:bg-white/20'
+                      }`}
                   >
                     {difficulty}
                   </button>
@@ -243,14 +242,14 @@ export default function Feed() {
       )}
 
       {/* Feed Container */}
-      <div 
+      <div
         ref={containerRef}
         onScroll={handleScroll}
         className="h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
         style={{ scrollSnapType: 'y mandatory' }}
       >
         {items.map((item, index) => (
-          <FeedCard 
+          <FeedCard
             key={item.id}
             item={item}
             isActive={index === currentIndex}
@@ -262,11 +261,10 @@ export default function Feed() {
       {/* Progress dots */}
       <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 z-40">
         {items.slice(0, 8).map((_, i) => (
-          <div 
+          <div
             key={i}
-            className={`w-1.5 h-1.5 rounded-full transition-all ${
-              i === currentIndex ? 'bg-white h-4' : 'bg-white/30'
-            }`}
+            className={`w-1.5 h-1.5 rounded-full transition-all ${i === currentIndex ? 'bg-white h-4' : 'bg-white/30'
+              }`}
           />
         ))}
       </div>
@@ -290,7 +288,7 @@ function FeedCard({ item, isActive, onExpand }: FeedCardProps) {
   useEffect(() => {
     if (videoRef.current) {
       if (isActive && item.videoUrl) {
-        videoRef.current.play().catch(() => {});
+        videoRef.current.play().catch(() => { });
       } else {
         videoRef.current.pause();
       }
@@ -306,7 +304,7 @@ function FeedCard({ item, isActive, onExpand }: FeedCardProps) {
   };
 
   return (
-    <div 
+    <div
       className="h-screen w-full snap-start snap-always relative flex items-center justify-center"
       onClick={() => setShowOverlay(!showOverlay)}
     >
@@ -324,9 +322,9 @@ function FeedCard({ item, isActive, onExpand }: FeedCardProps) {
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <ClayMascot 
-                field={item.field} 
-                size="lg" 
+              <ClayMascot
+                field={item.field}
+                size="lg"
                 animation={isActive ? 'wave' : 'idle'}
                 className="mx-auto"
               />
@@ -374,7 +372,7 @@ function FeedCard({ item, isActive, onExpand }: FeedCardProps) {
       <div className="absolute right-4 bottom-32 flex flex-col gap-6">
         {/* Mute/Unmute button - only show if video exists */}
         {item.videoUrl && (
-          <button 
+          <button
             onClick={toggleMute}
             className="flex flex-col items-center gap-2"
           >
@@ -395,7 +393,7 @@ function FeedCard({ item, isActive, onExpand }: FeedCardProps) {
         )}
 
         {/* Learn/Watch button */}
-        <button 
+        <button
           onClick={(e) => { e.stopPropagation(); onExpand(); }}
           className="flex flex-col items-center gap-2"
         >
@@ -409,13 +407,12 @@ function FeedCard({ item, isActive, onExpand }: FeedCardProps) {
         </button>
 
         {/* Bookmark button */}
-        <button 
+        <button
           onClick={(e) => { e.stopPropagation(); setBookmarked(!bookmarked); }}
           className="flex flex-col items-center gap-2"
         >
-          <div className={`w-16 h-16 rounded-full backdrop-blur-sm flex items-center justify-center transition-all hover:scale-110 shadow-lg ${
-            bookmarked ? 'bg-sage text-white' : 'bg-white/20 text-white hover:bg-white/30'
-          }`}>
+          <div className={`w-16 h-16 rounded-full backdrop-blur-sm flex items-center justify-center transition-all hover:scale-110 shadow-lg ${bookmarked ? 'bg-sage text-white' : 'bg-white/20 text-white hover:bg-white/30'
+            }`}>
             <svg className="w-8 h-8" fill={bookmarked ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
             </svg>
@@ -426,16 +423,16 @@ function FeedCard({ item, isActive, onExpand }: FeedCardProps) {
 
       {/* Expand overlay */}
       {showOverlay && (
-        <div 
+        <div
           className="absolute inset-0 bg-charcoal/95 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in"
           onClick={(e) => { e.stopPropagation(); setShowOverlay(false); }}
         >
           <div className="text-center p-6 max-w-md mx-auto" onClick={(e) => e.stopPropagation()}>
             {/* Mascot */}
             <div className="mb-6">
-              <ClayMascot 
-                field={item.field} 
-                size="md" 
+              <ClayMascot
+                field={item.field}
+                size="md"
                 animation="wave"
                 className="mx-auto"
               />
@@ -443,7 +440,7 @@ function FeedCard({ item, isActive, onExpand }: FeedCardProps) {
 
             {/* Title */}
             <h3 className="text-2xl font-semibold text-white mb-3">{item.title}</h3>
-            
+
             {/* Summary */}
             <p className="text-white/70 text-sm mb-6 leading-relaxed">
               {item.summary}
@@ -468,13 +465,13 @@ function FeedCard({ item, isActive, onExpand }: FeedCardProps) {
 
             {/* Actions */}
             <div className="flex flex-col gap-3">
-              <button 
+              <button
                 onClick={(e) => { e.stopPropagation(); onExpand(); }}
                 className="px-6 py-4 bg-coral text-white rounded-xl font-medium hover:bg-coral/90 transition-colors"
               >
                 Start Learning
               </button>
-              <button 
+              <button
                 onClick={(e) => { e.stopPropagation(); setShowOverlay(false); }}
                 className="px-6 py-4 bg-white/10 text-white rounded-xl font-medium hover:bg-white/20 transition-colors"
               >

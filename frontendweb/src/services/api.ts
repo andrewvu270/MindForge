@@ -123,9 +123,17 @@ export const apiService = {
     return data;
   },
 
+  getDailyChallengeProgress: async (userId: string) => {
+    const { data } = await api.get(`/api/progress/${userId}/daily-challenge`);
+    return data;
+  },
+
   // Lesson completion
-  completeLesson: async (lessonId: string, userId: string) => {
-    const { data } = await api.post(`/api/lessons/${lessonId}/complete`, { user_id: userId });
+  completeLesson: async (lessonId: string, userId: string, timeSpentSeconds?: number) => {
+    const { data } = await api.post(`/api/progress/${userId}/lessons/${lessonId}/complete`, {
+      user_id: userId,
+      time_spent_seconds: timeSpentSeconds || 300
+    });
     return data;
   },
 
@@ -188,6 +196,20 @@ export const apiService = {
       lesson_id: lessonId,
       lesson_content: lessonContent,
       num_cards: numCards
+    });
+    return data;
+  },
+
+  // Learning Paths
+  getLearningPaths: async (fieldId: string) => {
+    const { data } = await api.get(`/api/learning-paths/${fieldId}`);
+    return data;
+  },
+
+  generateLearningPaths: async (fieldId: string, fieldName: string) => {
+    const { data } = await api.post('/api/learning-paths/generate', {
+      field_id: fieldId,
+      field_name: fieldName
     });
     return data;
   },

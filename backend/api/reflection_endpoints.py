@@ -48,57 +48,61 @@ async def get_daily_reflection_prompt():
     Returns:
         Daily reflection prompt
     """
+    # Fallback prompts if database is empty or fails
+    fallback_prompts = [
+        {
+            "id": "prompt_1",
+            "prompt": "Describe a recent situation where you successfully influenced someone's decision. What techniques did you use?",
+            "category": "influence",
+            "difficulty": "beginner"
+        },
+        {
+            "id": "prompt_2",
+            "prompt": "Reflect on a time when your attempt to persuade someone failed. What could you have done differently?",
+            "category": "influence",
+            "difficulty": "intermediate"
+        },
+        {
+            "id": "prompt_3",
+            "prompt": "How do you adapt your communication style when speaking to different audiences? Provide specific examples.",
+            "category": "influence",
+            "difficulty": "intermediate"
+        },
+        {
+            "id": "prompt_4",
+            "prompt": "What did you learn today? How can you apply this knowledge?",
+            "category": "learning",
+            "difficulty": "beginner"
+        }
+    ]
+    
     try:
         client = db.client
         
         # Get all prompts
         response = client.table("reflection_prompts").select("*").execute()
         
-        if not response.data:
-            # Fallback prompts if database is empty
-            fallback_prompts = [
-                {
-                    "id": "prompt_1",
-                    "prompt": "Describe a recent situation where you successfully influenced someone's decision. What techniques did you use?",
-                    "category": "influence",
-                    "difficulty": "beginner"
-                },
-                {
-                    "id": "prompt_2",
-                    "prompt": "Reflect on a time when your attempt to persuade someone failed. What could you have done differently?",
-                    "category": "influence",
-                    "difficulty": "intermediate"
-                },
-                {
-                    "id": "prompt_3",
-                    "prompt": "How do you adapt your communication style when speaking to different audiences? Provide specific examples.",
-                    "category": "influence",
-                    "difficulty": "intermediate"
-                }
-            ]
+        if not response.data or len(response.data) == 0:
             prompts = fallback_prompts
         else:
             prompts = response.data
         
-        # Select a prompt based on day of year (consistent for the day)
-        day_of_year = date.today().timetuple().tm_yday
-        prompt_index = day_of_year % len(prompts)
-        daily_prompt = prompts[prompt_index]
-        
-        return {
-            "prompt_id": daily_prompt.get("id"),
-            "prompt": daily_prompt.get("prompt"),
-            "category": daily_prompt.get("category", "influence"),
-            "difficulty": daily_prompt.get("difficulty", "beginner"),
-            "date": date.today().isoformat()
-        }
-        
     except Exception as e:
-        logger.error(f"Failed to fetch daily prompt: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to fetch prompt: {str(e)}"
-        )
+        logger.warning(f"Failed to fetch prompts from database, using fallback: {e}")
+        prompts = fallback_prompts
+    
+    # Select a prompt based on day of year (consistent for the day)
+    day_of_year = date.today().timetuple().tm_yday
+    prompt_index = day_of_year % len(prompts)
+    daily_prompt = prompts[prompt_index]
+    
+    return {
+        "prompt_id": daily_prompt.get("id"),
+        "prompt": daily_prompt.get("prompt"),
+        "category": daily_prompt.get("category", "learning"),
+        "difficulty": daily_prompt.get("difficulty", "beginner"),
+        "date": date.today().isoformat()
+    }
 
 
 @router.post("", response_model=ReflectionResponse)

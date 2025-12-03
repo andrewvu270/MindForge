@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { apiService } from '../services/api';
 import Navbar from '../components/Navbar';
-import ClayMascot, { MascotLoader } from '../components/ClayMascot';
+import ClayMascot from '../components/ClayMascot';
+import { LottieLoader } from '../components/LottieEnhanced';
 
 export default function Lessons() {
   const [lessons, setLessons] = useState<any[]>([]);
@@ -33,20 +34,20 @@ export default function Lessons() {
     return fieldData.find(f => f.name === fieldName) || fieldData[0];
   };
 
-  const selectedFieldData = selectedField 
+  const selectedFieldData = selectedField
     ? (() => {
-        const field = fields.find(f => f.id === selectedField);
-        return getFieldData(field?.name || 'Technology');
-      })()
+      const field = fields.find(f => f.id === selectedField);
+      return getFieldData(field?.name || 'Technology');
+    })()
     : null;
 
   return (
     <div className="min-h-screen bg-cream">
       <Navbar />
-      
+
       <div className="max-w-6xl mx-auto px-6 py-12">
         {loading ? (
-          <MascotLoader field="Technology" message="Loading lessons..." />
+          <LottieLoader message="Loading lessons..." />
         ) : !selectedField ? (
           /* STEP 1: Field Selection */
           <>
@@ -66,7 +67,7 @@ export default function Lessons() {
                 const fieldObj = fields.find(f => f.name === field.name);
                 const fieldLessons = fieldObj ? lessons.filter(l => l.field_id === fieldObj.id) : [];
                 const lessonCount = fieldLessons.length;
-                
+
                 return (
                   <button
                     key={field.name}
@@ -90,24 +91,24 @@ export default function Lessons() {
                       <div className="flex justify-center mb-6 transform group-hover:scale-110 transition-transform duration-300">
                         <ClayMascot field={field.name} size="lg" animation="idle" />
                       </div>
-                      
+
                       {/* Field name */}
                       <h3 className="text-2xl font-semibold text-charcoal mb-2 text-center">
                         {field.name}
                       </h3>
-                      
+
                       {/* Description */}
                       <p className="text-sm text-muted text-center mb-6 flex-1">
                         {field.description}
                       </p>
-                      
+
                       {/* Stats footer */}
                       <div className="pt-4 border-t border-charcoal/10 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span className="text-2xl font-bold text-charcoal">{lessonCount}</span>
                           <span className="text-xs text-muted">lessons</span>
                         </div>
-                        
+
                         {/* Arrow indicator */}
                         <div className="w-8 h-8 rounded-full bg-charcoal/5 group-hover:bg-charcoal group-hover:text-white flex items-center justify-center transition-all">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,10 +160,10 @@ export default function Lessons() {
               <div className={`card-${selectedFieldData.color} mb-8 animate-slide-up`}>
                 <div className="flex items-center gap-6">
                   <div className="transform hover:scale-110 transition-transform">
-                    <ClayMascot 
-                      field={selectedFieldData.name} 
-                      size="lg" 
-                      animation="wave" 
+                    <ClayMascot
+                      field={selectedFieldData.name}
+                      size="lg"
+                      animation="wave"
                     />
                   </div>
                   <div className="flex-1">
@@ -204,9 +205,9 @@ export default function Lessons() {
             ) : (
               <div className="space-y-3 stagger">
                 {lessons.map((lesson, index) => (
-                  <Link 
-                    key={lesson.id} 
-                    to={`/lessons/${lesson.id}`} 
+                  <Link
+                    key={lesson.id}
+                    to={`/lessons/${lesson.id}`}
                     className="card flex items-center gap-4 group hover:shadow-xl transition-all hover:scale-[1.02]"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >

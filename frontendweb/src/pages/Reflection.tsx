@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { apiService } from '../services/api';
 import Navbar from '../components/Navbar';
+import { LottieLoader } from '../components/LottieEnhanced';
 
 export default function Reflection() {
   const [prompt, setPrompt] = useState<any>(null);
@@ -33,7 +34,7 @@ export default function Reflection() {
     try {
       const result = await apiService.submitReflection('user_1', response);
       setFeedback(result.feedback);
-      
+
       // Analyze reflection for topics (FREE)
       try {
         const analysis = await apiService.analyzeReflection('user_1', response);
@@ -52,9 +53,7 @@ export default function Reflection() {
     return (
       <div className="min-h-screen bg-cream">
         <Navbar />
-        <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-coral border-t-transparent rounded-full animate-spin" />
-        </div>
+        <LottieLoader message="Loading reflection..." />
       </div>
     );
   }
@@ -62,7 +61,7 @@ export default function Reflection() {
   return (
     <div className="min-h-screen bg-cream">
       <Navbar />
-      
+
       <div className="max-w-2xl mx-auto px-6 py-12">
         {/* Header */}
         <div className="mb-8">
@@ -115,9 +114,9 @@ export default function Reflection() {
             />
             <div className="flex justify-between items-center">
               <span className="text-xs text-muted">{response.length} characters · aim for 100+</span>
-              <button 
-                onClick={handleSubmit} 
-                disabled={!response.trim() || response.length < 20 || submitting} 
+              <button
+                onClick={handleSubmit}
+                disabled={!response.trim() || response.length < 20 || submitting}
                 className="btn-primary disabled:opacity-40"
               >
                 {submitting ? 'Analyzing...' : 'Submit reflection'}
@@ -181,7 +180,7 @@ export default function Reflection() {
             <div className="card bg-lavender-light">
               <p className="text-sm font-medium text-charcoal mb-3">What's next?</p>
               <p className="text-sm text-muted mb-4">
-                Your reflection has been saved. Come back tomorrow for a new prompt. 
+                Your reflection has been saved. Come back tomorrow for a new prompt.
                 Consistent reflection builds deeper understanding over time.
               </p>
               <div className="flex gap-3">

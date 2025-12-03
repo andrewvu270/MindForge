@@ -1,56 +1,127 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, type ReactElement } from 'react';
 import Lottie, { type LottieRefCurrentProps } from 'lottie-react';
 
-// Free Lottie animations from public CDN
-// These are actual working Lottie files
-const animations = {
-  // Celebrations
-  celebration: 'https://lottie.host/4db68bbd-31f6-4cd8-84eb-189572c9b4d1/HhSAYRgZlR.json',
-  confetti: 'https://assets2.lottiefiles.com/packages/lf20_touohxv0.json',
-  trophy: 'https://assets9.lottiefiles.com/packages/lf20_atipemkz.json',
-  success: 'https://assets4.lottiefiles.com/packages/lf20_jbrw3hcz.json',
-  
-  // Learning
-  book: 'https://assets10.lottiefiles.com/packages/lf20_1a8dx7zj.json',
-  brain: 'https://assets1.lottiefiles.com/packages/lf20_vnikrcia.json',
-  lightbulb: 'https://assets5.lottiefiles.com/packages/lf20_uu0x8lqv.json',
-  rocket: 'https://assets4.lottiefiles.com/packages/lf20_fclga8fl.json',
-  
-  // Progress
-  loading: 'https://assets9.lottiefiles.com/packages/lf20_a2chheio.json',
-  checkmark: 'https://assets3.lottiefiles.com/packages/lf20_jk6c1n2n.json',
-  fire: 'https://assets2.lottiefiles.com/packages/lf20_yd3oqjqm.json',
-  star: 'https://assets1.lottiefiles.com/packages/lf20_zyquagfl.json',
-  
-  // Fields
-  tech: 'https://assets7.lottiefiles.com/packages/lf20_qmfs6c3i.json',
-  finance: 'https://assets8.lottiefiles.com/packages/lf20_myejiggj.json',
-  globe: 'https://assets6.lottiefiles.com/packages/lf20_kcsr6fcp.json',
-  chart: 'https://assets5.lottiefiles.com/packages/lf20_qmzocmgg.json',
+// Animation types for CSS fallbacks
+type AnimationType = 'celebration' | 'confetti' | 'trophy' | 'success' | 'book' | 'brain' |
+  'lightbulb' | 'rocket' | 'loading' | 'checkmark' | 'fire' | 'star' | 'tech' | 'finance' | 'globe' | 'chart';
+
+// CSS-based animated fallbacks (no external dependencies)
+const CSSFallback = ({ animation, size }: { animation: AnimationType; size: string }): ReactElement => {
+  const fallbacks: Record<AnimationType, ReactElement> = {
+    celebration: (
+      <div className={`${size} relative flex items-center justify-center`}>
+        <div className="absolute inset-0 bg-honey/30 rounded-full animate-ping" />
+        <span className="text-4xl animate-bounce">🎉</span>
+      </div>
+    ),
+    confetti: (
+      <div className={`${size} relative flex items-center justify-center`}>
+        <span className="text-4xl animate-bounce">🎊</span>
+      </div>
+    ),
+    trophy: (
+      <div className={`${size} relative flex items-center justify-center`}>
+        <div className="absolute inset-0 bg-honey/20 rounded-full animate-pulse" />
+        <span className="text-4xl animate-bounce">🏆</span>
+      </div>
+    ),
+    success: (
+      <div className={`${size} relative flex items-center justify-center`}>
+        <div className="absolute inset-0 bg-sage/30 rounded-full animate-ping" />
+        <span className="text-4xl">✅</span>
+      </div>
+    ),
+    book: (
+      <div className={`${size} relative flex items-center justify-center`}>
+        <div className="absolute inset-0 bg-coral/20 rounded-lg animate-pulse" />
+        <span className="text-4xl">📚</span>
+      </div>
+    ),
+    brain: (
+      <div className={`${size} relative flex items-center justify-center`}>
+        <div className="absolute inset-0 bg-lavender/30 rounded-full animate-pulse" />
+        <span className="text-4xl">🧠</span>
+      </div>
+    ),
+    lightbulb: (
+      <div className={`${size} relative flex items-center justify-center`}>
+        <div className="absolute inset-0 bg-honey/30 rounded-full animate-ping opacity-50" />
+        <span className="text-4xl">💡</span>
+      </div>
+    ),
+    rocket: (
+      <div className={`${size} relative flex items-center justify-center`}>
+        <span className="text-4xl animate-bounce">🚀</span>
+      </div>
+    ),
+    loading: (
+      <div className={`${size} relative flex items-center justify-center`}>
+        <div className="w-12 h-12 border-4 border-coral/30 border-t-coral rounded-full animate-spin" />
+      </div>
+    ),
+    checkmark: (
+      <div className={`${size} relative flex items-center justify-center`}>
+        <div className="absolute inset-0 bg-sage/20 rounded-full" />
+        <span className="text-4xl">✓</span>
+      </div>
+    ),
+    fire: (
+      <div className={`${size} relative flex items-center justify-center`}>
+        <span className="text-4xl animate-pulse">🔥</span>
+      </div>
+    ),
+    star: (
+      <div className={`${size} relative flex items-center justify-center`}>
+        <div className="absolute inset-0 bg-honey/20 rounded-full animate-ping opacity-50" />
+        <span className="text-4xl">⭐</span>
+      </div>
+    ),
+    tech: (
+      <div className={`${size} relative flex items-center justify-center`}>
+        <div className="absolute inset-0 bg-sky/20 rounded-lg animate-pulse" />
+        <span className="text-4xl">💻</span>
+      </div>
+    ),
+    finance: (
+      <div className={`${size} relative flex items-center justify-center`}>
+        <div className="absolute inset-0 bg-sage/20 rounded-lg animate-pulse" />
+        <span className="text-4xl">📈</span>
+      </div>
+    ),
+    globe: (
+      <div className={`${size} relative flex items-center justify-center`}>
+        <span className="text-4xl animate-spin-slow">🌍</span>
+      </div>
+    ),
+    chart: (
+      <div className={`${size} relative flex items-center justify-center`}>
+        <div className="absolute inset-0 bg-honey/20 rounded-lg animate-pulse" />
+        <span className="text-4xl">📊</span>
+      </div>
+    ),
+  };
+
+  return fallbacks[animation] || fallbacks.loading;
 };
 
 interface LottieEnhancedProps {
-  animation: keyof typeof animations;
+  animation: AnimationType;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   loop?: boolean;
-  autoplay?: boolean;
-  speed?: number;
   className?: string;
   onComplete?: () => void;
+  animationData?: any; // JSON data for Lottie
 }
 
 export default function LottieEnhanced({
   animation,
   size = 'md',
   loop = true,
-  autoplay = true,
-  speed = 1,
   className = '',
   onComplete,
+  animationData,
 }: LottieEnhancedProps) {
   const lottieRef = useRef<LottieRefCurrentProps>(null);
-  const [animationData, setAnimationData] = useState<any>(null);
-  const [error, setError] = useState(false);
 
   const sizeClasses = {
     sm: 'w-16 h-16',
@@ -59,47 +130,33 @@ export default function LottieEnhanced({
     xl: 'w-48 h-48',
   };
 
+  // Trigger onComplete after animation cycle for non-looping animations
   useEffect(() => {
-    const loadAnimation = async () => {
-      try {
-        const url = animations[animation];
-        const response = await fetch(url);
-        const data = await response.json();
-        setAnimationData(data);
-      } catch (err) {
-        console.error('Failed to load animation:', err);
-        setError(true);
-      }
-    };
-
-    loadAnimation();
-  }, [animation]);
-
-  useEffect(() => {
-    if (lottieRef.current) {
-      lottieRef.current.setSpeed(speed);
+    if (!loop && onComplete && !animationData) {
+      const timer = setTimeout(onComplete, 1500);
+      return () => clearTimeout(timer);
     }
-  }, [speed]);
+  }, [loop, onComplete, animationData]);
 
-  if (error || !animationData) {
-    // Fallback to simple CSS animation
+  // If Lottie data is provided, use lottie-react
+  if (animationData) {
     return (
-      <div className={`${sizeClasses[size]} ${className} flex items-center justify-center`}>
-        <div className="w-full h-full rounded-full bg-coral/20 animate-pulse" />
+      <div className={`${sizeClasses[size]} ${className}`}>
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={animationData}
+          loop={loop}
+          onComplete={onComplete}
+          className="w-full h-full"
+        />
       </div>
     );
   }
 
+  // Use CSS fallbacks - more reliable than external Lottie CDN if no data provided
   return (
     <div className={`${sizeClasses[size]} ${className}`}>
-      <Lottie
-        lottieRef={lottieRef}
-        animationData={animationData}
-        loop={loop}
-        autoplay={autoplay}
-        onComplete={onComplete}
-        style={{ width: '100%', height: '100%' }}
-      />
+      <CSSFallback animation={animation} size="w-full h-full" />
     </div>
   );
 }
@@ -138,13 +195,20 @@ export function LottieCelebration({
 export function LottieLoader({
   message = 'Loading...',
   animation = 'loading',
+  animationData,
 }: {
   message?: string;
-  animation?: keyof typeof animations;
+  animation?: AnimationType;
+  animationData?: any;
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-12">
-      <LottieEnhanced animation={animation} size="md" className="mb-4" />
+      <LottieEnhanced
+        animation={animation}
+        size="md"
+        className="mb-4"
+        animationData={animationData}
+      />
       <p className="text-muted animate-pulse">{message}</p>
     </div>
   );
@@ -157,7 +221,6 @@ export function StreakFire({ days }: { days: number }) {
       <LottieEnhanced
         animation="fire"
         size="sm"
-        speed={days >= 30 ? 1.5 : days >= 7 ? 1.2 : 1}
       />
       <span className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs">
         {days}
@@ -170,4 +233,3 @@ export function StreakFire({ days }: { days: number }) {
 export function SuccessCheck({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
   return <LottieEnhanced animation="checkmark" size={size} loop={false} />;
 }
-

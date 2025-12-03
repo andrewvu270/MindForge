@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { apiService } from '../services/api';
 import ClayMascot from '../components/ClayMascot';
+import { LottieLoader } from '../components/LottieEnhanced';
 
 export default function LearnVideo() {
   const { id } = useParams();
@@ -36,8 +37,7 @@ export default function LearnVideo() {
     return (
       <div className="min-h-screen bg-charcoal flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-3 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-white/60">Loading video...</p>
+          <LottieLoader message="Loading video..." />
         </div>
       </div>
     );
@@ -62,7 +62,7 @@ export default function LearnVideo() {
       {/* Header */}
       <div className="sticky top-0 z-40 bg-charcoal/80 backdrop-blur-md border-b border-white/10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <button 
+          <button
             onClick={() => navigate(`/lessons/${id}`)}
             className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
           >
@@ -71,12 +71,12 @@ export default function LearnVideo() {
             </svg>
             Back
           </button>
-          
+
           <h2 className="text-white font-medium truncate max-w-md">{lesson.title}</h2>
-          
-          <ClayMascot 
-            field={lesson.field_name || 'Technology'} 
-            size="sm" 
+
+          <ClayMascot
+            field={lesson.field_name || 'Technology'}
+            size="sm"
             animation="idle"
           />
         </div>
@@ -96,27 +96,27 @@ export default function LearnVideo() {
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
             />
-            
+
             {/* Overlay info */}
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
               <h3 className="text-white font-semibold text-lg mb-1">{lesson.title}</h3>
               <p className="text-white/70 text-sm">{lesson.field_name} • {lesson.difficulty_level}</p>
             </div>
           </div>
-          
+
           {/* Actions below video */}
           <div className="flex gap-4 mt-6">
-            <Link 
+            <Link
               to={`/learn/read/${id}`}
               className="btn-secondary px-6 py-3"
             >
               📖 Read Mode
             </Link>
-            <Link 
+            <Link
               to={`/quiz/${id}`}
               className="btn-primary px-6 py-3"
             >
-              🎯 Take Quiz
+              Take Quiz
             </Link>
           </div>
         </div>
@@ -125,9 +125,9 @@ export default function LearnVideo() {
         <div className="max-w-4xl mx-auto px-6 py-20">
           <div className="text-center">
             <div className="mb-8 animate-float">
-              <ClayMascot 
-                field={lesson.field_name || 'Technology'} 
-                size="lg" 
+              <ClayMascot
+                field={lesson.field_name || 'Technology'}
+                size="lg"
                 animation="wave"
                 className="mx-auto"
               />
@@ -136,22 +136,22 @@ export default function LearnVideo() {
             <h1 className="text-4xl font-semibold text-white mb-4">
               {videoError ? 'Video Unavailable' : 'Video Coming Soon!'}
             </h1>
-            
+
             <p className="text-xl text-white/60 mb-8 max-w-2xl mx-auto">
-              {videoError 
+              {videoError
                 ? 'There was an issue loading this video. Try our other learning modes instead.'
                 : 'This lesson doesn\'t have a video yet. Try our other learning modes in the meantime.'
               }
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link 
+              <Link
                 to={`/learn/read/${id}`}
                 className="btn-primary px-8 py-4"
               >
                 Try Deep Read Mode
               </Link>
-              <Link 
+              <Link
                 to={`/learn/${id}`}
                 className="btn-secondary px-8 py-4"
               >

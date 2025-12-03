@@ -40,6 +40,7 @@ const LearnScreen = ({ navigation }: { navigation: any }) => {
         color: '#3B82F6',
         total_lessons: 62,
         image: require('../assets/clay/scene_tech.png'),
+        mascot: require('../assets/clay/tech-mascot.png'),
         progress: 73,
       },
       {
@@ -50,6 +51,7 @@ const LearnScreen = ({ navigation }: { navigation: any }) => {
         color: '#10B981',
         total_lessons: 45,
         image: require('../assets/clay/scene_finance.png'),
+        mascot: require('../assets/clay/finance-mascot.png'),
         progress: 58,
       },
       {
@@ -60,6 +62,7 @@ const LearnScreen = ({ navigation }: { navigation: any }) => {
         color: '#F59E0B',
         total_lessons: 38,
         image: require('../assets/clay/scene_finance.png'),
+        mascot: require('../assets/clay/econ-mascot.png'),
         progress: 42,
       },
       {
@@ -70,6 +73,7 @@ const LearnScreen = ({ navigation }: { navigation: any }) => {
         color: '#8B5CF6',
         total_lessons: 28,
         image: require('../assets/clay/scene_culture.png'),
+        mascot: require('../assets/clay/culture-mascot.png'),
         progress: 85,
       },
       {
@@ -80,6 +84,7 @@ const LearnScreen = ({ navigation }: { navigation: any }) => {
         color: '#EF4444',
         total_lessons: 33,
         image: require('../assets/clay/scene_culture.png'),
+        mascot: require('../assets/clay/influence-mascot.png'),
         progress: 67,
       },
       {
@@ -90,6 +95,7 @@ const LearnScreen = ({ navigation }: { navigation: any }) => {
         color: '#06B6D4',
         total_lessons: 41,
         image: require('../assets/clay/scene_global.png'),
+        mascot: require('../assets/clay/global-mascot.png'),
         progress: 31,
       },
     ]);
@@ -108,7 +114,7 @@ const LearnScreen = ({ navigation }: { navigation: any }) => {
         <Text style={styles.title}>Learning Fields</Text>
         <Text style={styles.subtitle}>Choose your area of focus</Text>
       </View>
-      
+
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>247</Text>
@@ -137,10 +143,10 @@ const LearnScreen = ({ navigation }: { navigation: any }) => {
           ]}
           onPress={() => setSelectedCategory(category.id)}
         >
-          <Ionicons 
-            name={category.icon as any} 
-            size={16} 
-            color={selectedCategory === category.id ? '#FFFFFF' : theme.colors.textLight} 
+          <Ionicons
+            name={category.icon as any}
+            size={16}
+            color={selectedCategory === category.id ? '#FFFFFF' : theme.colors.textLight}
           />
           <Text style={[
             styles.categoryText,
@@ -158,9 +164,13 @@ const LearnScreen = ({ navigation }: { navigation: any }) => {
     if (!featured) return null;
 
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.featuredCard}
-        onPress={() => navigation.navigate('Lessons', { fieldId: featured.id })}
+        onPress={() => navigation.navigate('Curriculum', {
+          fieldId: featured.id,
+          fieldName: featured.name,
+          color: featured.color
+        })}
       >
         <LinearGradient
           colors={[featured.color + 'DD', featured.color + '99']}
@@ -177,21 +187,21 @@ const LearnScreen = ({ navigation }: { navigation: any }) => {
                 <Text style={styles.featuredBadgeText}>Featured</Text>
               </View>
             </View>
-            
+
             <Text style={styles.featuredTitle}>{featured.name}</Text>
             <Text style={styles.featuredDescription}>{featured.description}</Text>
-            
+
             <View style={styles.featuredFooter}>
               <View style={styles.featuredProgress}>
                 <Text style={styles.featuredProgressText}>
                   {featured.total_lessons} lessons
                 </Text>
                 <View style={styles.featuredProgressBar}>
-                  <View 
+                  <View
                     style={[
                       styles.featuredProgressFill,
                       { width: `${featured.progress || 0}%` }
-                    ]} 
+                    ]}
                   />
                 </View>
               </View>
@@ -216,7 +226,7 @@ const LearnScreen = ({ navigation }: { navigation: any }) => {
         {renderFeaturedCard()}
 
         <Text style={styles.sectionTitle}>All Fields</Text>
-        
+
         {loading ? (
           <Text style={styles.loadingText}>Loading fields...</Text>
         ) : (
@@ -231,8 +241,13 @@ const LearnScreen = ({ navigation }: { navigation: any }) => {
                 color={field.color}
                 image={field.image}
                 icon={field.icon}
+                mascot={field.mascot}
                 progress={field.progress}
-                onPress={() => navigation.navigate('Lessons', { fieldId: field.id })}
+                onPress={() => navigation.navigate('Curriculum', {
+                  fieldId: field.id,
+                  fieldName: field.name,
+                  color: field.color
+                })}
               />
             ))}
           </View>

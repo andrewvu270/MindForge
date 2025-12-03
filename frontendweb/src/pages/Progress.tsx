@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { apiService } from '../services/api';
 import Navbar from '../components/Navbar';
-import ClayMascot, { MascotLoader } from '../components/ClayMascot';
-import { StreakFire } from '../components/LottieEnhanced';
+import ClayMascot from '../components/ClayMascot';
+import { StreakFire, LottieLoader } from '../components/LottieEnhanced';
 
 export default function Progress() {
   const [progress, setProgress] = useState<any>(null);
@@ -17,7 +17,7 @@ export default function Progress() {
     return (
       <div className="min-h-screen bg-cream">
         <Navbar />
-        <MascotLoader field="User" message="Loading your progress..." />
+        <LottieLoader message="Loading your progress..." />
       </div>
     );
   }
@@ -30,13 +30,13 @@ export default function Progress() {
   return (
     <div className="min-h-screen bg-cream">
       <Navbar />
-      
+
       <div className="max-w-3xl mx-auto px-6 py-12">
         {/* Header */}
         <div className="mb-8 text-center animate-slide-up">
-          <ClayMascot 
-            field="User" 
-            size="md" 
+          <ClayMascot
+            field="User"
+            size="md"
             animation={totalLessons > 10 ? 'celebrate' : 'wave'}
             className="mx-auto mb-4"
           />
@@ -85,7 +85,7 @@ export default function Progress() {
                     'Global Events': 'bg-rose',
                   };
                   const color = colors[f.field_name] || 'bg-coral';
-                  
+
                   return (
                     <div key={f.field_id}>
                       <div className="flex justify-between items-center mb-2">
@@ -96,9 +96,9 @@ export default function Progress() {
                         <span className="text-sm text-muted">{f.completed_lessons || 0} lessons</span>
                       </div>
                       <div className="w-full bg-cream-dark rounded-full h-2 overflow-hidden">
-                        <div 
+                        <div
                           className={`${color} h-full rounded-full transition-all duration-1000`}
-                          style={{ width: `${percentage}%` }} 
+                          style={{ width: `${percentage}%` }}
                         />
                       </div>
                     </div>
@@ -121,8 +121,8 @@ export default function Progress() {
               <div className="flex flex-wrap gap-2">
                 {/* These would come from actual completed lessons in production */}
                 {['Market fundamentals', 'AI basics', 'Economic indicators', 'Negotiation principles', 'Tech trends', 'Global trade'].slice(0, Math.min(6, totalLessons)).map((topic, i) => (
-                  <span 
-                    key={topic} 
+                  <span
+                    key={topic}
                     className="px-3 py-1.5 bg-sage-light text-sage text-sm rounded-full animate-scale-in"
                     style={{ animationDelay: `${i * 0.1}s` }}
                   >
@@ -151,9 +151,8 @@ export default function Progress() {
                       {new Date(q.completed_at).toLocaleDateString()}
                     </div>
                   </div>
-                  <div className={`text-lg font-semibold ${
-                    q.score >= 80 ? 'text-sage' : q.score >= 60 ? 'text-honey' : 'text-coral'
-                  }`}>
+                  <div className={`text-lg font-semibold ${q.score >= 80 ? 'text-sage' : q.score >= 60 ? 'text-honey' : 'text-coral'
+                    }`}>
                     {q.score}%
                   </div>
                 </div>

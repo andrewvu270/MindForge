@@ -3,19 +3,24 @@ import { Link } from 'react-router-dom';
 import { apiService } from '../services/api';
 import Navbar from '../components/Navbar';
 import ClayMascot from '../components/ClayMascot';
+import { LottieLoader } from '../components/LottieEnhanced';
 
 export default function Dashboard() {
   const [stats, setStats] = useState<any>(null);
   const [todaysBriefing, setTodaysBriefing] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [dailyProgress, setDailyProgress] = useState<any>(null);
+
   useEffect(() => {
     Promise.all([
       apiService.getUserStats('user_1'),
       apiService.getLessons(''),
-    ]).then(([s, l]) => {
+      apiService.getDailyChallengeProgress('user_1'),
+    ]).then(([s, l, d]) => {
       setStats(s);
       setTodaysBriefing(l.slice(0, 3));
+      setDailyProgress(d);
     }).catch(console.error).finally(() => setLoading(false));
   }, []);
 
@@ -24,7 +29,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-cream">
       <Navbar />
-      
+
       <div className="max-w-3xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-6">
@@ -35,7 +40,7 @@ export default function Dashboard() {
         </div>
 
         {/* Main CTA - Video Feed */}
-        <Link 
+        <Link
           to="/feed"
           className="block mb-8 rounded-3xl overflow-hidden relative group"
         >
@@ -66,7 +71,9 @@ export default function Dashboard() {
               </div>
               <div>
                 <h3 className="font-medium text-charcoal group-hover:text-coral transition-colors">Daily Challenge</h3>
-                <p className="text-sm text-muted">0/4 completed · ~18 min</p>
+                <p className="text-sm text-muted">
+                  {dailyProgress?.completed_count || 0}/{dailyProgress?.total_count || 4} completed · ~18 min
+                </p>
               </div>
             </div>
             <div className="text-right">
@@ -126,15 +133,13 @@ export default function Dashboard() {
             <h2 className="text-lg font-semibold text-charcoal">Today's topics</h2>
             <Link to="/lessons" className="text-sm text-coral font-medium hover:underline">See all</Link>
           </div>
-          
+
           {loading ? (
-            <div className="flex justify-center py-8">
-              <div className="w-8 h-8 border-2 border-coral border-t-transparent rounded-full animate-spin" />
-            </div>
+            <LottieLoader message="Loading your briefing..." />
           ) : (
             <div className="space-y-3">
               {todaysBriefing.map((lesson, i) => (
-                <Link 
+                <Link
                   key={lesson.id}
                   to={`/learn/${lesson.id}`}
                   className="card flex items-center gap-4 group hover:shadow-lg transition-all"

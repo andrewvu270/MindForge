@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { apiService } from '../services/api';
 import Navbar from '../components/Navbar';
+import { LottieLoader } from '../components/LottieEnhanced';
 
 export default function ReflectionHistory() {
   const [reflections, setReflections] = useState<any[]>([]);
@@ -12,17 +13,15 @@ export default function ReflectionHistory() {
     apiService.getReflectionHistory('user_1').then(setReflections).catch(console.error).finally(() => setLoading(false));
   }, []);
 
-  const avgScore = reflections.length > 0 
-    ? Math.round(reflections.reduce((sum, r) => sum + (r.feedback?.quality_score || 0), 0) / reflections.length) 
+  const avgScore = reflections.length > 0
+    ? Math.round(reflections.reduce((sum, r) => sum + (r.feedback?.quality_score || 0), 0) / reflections.length)
     : 0;
 
   if (loading) {
     return (
       <div className="min-h-screen bg-cream">
         <Navbar />
-        <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-coral border-t-transparent rounded-full animate-spin" />
-        </div>
+        <LottieLoader message="Loading history..." />
       </div>
     );
   }
@@ -30,7 +29,7 @@ export default function ReflectionHistory() {
   return (
     <div className="min-h-screen bg-cream">
       <Navbar />
-      
+
       <div className="max-w-5xl mx-auto px-6 py-12">
         <div className="flex items-center justify-between mb-12 animate-slide-up">
           <div>
@@ -66,9 +65,9 @@ export default function ReflectionHistory() {
         ) : (
           <div className="grid md:grid-cols-2 gap-6 stagger">
             {reflections.map((r) => (
-              <div 
-                key={r.id} 
-                onClick={() => setSelected(r)} 
+              <div
+                key={r.id}
+                onClick={() => setSelected(r)}
                 className="card cursor-pointer hover:shadow-lg transition-all"
               >
                 <div className="flex justify-between items-start mb-4">
@@ -86,12 +85,12 @@ export default function ReflectionHistory() {
 
         {/* Modal */}
         {selected && (
-          <div 
-            className="fixed inset-0 bg-charcoal/40 backdrop-blur-sm flex items-center justify-center p-6 z-50" 
+          <div
+            className="fixed inset-0 bg-charcoal/40 backdrop-blur-sm flex items-center justify-center p-6 z-50"
             onClick={() => setSelected(null)}
           >
-            <div 
-              className="bg-warm-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8" 
+            <div
+              className="bg-warm-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-start mb-6">
@@ -100,19 +99,19 @@ export default function ReflectionHistory() {
                 </div>
                 <button onClick={() => setSelected(null)} className="text-2xl text-muted hover:text-charcoal">×</button>
               </div>
-              
+
               <h2 className="text-xl font-semibold text-charcoal mb-4">{selected.prompt}</h2>
-              
+
               <div className="mb-6 p-4 bg-coral-light rounded-2xl flex justify-between items-center">
                 <span className="font-medium text-charcoal">Quality Score</span>
                 <span className="text-2xl font-semibold text-coral">{selected.feedback?.quality_score || 0}</span>
               </div>
-              
+
               <div className="mb-6">
                 <h3 className="font-medium text-charcoal mb-2">Your Response</h3>
                 <p className="text-muted">{selected.response}</p>
               </div>
-              
+
               {selected.feedback && (
                 <div>
                   <h3 className="font-medium text-charcoal mb-2">Feedback</h3>

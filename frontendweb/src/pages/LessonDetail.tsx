@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { apiService } from '../services/api';
 import Navbar from '../components/Navbar';
-import ClayMascot, { MascotLoader } from '../components/ClayMascot';
+import ClayMascot from '../components/ClayMascot';
+import { LottieLoader } from '../components/LottieEnhanced';
 
 export default function LessonDetail() {
   const { id } = useParams();
@@ -18,7 +19,7 @@ export default function LessonDetail() {
     return (
       <div className="min-h-screen bg-cream">
         <Navbar />
-        <MascotLoader field="Technology" message="Loading lesson..." />
+        <LottieLoader message="Loading lesson..." animation="loading" />
       </div>
     );
   }
@@ -220,7 +221,7 @@ export default function LessonDetail() {
                 </div>
               </Link>
 
-              {/* 3. Card Swipe */}
+              {/* 3. Card Mode */}
               <Link
                 to={`/learn/${lesson.id}`}
                 className="card hover:shadow-xl transition-all group"
@@ -232,10 +233,10 @@ export default function LessonDetail() {
                     </svg>
                   </div>
                   <h3 className="font-semibold text-charcoal mb-2">
-                    Quick Swipe
+                    Card Mode
                   </h3>
                   <p className="text-sm text-muted mb-3">
-                    Bite-sized cards, TikTok-style
+                    Bite-sized cards to swipe through
                   </p>
                   <span className="text-xs text-muted">
                     ~{Math.ceil((lesson.estimated_minutes || 5) * 0.6)} min

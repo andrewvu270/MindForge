@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { apiService } from '../services/api';
 import ClayMascot from '../components/ClayMascot';
 import LottieAnimation from '../components/LottieAnimation';
+import { LottieLoader } from '../components/LottieEnhanced';
 
 export default function LearnRead() {
   const { id } = useParams();
@@ -24,12 +25,12 @@ export default function LearnRead() {
   useEffect(() => {
     const handleScroll = () => {
       if (!contentRef.current) return;
-      
+
       const element = contentRef.current;
       const scrollTop = window.scrollY;
       const scrollHeight = element.scrollHeight - window.innerHeight;
       const scrollProgress = (scrollTop / scrollHeight) * 100;
-      
+
       setProgress(Math.min(Math.max(scrollProgress, 0), 100));
     };
 
@@ -50,8 +51,7 @@ export default function LearnRead() {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-3 border-coral border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted">Loading lesson...</p>
+          <LottieLoader message="Loading lesson..." />
         </div>
       </div>
     );
@@ -75,9 +75,9 @@ export default function LearnRead() {
       {/* Progress Bar */}
       <div className="fixed top-0 left-0 right-0 z-50">
         <div className="h-1 bg-cream-dark">
-          <div 
-            className="h-full bg-coral transition-all duration-300" 
-            style={{ width: `${progress}%` }} 
+          <div
+            className="h-full bg-coral transition-all duration-300"
+            style={{ width: `${progress}%` }}
           />
         </div>
       </div>
@@ -85,7 +85,7 @@ export default function LearnRead() {
       {/* Header */}
       <div className="sticky top-1 z-40 bg-warm-white/80 backdrop-blur-md border-b border-cream-dark">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <button 
+          <button
             onClick={() => navigate(`/lessons/${id}`)}
             className="flex items-center gap-2 text-muted hover:text-charcoal transition-colors"
           >
@@ -94,12 +94,12 @@ export default function LearnRead() {
             </svg>
             <span className="hidden sm:inline">Back</span>
           </button>
-          
+
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted">{Math.round(progress)}%</span>
-            <ClayMascot 
-              field={lesson.field_name || 'Technology'} 
-              size="sm" 
+            <ClayMascot
+              field={lesson.field_name || 'Technology'}
+              size="sm"
               animation="idle"
             />
           </div>
@@ -112,9 +112,9 @@ export default function LearnRead() {
         <div className="mb-16 animate-slide-up">
           {/* Field Badge */}
           <div className="flex items-center gap-3 mb-6">
-            <ClayMascot 
-              field={lesson.field_name || 'Technology'} 
-              size="md" 
+            <ClayMascot
+              field={lesson.field_name || 'Technology'}
+              size="md"
               animation="wave"
             />
             <div>
@@ -153,7 +153,7 @@ export default function LearnRead() {
 
         {/* Animated Divider */}
         <div className="my-12 flex justify-center">
-          <LottieAnimation 
+          <LottieAnimation
             topic="learning"
             fallbackType="blob"
             fallbackColor="coral"
@@ -163,8 +163,8 @@ export default function LearnRead() {
         {/* Content Sections */}
         <div className="space-y-12">
           {contentSections.map((section: string, index: number) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="animate-fade-in"
               style={{ animationDelay: `${index * 200}ms` }}
             >
@@ -173,9 +173,9 @@ export default function LearnRead() {
                 {/* Mascot appears every 2 sections */}
                 {index % 2 === 0 && (
                   <div className="hidden md:block flex-shrink-0">
-                    <ClayMascot 
-                      field={lesson.field_name || 'Technology'} 
-                      size="md" 
+                    <ClayMascot
+                      field={lesson.field_name || 'Technology'}
+                      size="md"
                       animation={index % 4 === 0 ? 'think' : 'idle'}
                     />
                   </div>
@@ -201,9 +201,9 @@ export default function LearnRead() {
 
                 {index % 2 === 1 && (
                   <div className="hidden md:block flex-shrink-0">
-                    <ClayMascot 
-                      field={lesson.field_name || 'Technology'} 
-                      size="md" 
+                    <ClayMascot
+                      field={lesson.field_name || 'Technology'}
+                      size="md"
                       animation="idle"
                     />
                   </div>
@@ -241,8 +241,8 @@ export default function LearnRead() {
             </h3>
             <div className="grid md:grid-cols-2 gap-4">
               {lesson.sources.map((src: any, i: number) => (
-                <div 
-                  key={i} 
+                <div
+                  key={i}
                   className="card hover:shadow-lg transition-all"
                   style={{ animationDelay: `${i * 100}ms` }}
                 >
@@ -256,10 +256,10 @@ export default function LearnRead() {
                       )}
                     </div>
                     {src.url && (
-                      <a 
-                        href={src.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
+                      <a
+                        href={src.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="flex-shrink-0 p-2 rounded-lg hover:bg-cream transition-colors"
                       >
                         <svg className="w-5 h-5 text-coral" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -277,9 +277,9 @@ export default function LearnRead() {
         {/* Completion CTA */}
         <div className="my-16 text-center animate-scale-in">
           <div className="card bg-gradient-to-br from-coral-light to-lavender-light p-12">
-            <ClayMascot 
-              field={lesson.field_name || 'Technology'} 
-              size="lg" 
+            <ClayMascot
+              field={lesson.field_name || 'Technology'}
+              size="lg"
               animation="celebrate"
               className="mx-auto mb-6"
             />
@@ -290,14 +290,14 @@ export default function LearnRead() {
               Ready to test your knowledge? Take the quiz to see how much you've learned.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button 
+              <button
                 onClick={handleComplete}
                 className="btn-primary px-8 py-4 text-lg"
               >
                 Take the Quiz
               </button>
-              <Link 
-                to="/lessons" 
+              <Link
+                to="/lessons"
                 className="btn-secondary px-8 py-4 text-lg"
               >
                 Browse More Lessons

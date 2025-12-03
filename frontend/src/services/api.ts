@@ -1,12 +1,12 @@
-import { 
-  Field, 
-  Lesson, 
-  QuizQuestion, 
-  QuizSubmission, 
-  QuizResult, 
-  UserProgress, 
-  DailyChallenge, 
-  NewsItem 
+import {
+  Field,
+  Lesson,
+  QuizQuestion,
+  QuizSubmission,
+  QuizResult,
+  UserProgress,
+  DailyChallenge,
+  NewsItem
 } from '@/types';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
@@ -20,7 +20,7 @@ class ApiService {
 
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    
+
     try {
       const response = await fetch(url, {
         headers: {
@@ -51,7 +51,7 @@ class ApiService {
     const params = new URLSearchParams();
     if (fieldId) params.append('field_id', fieldId);
     if (difficulty) params.append('difficulty', difficulty);
-    
+
     const queryString = params.toString();
     return this.request<Lesson[]>(`/api/lessons${queryString ? `?${queryString}` : ''}`);
   }
@@ -136,6 +136,17 @@ class ApiService {
 
   async getUserAchievements(userId: string): Promise<any> {
     return this.request<any>(`/api/gamification/achievements/${userId}`);
+  }
+
+  // Curriculum
+  async getCurriculum(fieldId: string): Promise<any> {
+    return this.request<any>(`/api/curriculum/${fieldId}`);
+  }
+
+  async generateCurriculum(fieldId: string): Promise<any> {
+    return this.request<any>(`/api/curriculum/generate/${fieldId}`, {
+      method: 'POST',
+    });
   }
 }
 

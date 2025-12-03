@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import Navbar from '../components/Navbar';
+import { LottieLoader } from '../components/LottieEnhanced';
 
 export default function Calendar() {
   const navigate = useNavigate();
@@ -57,9 +58,7 @@ export default function Calendar() {
     return (
       <div className="min-h-screen bg-cream">
         <Navbar />
-        <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-coral border-t-transparent rounded-full animate-spin" />
-        </div>
+        <LottieLoader message="Loading calendar..." />
       </div>
     );
   }
@@ -69,7 +68,7 @@ export default function Calendar() {
   return (
     <div className="min-h-screen bg-cream">
       <Navbar />
-      
+
       <div className="max-w-5xl mx-auto px-6 py-12">
         <div className="mb-12 animate-slide-up">
           <h1 className="text-4xl md:text-5xl font-semibold text-charcoal tracking-tight mb-4">

@@ -18,6 +18,7 @@ export interface Field {
   color: string;
   total_lessons: number;
   image?: any;
+  mascot?: any;
   progress?: number;
 }
 

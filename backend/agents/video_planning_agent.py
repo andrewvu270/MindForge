@@ -237,7 +237,7 @@ Return as JSON:
         field: str
     ) -> List[str]:
         """
-        Generate detailed image prompts for each slide with Wes Anderson claymation mascot.
+        Generate detailed image prompts for each slide based on the video plan.
         
         Args:
             video_plan: Video plan from plan_video_structure
@@ -245,45 +245,25 @@ Return as JSON:
             field: Subject field
             
         Returns:
-            List of image generation prompts with mascot character
+            List of image generation prompts
         """
         prompts = []
         
-        # Mascot descriptions by field (Wes Anderson claymation style)
-        mascot_prompts = {
-            "tech": "Funny unique claymation mascot character, Wes Anderson aesthetic, pastel sage green background, symmetrical centered composition. A round clay figure with overly tiny glasses and exaggerated messy coder hair, wearing a miniature tech hoodie stuffed with too many gadgets. Soft matte clay texture, stop-motion animation style, warm studio lighting, dry deadpan expression, full body visible with stubby arms and legs.",
-            "technology": "Funny unique claymation mascot character, Wes Anderson aesthetic, pastel sage green background, symmetrical centered composition. A round clay figure with overly tiny glasses and exaggerated messy coder hair, wearing a miniature tech hoodie stuffed with too many gadgets. Soft matte clay texture, stop-motion animation style, warm studio lighting, dry deadpan expression, full body visible with stubby arms and legs.",
-            "finance": "Funny unique claymation mascot character, Wes Anderson aesthetic, pastel light blue background, symmetrical centered composition. A plump clay figure wearing an absurdly serious banker vest and a tie that's way too short, holding an oversized piggy bank. Soft matte clay texture, stop-motion animation style, warm studio lighting, dry deadpan expression, full body visible with stubby arms and legs.",
-            "economics": "Funny unique claymation mascot character, Wes Anderson aesthetic, pastel soft yellow background, symmetrical centered composition. A quirky clay economist with giant circular glasses slipping down their face, holding a tiny supply-and-demand graph. Soft matte clay texture, stop-motion animation style, warm studio lighting, dry deadpan expression, full body visible with stubby arms and legs.",
-            "soft_skills": "Funny unique claymation mascot character, Wes Anderson aesthetic, pastel peach-coral background, symmetrical centered composition. A clay figure wearing a cardigan with comically large elbow patches, holding a miniature speech bubble. Soft matte clay texture, stop-motion animation style, warm studio lighting, dry deadpan expression, full body visible with stubby arms and legs.",
-            "influence": "Funny unique claymation mascot character, Wes Anderson aesthetic, pastel peach-coral background, symmetrical centered composition. A clay figure wearing a cardigan with comically large elbow patches, holding a miniature speech bubble. Soft matte clay texture, stop-motion animation style, warm studio lighting, dry deadpan expression, full body visible with stubby arms and legs.",
-            "events": "Funny unique claymation mascot character, Wes Anderson aesthetic, pastel lavender background, symmetrical centered composition. A clay figure dressed like an overly enthusiastic news reporter with a headset mic too big for its head, holding a wonky miniature spinning globe. Soft matte clay texture, stop-motion animation style, warm studio lighting, dry deadpan expression, full body visible with stubby arms and legs.",
-            "global_events": "Funny unique claymation mascot character, Wes Anderson aesthetic, pastel lavender background, symmetrical centered composition. A clay figure dressed like an overly enthusiastic news reporter with a headset mic too big for its head, holding a wonky miniature spinning globe. Soft matte clay texture, stop-motion animation style, warm studio lighting, dry deadpan expression, full body visible with stubby arms and legs.",
-            "culture": "Funny unique claymation mascot character, Wes Anderson aesthetic, pastel warm orange background, symmetrical centered composition. A clay figure wearing a hilariously dramatic folkloric scarf, holding a tiny theater mask with a confused expression. Soft matte clay texture, stop-motion animation style, warm studio lighting, dry deadpan expression, full body visible with stubby arms and legs.",
-        }
-        
-        # Get mascot for this field (default to tech)
-        mascot_base = mascot_prompts.get(field.lower(), mascot_prompts["tech"])
-        
-        # Slide action descriptions
-        slide_actions = [
-            "presenting a title card",
-            "pointing at an introduction board",
-            "showing a diagram with main concepts",
-            "teaching with a detailed explanation chart",
-            "highlighting key points on a summary board",
-            "demonstrating practical examples with props",
-            "wrapping up with conclusion takeaways",
-            "waving goodbye with a 'Keep Learning!' sign"
-        ]
+        # Base style for consistency (can be adjusted per field if needed)
+        base_style = "High quality educational illustration, modern flat design with subtle texture, professional color palette."
         
         for i, slide in enumerate(video_plan.get('slides', [])):
-            # Get action for this slide
-            action = slide_actions[i % len(slide_actions)]
+            # Use the specific visual prompt from the plan if available
+            visual_prompt = slide.get('visual_prompt', '')
             slide_title = slide.get('title', 'Slide')
             
-            # Combine mascot with slide content
-            enhanced_prompt = f"{mascot_base} The mascot is {action} about '{slide_title}'. Educational slide design, 9:16 portrait aspect ratio for mobile."
+            if not visual_prompt:
+                # Fallback if no visual prompt in plan
+                visual_prompt = f"Educational illustration for '{slide_title}' related to {lesson_title}"
+            
+            # Combine into a full image generation prompt
+            # 9:16 aspect ratio is handled by the image service, but we specify the composition here
+            enhanced_prompt = f"{visual_prompt}. {base_style} 9:16 portrait composition, clear focal point, minimal text."
             
             prompts.append(enhanced_prompt)
         

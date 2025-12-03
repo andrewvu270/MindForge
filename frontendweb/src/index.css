@@ -281,3 +281,100 @@ html {
 .animation-delay-4000 {
   animation-delay: 4s;
 }
+
+/* Dancing and celebration animations */
+@keyframes dance {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-8px) rotate(-5deg); }
+  50% { transform: translateY(0) rotate(0deg); }
+  75% { transform: translateY(-8px) rotate(5deg); }
+}
+
+@keyframes wave-arm {
+  0%, 100% { transform: rotate(-20deg); }
+  50% { transform: rotate(30deg); }
+}
+
+@keyframes wave-arm-reverse {
+  0%, 100% { transform: rotate(20deg); }
+  50% { transform: rotate(-30deg); }
+}
+
+@keyframes kick-left {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-15deg) translateX(-2px); }
+}
+
+@keyframes kick-right {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(15deg) translateX(2px); }
+}
+
+@keyframes float-up {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
+}
+
+@keyframes sparkle {
+  0%, 100% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes draw-check {
+  0% { stroke-dashoffset: 100; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes grow-up {
+  0% { transform: scaleY(0); transform-origin: bottom; }
+  100% { transform: scaleY(1); transform-origin: bottom; }
+}
+
+.animate-dance {
+  animation: dance 0.6s ease-in-out infinite;
+}
+
+.animate-wave-arm {
+  animation: wave-arm 0.5s ease-in-out infinite;
+}
+
+.animate-wave-arm-reverse {
+  animation: wave-arm-reverse 0.5s ease-in-out infinite;
+  animation-delay: 0.25s;
+}
+
+.animate-kick-left {
+  animation: kick-left 0.4s ease-in-out infinite;
+}
+
+.animate-kick-right {
+  animation: kick-right 0.4s ease-in-out infinite;
+  animation-delay: 0.2s;
+}
+
+.animate-float-up {
+  animation: float-up 2s ease-out infinite;
+}
+
+.animate-sparkle {
+  animation: sparkle 1s ease-in-out infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 1s ease-in-out infinite;
+}
+
+.animate-draw-check {
+  stroke-dasharray: 100;
+  animation: draw-check 0.5s ease-out forwards;
+  animation-delay: 0.2s;
+}
+
+.animate-grow-up {
+  animation: grow-up 0.5s ease-out forwards;
+}

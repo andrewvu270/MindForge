@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import Navbar from '../components/Navbar';
+import LottieEnhanced from '../components/LottieEnhanced';
 
 export default function FrankensteinGenerator() {
   const navigate = useNavigate();
@@ -71,7 +72,7 @@ export default function FrankensteinGenerator() {
 
         {generating && (
           <div className="card text-center py-12">
-            <div className="w-10 h-10 border-2 border-coral border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <LottieEnhanced animation="brain" size="lg" className="mx-auto mb-4" />
             <p className="text-muted">Synthesizing content from multiple sources...</p>
           </div>
         )}
@@ -83,9 +84,20 @@ export default function FrankensteinGenerator() {
               <span className="text-sm font-medium text-sage">Generated Successfully</span>
             </div>
             <h2 className="text-2xl font-semibold text-charcoal mb-3">{result.lesson?.title}</h2>
-            <p className="text-muted mb-6 line-clamp-4">{result.lesson?.content}</p>
+            <p className="text-muted mb-6 line-clamp-4">{result.lesson?.summary || result.lesson?.content}</p>
+            
+            {/* Sources info */}
+            {result.metadata?.num_sources > 0 && (
+              <div className="mb-6 p-4 bg-sage/10 rounded-xl flex items-center gap-3">
+                <LottieEnhanced animation="star" size="sm" />
+                <p className="text-sm text-sage font-medium">
+                  Synthesized from {result.metadata.num_sources} sources
+                </p>
+              </div>
+            )}
+            
             <div className="flex gap-4">
-              <button onClick={() => navigate(`/lessons/${result.lesson?.id}`)} className="btn-primary">View Lesson</button>
+              <button onClick={() => navigate(`/lessons/${result.lesson?.id || result.metadata?.lesson_id}`)} className="btn-primary">View Lesson</button>
               <button onClick={() => { setResult(null); setTopic(''); }} className="btn-secondary">Generate Another</button>
             </div>
           </div>

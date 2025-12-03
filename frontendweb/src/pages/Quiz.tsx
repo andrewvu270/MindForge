@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import Navbar from '../components/Navbar';
-import { MascotLoader } from '../components/ClayMascot';
+import LottieEnhanced, { LottieLoader, LottieCelebration } from '../components/LottieEnhanced';
 import Confetti from '../components/Confetti';
-import { LottieCelebration } from '../components/LottieEnhanced';
 
 export default function Quiz() {
   const { lessonId } = useParams();
@@ -15,16 +14,14 @@ export default function Quiz() {
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showCelebration, setShowCelebration] = useState(false);
-  const [lessonField, setLessonField] = useState('Technology');
 
   useEffect(() => {
     const loadQuiz = async () => {
       if (!lessonId) return;
       
       try {
-        // First get the lesson to know the field
+        // First get the lesson
         const lesson = await apiService.getLesson(lessonId);
-        setLessonField(lesson.field_name || 'Technology');
         
         // Try to get existing quiz
         const quizData = await apiService.getQuiz(lessonId);
@@ -97,7 +94,7 @@ export default function Quiz() {
     return (
       <div className="min-h-screen bg-cream">
         <Navbar />
-        <MascotLoader field={lessonField} message="Preparing your quiz..." />
+        <LottieLoader message="Preparing your quiz..." animation="loading" />
       </div>
     );
   }
@@ -120,16 +117,18 @@ export default function Quiz() {
   // Results screen
   if (result) {
     const isPassing = result.percentage >= 70;
+    const isPerfect = result.percentage === 100;
+    
     return (
       <div className="min-h-screen bg-cream">
         <Navbar />
         
-        {/* Celebration overlay */}
+        {/* Celebration overlay - using existing Lottie */}
         {showCelebration && (
           <>
-            {result.percentage === 100 && <Confetti />}
-            <LottieCelebration 
-              message={result.percentage === 100 ? 'Perfect score! 🎉' : 'Great job! 🌟'}
+            <Confetti />
+            <LottieCelebration
+              message={isPerfect ? 'Perfect Score!' : 'Great Job!'}
               onComplete={() => setShowCelebration(false)}
             />
           </>
@@ -137,7 +136,14 @@ export default function Quiz() {
         
         <div className="max-w-2xl mx-auto px-6 py-12">
           <div className={`card text-center py-12 ${isPassing ? 'card-sage' : 'card-coral'} animate-scale-in`}>
-            <div className="text-6xl mb-4 animate-celebrate">{isPassing ? '🎉' : '📚'}</div>
+            {/* Lottie animation instead of emoji */}
+            <div className="flex justify-center mb-4">
+              <LottieEnhanced 
+                animation={isPerfect ? "trophy" : isPassing ? "success" : "book"} 
+                size="lg" 
+                loop={false}
+              />
+            </div>
             <h1 className="text-3xl font-semibold text-charcoal mb-2">
               {isPassing ? 'Great job!' : 'Keep learning!'}
             </h1>
@@ -146,9 +152,9 @@ export default function Quiz() {
               {result.score} of {result.total_questions} correct
             </p>
             
-            {/* Points earned */}
+            {/* Points earned - using Lottie star instead of emoji */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-honey-light rounded-full mb-8">
-              <span className="text-2xl">⭐</span>
+              <LottieEnhanced animation="star" size="sm" />
               <span className="font-semibold text-charcoal">+{result.points_earned} points</span>
             </div>
             
