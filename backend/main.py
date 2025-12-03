@@ -27,28 +27,30 @@ load_dotenv()
 
 app = FastAPI(title="MindForge API", version="1.0.0")
 
-# Add CORS middleware FIRST
-# Allow localhost for development and your deployed frontends
-allowed_origins = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://localhost:8081",
-    "http://localhost:19006",
-    "https://mind-forge-backend.vercel.app",
-    "https://mindforger.vercel.app",
-]
-
-# Add any additional origins from environment variable
-if os.getenv("ALLOWED_ORIGINS"):
-    allowed_origins.extend(os.getenv("ALLOWED_ORIGINS").split(","))
-
+# Add CORS middleware - allow all origins for now to fix Vercel deployment
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins if os.getenv("VERCEL") else ["*"],  # Allow all in local dev
+    allow_origins=["*"],  # Allow all origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
+
+# Additional middleware to ensure CORS headers on all responses (Vercel fix)
+from fastapi import Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class CORSHeaderMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        return response
+
+app.add_middleware(CORSHeaderMiddleware)
 
 # Include routers
 app.include_router(lesson_router)
