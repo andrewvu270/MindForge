@@ -53,11 +53,6 @@ function App() {
     setUser(userData);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('mindforge_user');
-    setUser(null);
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">

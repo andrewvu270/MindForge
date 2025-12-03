@@ -1,26 +1,6 @@
-import Lottie from 'lottie-react';
-
-// Free Lottie animations for different topics
-// These are public domain / free to use animations from LottieFiles
-const animations: Record<string, string> = {
-  // Technology
-  'technology': 'https://lottie.host/embed/4db68bbd-31f6-4cd8-84eb-189572c9b4d1/HhSAYRgZlR.json',
-  'ai': 'https://lottie.host/embed/d5f89c5e-5c5e-4c5e-8c5e-5c5e5c5e5c5e/robot.json',
-  
-  // Finance
-  'finance': 'https://lottie.host/embed/3c3c3c3c-3c3c-3c3c-3c3c-3c3c3c3c3c3c/money.json',
-  'investing': 'https://lottie.host/embed/2b2b2b2b-2b2b-2b2b-2b2b-2b2b2b2b2b2b/chart.json',
-  
-  // Economics
-  'economics': 'https://lottie.host/embed/1a1a1a1a-1a1a-1a1a-1a1a-1a1a1a1a1a1a/globe.json',
-  
-  // Default
-  'default': 'https://lottie.host/embed/0000000-0000-0000-0000-000000000000/learning.json',
-};
-
 // Simple animated shapes as fallback (no external dependency)
 const AnimatedShape = ({ type, color }: { type: string; color: string }) => {
-  const shapes: Record<string, JSX.Element> = {
+  const shapes: Record<string, React.ReactElement> = {
     circle: (
       <div className={`w-24 h-24 rounded-full bg-${color}/20 animate-pulse flex items-center justify-center`}>
         <div className={`w-16 h-16 rounded-full bg-${color}/40`} />
@@ -44,16 +24,12 @@ const AnimatedShape = ({ type, color }: { type: string; color: string }) => {
 };
 
 interface LottieAnimationProps {
-  topic?: string;
-  field?: string;
   className?: string;
   fallbackType?: 'circle' | 'square' | 'blob';
   fallbackColor?: string;
 }
 
 export default function LottieAnimation({ 
-  topic, 
-  field, 
   className = '',
   fallbackType = 'blob',
   fallbackColor = 'coral'
@@ -82,7 +58,7 @@ export function AnimatedIllustration({
     lg: 'w-32 h-32',
   };
 
-  const illustrations: Record<string, JSX.Element> = {
+  const illustrations: Record<string, React.ReactElement> = {
     learning: (
       <div className={`${sizeClasses[size]} relative`}>
         {/* Book shape */}

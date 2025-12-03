@@ -10,7 +10,6 @@ export default function LearnVideo() {
   const [lesson, setLesson] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [videoError, setVideoError] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -21,17 +20,6 @@ export default function LearnVideo() {
         .finally(() => setLoading(false));
     }
   }, [id]);
-
-  const togglePlay = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
 
   if (loading) {
     return (
@@ -93,8 +81,6 @@ export default function LearnVideo() {
               controls
               playsInline
               onError={() => setVideoError(true)}
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
             />
 
             {/* Overlay info */}

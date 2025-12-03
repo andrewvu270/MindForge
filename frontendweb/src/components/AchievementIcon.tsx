@@ -7,7 +7,7 @@ export interface AchievementIconProps extends Omit<AnimatedIconProps, 'children'
 }
 
 // CSS-based animated achievement icons
-const AchievementAnimations: Record<AchievementType, (reducedMotion: boolean, celebrate: boolean) => JSX.Element> = {
+const AchievementAnimations: Record<AchievementType, (reducedMotion: boolean, celebrate: boolean) => React.ReactElement> = {
   'trophy': (reducedMotion, celebrate) => (
     <div className="relative w-full h-full flex items-center justify-center">
       {celebrate && !reducedMotion && (
@@ -20,7 +20,7 @@ const AchievementAnimations: Record<AchievementType, (reducedMotion: boolean, ce
     </div>
   ),
   
-  'gold': (reducedMotion, celebrate) => (
+  'gold': (reducedMotion) => (
     <div className="relative w-full h-full flex items-center justify-center">
       {!reducedMotion && (
         <div className="absolute inset-0 bg-yellow-400/20 rounded-full animate-ping opacity-50" />
@@ -31,7 +31,7 @@ const AchievementAnimations: Record<AchievementType, (reducedMotion: boolean, ce
     </div>
   ),
   
-  'silver': (reducedMotion, celebrate) => (
+  'silver': () => (
     <div className="relative w-full h-full flex items-center justify-center">
       <div className="relative w-3/4 h-3/4 rounded-full bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 flex items-center justify-center shadow-lg">
         <span className="text-gray-700 font-bold text-lg">2</span>
@@ -39,7 +39,7 @@ const AchievementAnimations: Record<AchievementType, (reducedMotion: boolean, ce
     </div>
   ),
   
-  'bronze': (reducedMotion, celebrate) => (
+  'bronze': () => (
     <div className="relative w-full h-full flex items-center justify-center">
       <div className="relative w-3/4 h-3/4 rounded-full bg-gradient-to-br from-orange-300 via-orange-400 to-orange-600 flex items-center justify-center shadow-lg">
         <span className="text-white font-bold text-lg">3</span>
@@ -47,7 +47,7 @@ const AchievementAnimations: Record<AchievementType, (reducedMotion: boolean, ce
     </div>
   ),
   
-  'badge': (reducedMotion, celebrate) => (
+  'badge': (reducedMotion) => (
     <div className="relative w-full h-full flex items-center justify-center">
       <div className={`absolute inset-0 bg-coral/20 rounded-full ${!reducedMotion ? 'animate-pulse' : ''}`} />
       <svg className="w-3/4 h-3/4 text-coral" viewBox="0 0 24 24" fill="currentColor">

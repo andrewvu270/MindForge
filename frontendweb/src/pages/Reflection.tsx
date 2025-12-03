@@ -26,8 +26,6 @@ export default function Reflection() {
     }).catch(console.error).finally(() => setLoading(false));
   }, []);
 
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
-
   const handleSubmit = async () => {
     if (!response.trim()) return;
     setSubmitting(true);
@@ -38,7 +36,6 @@ export default function Reflection() {
       // Analyze reflection for topics (FREE)
       try {
         const analysis = await apiService.analyzeReflection('user_1', response);
-        setAnalysisResult(analysis);
         console.log('Analysis:', analysis);
       } catch (e) {
         console.error('Topic analysis failed:', e);

@@ -34,13 +34,6 @@ const FireAnimation = ({
     );
   }
 
-  const colors = {
-    low: 'from-orange-400 to-red-400',
-    medium: 'from-orange-500 to-red-500',
-    high: 'from-orange-600 to-red-600',
-    max: 'from-orange-700 to-red-700',
-  };
-
   const animations = {
     low: !reducedMotion ? 'animate-pulse' : '',
     medium: !reducedMotion ? 'animate-pulse' : '',
