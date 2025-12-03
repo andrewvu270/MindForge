@@ -95,7 +95,7 @@ async def generate_quiz(request: QuizGenerationRequest):
         
         # Store quiz in database
         try:
-            client = db.get_client()
+            client = db.client
             
             # Store each question
             for question in questions:
@@ -152,7 +152,7 @@ async def submit_quiz(request: QuizSubmissionRequest):
         logger.info(f"Processing quiz submission for user {request.user_id}")
         
         # Fetch quiz questions from database
-        client = db.get_client()
+        client = db.client
         response = client.table("quizzes").select("*").eq("lesson_id", request.quiz_id).execute()
         
         if not response.data:
@@ -192,6 +192,7 @@ async def submit_quiz(request: QuizSubmissionRequest):
                 "id": str(uuid.uuid4()),
                 "user_id": request.user_id,
                 "quiz_id": request.quiz_id,
+                "lesson_id": request.quiz_id,  # Using quiz_id as lesson_id for now
                 "score": score,
                 "total_questions": total_questions,
                 "percentage": percentage,
@@ -200,8 +201,54 @@ async def submit_quiz(request: QuizSubmissionRequest):
             }
             client.table("quiz_attempts").insert(result_data).execute()
             
-            # Update user progress
-            # TODO: Implement user progress update
+            # Update user stats
+            try:
+                # Get current stats
+                stats_response = client.table("user_stats").select("*").eq("user_id", request.user_id).execute()
+                
+                if stats_response.data:
+                    # Update existing stats
+                    current_stats = stats_response.data[0]
+                    
+                    # Mark lesson as completed if score is 80% or higher (4/5 or 5/5)
+                    lessons_completed_increment = 1 if percentage >= 80 else 0
+                    
+                    updated_stats = {
+                        "total_points": current_stats.get("total_points", 0) + points_earned,
+                        "quizzes_completed": current_stats.get("quizzes_completed", 0) + 1,
+                        "quizzes_passed": current_stats.get("quizzes_passed", 0) + (1 if percentage >= 70 else 0),
+                        "perfect_scores": current_stats.get("perfect_scores", 0) + (1 if percentage == 100 else 0),
+                        "total_questions_answered": current_stats.get("total_questions_answered", 0) + total_questions,
+                        "correct_answers": current_stats.get("correct_answers", 0) + score,
+                        "lessons_completed": current_stats.get("lessons_completed", 0) + lessons_completed_increment,
+                        "updated_at": datetime.now().isoformat()
+                    }
+                    client.table("user_stats").update(updated_stats).eq("user_id", request.user_id).execute()
+                    
+                    if lessons_completed_increment > 0:
+                        logger.info(f"✅ Lesson completed! User {request.user_id} now has {updated_stats['lessons_completed']} lessons")
+                else:
+                    # Create new stats
+                    new_stats = {
+                        "id": str(uuid.uuid4()),
+                        "user_id": request.user_id,
+                        "total_points": points_earned,
+                        "quizzes_completed": 1,
+                        "quizzes_passed": 1 if percentage >= 70 else 0,
+                        "perfect_scores": 1 if percentage == 100 else 0,
+                        "total_questions_answered": total_questions,
+                        "correct_answers": score,
+                        "lessons_completed": 0,
+                        "current_streak": 0,
+                        "longest_streak": 0,
+                        "created_at": datetime.now().isoformat(),
+                        "updated_at": datetime.now().isoformat()
+                    }
+                    client.table("user_stats").insert(new_stats).execute()
+                
+                logger.info(f"Updated user stats for {request.user_id}")
+            except Exception as e:
+                logger.warning(f"Failed to update user stats: {e}")
             
             logger.info(f"Stored quiz result: {score}/{total_questions} ({percentage}%)")
             
@@ -242,7 +289,7 @@ async def get_quiz_for_lesson(lesson_id: str):
         Quiz questions
     """
     try:
-        client = db.get_client()
+        client = db.client
         response = client.table("quizzes").select("*").eq("lesson_id", lesson_id).execute()
         
         return {"questions": response.data, "count": len(response.data)}
@@ -252,4 +299,134 @@ async def get_quiz_for_lesson(lesson_id: str):
         raise HTTPException(
             status_code=500,
             detail=f"Failed to fetch quiz: {str(e)}"
+        )
+
+
+# ============================================
+# Flashcard Endpoints
+# ============================================
+
+class FlashcardGenerationRequest(BaseModel):
+    lesson_id: str
+    lesson_content: str
+    num_cards: int = 10
+
+
+@router.post("/flashcards/generate")
+async def generate_flashcards(request: FlashcardGenerationRequest):
+    """
+    Generate flashcards from lesson content using AI.
+    
+    Args:
+        request: Flashcard generation parameters
+        
+    Returns:
+        Generated flashcards
+    """
+    try:
+        logger.info(f"Generating flashcards for lesson {request.lesson_id}")
+        
+        # Generate flashcards using LLM
+        flashcards = await llm_service.generate_flashcards(
+            lesson_content=request.lesson_content,
+            num_cards=request.num_cards
+        )
+        
+        if not flashcards:
+            raise HTTPException(
+                status_code=500,
+                detail="No flashcards were generated"
+            )
+        
+        # Store flashcards in database
+        try:
+            client = db.client
+            
+            for card in flashcards:
+                flashcard_data = {
+                    "id": str(uuid.uuid4()),
+                    "lesson_id": request.lesson_id,
+                    "front": card.get("front"),
+                    "back": card.get("back"),
+                    "difficulty": card.get("difficulty", "medium"),
+                    "topic": card.get("topic", "General"),
+                    "created_at": datetime.now().isoformat()
+                }
+                client.table("flashcards").insert(flashcard_data).execute()
+            
+            logger.info(f"Stored {len(flashcards)} flashcards for lesson {request.lesson_id}")
+            
+        except Exception as e:
+            logger.warning(f"Failed to store flashcards in database: {e}")
+        
+        return {
+            "flashcards": flashcards,
+            "count": len(flashcards),
+            "lesson_id": request.lesson_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Flashcard generation failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Flashcard generation failed: {str(e)}"
+        )
+
+
+@router.get("/flashcards/{lesson_id}")
+async def get_flashcards_for_lesson(lesson_id: str):
+    """
+    Get flashcards for a specific lesson.
+    
+    Args:
+        lesson_id: Lesson ID
+        
+    Returns:
+        Flashcards
+    """
+    try:
+        client = db.client
+        response = client.table("flashcards").select("*").eq("lesson_id", lesson_id).execute()
+        
+        return {"flashcards": response.data, "count": len(response.data)}
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch flashcards for lesson {lesson_id}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch flashcards: {str(e)}"
+        )
+
+
+@router.get("/flashcards")
+async def get_all_flashcards(field_id: Optional[str] = None, limit: int = 50):
+    """
+    Get all flashcards, optionally filtered by field.
+    
+    Args:
+        field_id: Optional field filter
+        limit: Maximum number of flashcards
+        
+    Returns:
+        Flashcards
+    """
+    try:
+        client = db.client
+        query = client.table("flashcards").select("*")
+        
+        if field_id:
+            query = query.eq("field_id", field_id)
+        
+        query = query.limit(limit).order("created_at", desc=True)
+        response = query.execute()
+        
+        return {"flashcards": response.data, "count": len(response.data)}
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch flashcards: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch flashcards: {str(e)}"
         )

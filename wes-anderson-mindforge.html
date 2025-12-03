@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindForge - Wes Anderson Learning Academy</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Courier+Prime:wght@400;600&family=Bebas+Neue&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Wes Anderson Color Palettes */
+            --grand-budapest-pink: #F4A9A8;
+            --grand-budapest-purple: #9B4F4F;
+            --grand-budapest-red: #C73E1D;
+            --grand-budapest-cream: #F7E8D0;
+            --grand-budapest-teal: #A8DADC;
+            
+            --moonrise-kingdom-yellow: #F1C40F;
+            --moonrise-kingdom-blue: #E67E22;
+            --moonrise-kingdom-beige: #F9E79F;
+            --moonrise-kingdom-brown: #8B4513;
+            --moonrise-kingdom-red: #E74C3C;
+            
+            --tenenbaums-blue: #2C3E50;
+            --tenenbaums-pink: #FFB6C1;
+            --tenenbaums-beige: #F5DEB3;
+            --tenenbaums-green: #228B22;
+            --tenenbaums-gray: #708090;
+            
+            --font-serif: 'Playfair Display', serif;
+            --font-mono: 'Courier Prime', monospace;
+            --font-display: 'Bebas Neue', cursive;
+        }
+
+        body {
+            font-family: var(--font-serif);
+            background: linear-gradient(45deg, var(--grand-budapest-cream), var(--moonrise-kingdom-beige));
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .mockup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 40px;
+            max-width: 1800px;
+            width: 100%;
+        }
+
+        .phone-mockup {
+            width: 380px;
+            height: 820px;
+            background: var(--tenenbaums-blue);
+            border-radius: 20px;
+            padding: 12px;
+            box-shadow: 
+                0 0 0 4px var(--grand-budapest-red),
+                0 0 0 8px var(--tenenbaums-gray),
+                0 20px 40px rgba(0,0,0,0.4);
+            position: relative;
+            transform: rotate(-1deg);
+            transition: transform 0.3s ease;
+        }
+
+        .phone-mockup:hover {
+            transform: rotate(0deg);
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: var(--grand-budapest-cream);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid var(--grand-budapest-red);
+        }
+
+        .status-bar {
+            height: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--tenenbaums-blue);
+            background: var(--grand-budapest-pink);
+            border-bottom: 3px solid var(--grand-budapest-purple);
+        }
+
+        /* Wes Anderson Components */
+        .wes-card {
+            background: var(--primary-white);
+            border: 3px solid var(--grand-budapest-red);
+            border-radius: 0;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 4px 4px 0 var(--grand-budapest-purple);
+        }
+
+        .wes-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--grand-budapest-purple);
+        }
+
+        .wes-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: repeating-linear-gradient(
+                90deg,
+                var(--grand-budapest-pink),
+                var(--grand-budapest-pink) 10px,
+                var(--moonrise-kingdom-yellow) 10px,
+                var(--moonrise-kingdom-yellow) 20px
+            );
+        }
+
+        .wes-button {
+            background: var(--grand-budapest-red);
+            border: 3px solid var(--tenenbaums-blue);
+            border-radius: 0;
+            padding: 12px 24px;
+            font-family: var(--font-display);
+            font-size: 18px;
+            font-weight: 400;
+            color: var(--grand-budapest-cream);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 4px 4px 0 var(--tenenbaums-blue);
+        }
+
+        .wes-button:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--tenenbaums-blue);
+        }
+
+        .wes-button:active {
+            transform: translate(0, 0);
+            box-shadow: 2px 2px 0 var(--tenenbaums-blue);
+        }
+
+        .wes-button.secondary {
+            background: var(--moonrise-kingdom-yellow);
+            color: var(--tenenbaums-blue);
+            border-color: var(--moonrise-kingdom-brown);
+            box-shadow: 4px 4px 0 var(--moonrise-kingdom-brown);
+        }
+
+        .wes-input {
+            background: var(--grand-budapest-cream);
+            border: 3px solid var(--grand-budapest-purple);
+            border-radius: 0;
+            padding: 12px 16px;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--tenenbaums-blue);
+            transition: all 0.3s ease;
+        }
+
+        .wes-input:focus {
+            outline: none;
+            border-color: var(--grand-budapest-red);
+            background: var(--primary-white);
+        }
+
+        /* Symmetrical Layout Elements */
+        .symmetrical-header {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 3px solid var(--grand-budapest-purple);
+            background: linear-gradient(180deg, var(--grand-budapest-pink), var(--grand-budapest-cream));
+        }
+
+        .wes-title {
+            font-family: var(--font-display);
+            font-size: 32px;
+            color: var(--tenenbaums-blue);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            line-height: 1;
+        }
+
+        .wes-subtitle {
+            font-family: var(--font-serif);
+            font-size: 14px;
+            color: var(--grand-budapest-purple);
+            font-style: italic;
+        }
+
+        /* Bottom Navigation */
+        .wes-tab-bar {
+            height: 80px;
+            background: var(--tenenbaums-blue);
+            border-top: 3px solid var(--grand-budapest-red);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px;
+            margin-top: auto;
+        }
+
+        .wes-tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 8px;
+            border: 2px solid transparent;
+        }
+
+        .wes-tab-item:hover {
+            border-color: var(--moonrise-kingdom-yellow);
+            background: var(--grand-budapest-cream);
+        }
+
+        .wes-tab-item.active {
+            background: var(--moonrise-kingdom-yellow);
+            border-color: var(--tenenbaums-blue);
+        }
+
+        .wes-tab-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            font-family: var(--font-mono);
+        }
+
+        .wes-tab-label {
+            font-family: var(--font-mono);
+            font-size: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--tenenbaums-blue);
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            background: var(--grand-budapest-cream);
+            position: relative;
+        }
+
+        .content-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: repeating-linear-gradient(
+                90deg,
+                var(--grand-budapest-red),
+                var(--grand-budapest-red) 20px,
+                var(--moonrise-kingdom-yellow) 20px,
+                var(--moonrise-kingdom-yellow) 40px
+            );
+            z-index: 10;
+        }
+
+        /* Field Cards with Wes Anderson Styling */
+        .field-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            padding: 20px;
+        }
+
+        .field-card {
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            background: var(--primary-white);
+        }
+
+        .field-card.tech {
+            background: linear-gradient(135deg, var(--grand-budapest-teal), var(--grand-budapest-pink));
+            border-color: var(--tenenbaums-blue);
+        }
+
+        .field-card.finance {
+            background: linear-gradient(135deg, var(--moonrise-kingdom-yellow), var(--grand-budapest-cream));
+            border-color: var(--moonrise-kingdom-brown);
+        }
+
+        .field-card.culture {
+            background: linear-gradient(135deg, var(--tenenbaums-pink), var(--grand-budapest-cream));
+            border-color: var(--grand-budapest-purple);
+        }
+
+        .field-card.economics {
+            background: linear-gradient(135deg, var(--tenenbaums-green), var(--moonrise-kingdom-beige));
+            border-color: var(--tenenbaums-blue);
+        }
+
+        .field-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--grand-budapest-cream);
+            border: 3px solid var(--tenenbaums-blue);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 12px;
+            font-size: 24px;
+            font-family: var(--font-mono);
+        }
+
+        .field-name {
+            font-family: var(--font-display);
+            font-size: 16px;
+            color: var(--tenenbaums-blue);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .field-stats {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--grand-budapest-purple);
+            text-transform: uppercase;
+        }
+
+        /* Progress Elements */
+        .progress-section {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .circular-progress {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            position: relative;
+            background: var(--grand-budapest-pink);
+            border: 4px solid var(--grand-budapest-red);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .progress-text {
+            font-family: var(--font-display);
+            font-size: 36px;
+            color: var(--tenenbaums-blue);
+        }
+
+        .progress-label {
+            font-family: var(--font-serif);
+            font-size: 14px;
+            color: var(--grand-budapest-purple);
+            font-style: italic;
+            margin-bottom: 4px;
+        }
+
+        /* Lesson Cards */
+        .lesson-list {
+            padding: 20px;
+        }
+
+        .lesson-card {
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--primary-white);
+            border-left: 6px solid var(--grand-budapest-red);
+        }
+
+        .lesson-number {
+            width: 40px;
+            height: 40px;
+            background: var(--grand-budapest-red);
+            border: 2px solid var(--tenenbaums-blue);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: var(--font-display);
+            font-size: 18px;
+            color: var(--grand-budapest-cream);
+        }
+
+        .lesson-content {
+            flex: 1;
+        }
+
+        .lesson-title {
+            font-family: var(--font-serif);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--tenenbaums-blue);
+            margin-bottom: 4px;
+        }
+
+        .lesson-meta {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--grand-budapest-purple);
+            text-transform: uppercase;
+        }
+
+        /* Quiz Section */
+        .quiz-section {
+            padding: 20px;
+        }
+
+        .quiz-header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: var(--grand-budapest-pink);
+            border: 3px solid var(--grand-budapest-purple);
+        }
+
+        .quiz-title {
+            font-family: var(--font-display);
+            font-size: 24px;
+            color: var(--tenenbaums-blue);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .quiz-question {
+            padding: 20px;
+            margin-bottom: 20px;
+            background: var(--grand-budapest-cream);
+            border: 3px solid var(--grand-budapest-red);
+            text-align: center;
+        }
+
+        .question-text {
+            font-family: var(--font-serif);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--tenenbaums-blue);
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .quiz-option {
+            padding: 12px;
+            background: var(--primary-white);
+            border: 2px solid var(--grand-budapest-purple);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--tenenbaums-blue);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .quiz-option:hover {
+            background: var(--moonrise-kingdom-yellow);
+            border-color: var(--tenenbaums-blue);
+        }
+
+        /* Challenges Section */
+        .challenge-card {
+            padding: 24px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--moonrise-kingdom-yellow), var(--grand-budapest-pink));
+            border: 3px solid var(--grand-budapest-red);
+            text-align: center;
+        }
+
+        .challenge-title {
+            font-family: var(--font-display);
+            font-size: 20px;
+            color: var(--tenenbaums-blue);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .challenge-description {
+            font-family: var(--font-serif);
+            font-size: 14px;
+            color: var(--tenenbaums-blue);
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 20px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            text-align: center;
+            background: var(--primary-white);
+            border: 3px solid var(--grand-budapest-purple);
+        }
+
+        .stat-value {
+            font-family: var(--font-display);
+            font-size: 28px;
+            color: var(--grand-budapest-red);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--tenenbaums-blue);
+            text-transform: uppercase;
+        }
+
+        /* News Cards */
+        .news-card {
+            padding: 16px;
+            margin-bottom: 16px;
+            background: var(--primary-white);
+            border-left: 6px solid var(--moonrise-kingdom-yellow);
+            border-top: 3px solid var(--moonrise-kingdom-yellow);
+            border-bottom: 3px solid var(--moonrise-kingdom-yellow);
+        }
+
+        .news-source {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--moonrise-kingdom-brown);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .news-title {
+            font-family: var(--font-serif);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--tenenbaums-blue);
+            margin-bottom: 8px;
+        }
+
+        .news-summary {
+            font-family: var(--font-serif);
+            font-size: 12px;
+            color: var(--grand-budapest-purple);
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+
+        /* Decorative Elements */
+        .decorative-border {
+            border: 3px solid var(--grand-budapest-red);
+            position: relative;
+        }
+
+        .decorative-border::before,
+        .decorative-border::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--grand-budapest-red);
+        }
+
+        .decorative-border::before {
+            top: -3px;
+            left: -3px;
+        }
+
+        .decorative-border::after {
+            bottom: -3px;
+            right: -3px;
+        }
+
+        /* Symmetrical Animations */
+        @keyframes wesFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(2deg); }
+        }
+
+        .wes-float {
+            animation: wesFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes wesWiggle {
+            0%, 100% { transform: rotate(-1deg); }
+            50% { transform: rotate(1deg); }
+        }
+
+        .wes-wiggle {
+            animation: wesWiggle 3s ease-in-out infinite;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .mockup-grid {
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mockup-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .phone-mockup {
+                width: 360px;
+                height: 760px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mockup-grid">
+        <!-- Dashboard Screen -->
+        <div class="phone-mockup wes-wiggle">
+            <div class="phone-screen">
+                <div class="status-bar">
+                    <span>9:41 AM</span>
+                    <span>MONDAY, DECEMBER 2</span>
+                </div>
+                
+                <div class="symmetrical-header">
+                    <div class="wes-title">MindForge</div>
+                    <div class="wes-subtitle">An Educational Picture</div>
+                </div>
+                
+                <div class="content-area">
+                    <div class="progress-section">
+                        <div class="circular-progress wes-float">
+                            <div class="progress-text">75%</div>
+                        </div>
+                        <div class="progress-label">Today's Learning Progress</div>
+                        <div class="wes-subtitle">Three of Four Acts Complete</div>
+                    </div>
+                    
+                    <div class="field-grid">
+                        <div class="field-card wes-card tech">
+                            <div class="field-icon">01</div>
+                            <div class="field-name">Technology</div>
+                            <div class="field-stats">45 of 62 Chapters</div>
+                        </div>
+                        
+                        <div class="field-card wes-card finance">
+                            <div class="field-icon">02</div>
+                            <div class="field-name">Finance</div>
+                            <div class="field-stats">26 of 45 Chapters</div>
+                        </div>
+                        
+                        <div class="field-card wes-card culture">
+                            <div class="field-icon">03</div>
+                            <div class="field-name">Culture</div>
+                            <div class="field-stats">24 of 28 Chapters</div>
+                        </div>
+                        
+                        <div class="field-card wes-card economics">
+                            <div class="field-icon">04</div>
+                            <div class="field-name">Economics</div>
+                            <div class="field-stats">16 of 38 Chapters</div>
+                        </div>
+                    </div>
+                    
+                    <div class="lesson-list">
+                        <div class="lesson-card wes-card">
+                            <div class="lesson-number">03</div>
+                            <div class="lesson-content">
+                                <div class="lesson-title">Cloud Computing Fundamentals</div>
+                                <div class="lesson-meta">Technology • Seven Minutes • In Progress</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="wes-tab-bar">
+                    <div class="wes-tab-item active">
+                        <div class="wes-tab-icon">I</div>
+                        <div class="wes-tab-label">Home</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">II</div>
+                        <div class="wes-tab-label">Learn</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">III</div>
+                        <div class="wes-tab-label">Quiz</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">IV</div>
+                        <div class="wes-tab-label">Challenge</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">V</div>
+                        <div class="wes-tab-label">Progress</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Learn Screen -->
+        <div class="phone-mockup wes-wiggle" style="transform: rotate(1deg);">
+            <div class="phone-screen">
+                <div class="status-bar">
+                    <span>9:41 AM</span>
+                    <span>MONDAY, DECEMBER 2</span>
+                </div>
+                
+                <div class="symmetrical-header">
+                    <div class="wes-title">Learn</div>
+                    <div class="wes-subtitle">The Technology Saga</div>
+                </div>
+                
+                <div class="content-area">
+                    <div class="lesson-list">
+                        <div class="lesson-card wes-card">
+                            <div class="lesson-number">I</div>
+                            <div class="lesson-content">
+                                <div class="lesson-title">Introduction to Cloud Computing</div>
+                                <div class="lesson-meta">Technology • Five Minutes • Completed</div>
+                            </div>
+                        </div>
+                        
+                        <div class="lesson-card wes-card">
+                            <div class="lesson-number">II</div>
+                            <div class="lesson-content">
+                                <div class="lesson-title">Infrastructure as a Service</div>
+                                <div class="lesson-meta">Technology • Seven Minutes • Completed</div>
+                            </div>
+                        </div>
+                        
+                        <div class="lesson-card wes-card">
+                            <div class="lesson-number">III</div>
+                            <div class="lesson-content">
+                                <div class="lesson-title">Platform as a Service</div>
+                                <div class="lesson-meta">Technology • Six Minutes • In Progress</div>
+                            </div>
+                        </div>
+                        
+                        <div class="lesson-card wes-card">
+                            <div class="lesson-number">IV</div>
+                            <div class="lesson-content">
+                                <div class="lesson-title">Software as a Service Models</div>
+                                <div class="lesson-meta">Technology • Eight Minutes • New</div>
+                            </div>
+                        </div>
+                        
+                        <div class="lesson-card wes-card">
+                            <div class="lesson-number">V</div>
+                            <div class="lesson-content">
+                                <div class="lesson-title">Cloud Security Fundamentals</div>
+                                <div class="lesson-meta">Technology • Ten Minutes • New</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="wes-tab-bar">
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">I</div>
+                        <div class="wes-tab-label">Home</div>
+                    </div>
+                    <div class="wes-tab-item active">
+                        <div class="wes-tab-icon">II</div>
+                        <div class="wes-tab-label">Learn</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">III</div>
+                        <div class="wes-tab-label">Quiz</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">IV</div>
+                        <div class="wes-tab-label">Challenge</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">V</div>
+                        <div class="wes-tab-label">Progress</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div class="phone-mockup wes-wiggle">
+            <div class="phone-screen">
+                <div class="status-bar">
+                    <span>9:41 AM</span>
+                    <span>MONDAY, DECEMBER 2</span>
+                </div>
+                
+                <div class="symmetrical-header">
+                    <div class="wes-title">Quiz</div>
+                    <div class="wes-subtitle">A Test of Knowledge</div>
+                </div>
+                
+                <div class="content-area">
+                    <div class="quiz-section">
+                        <div class="quiz-header wes-card">
+                            <div class="quiz-title">Reinforcement Quiz</div>
+                            <div class="wes-subtitle">Question III of V</div>
+                        </div>
+                        
+                        <div class="quiz-question wes-card">
+                            <div class="question-text">
+                                "Which of the following is a key characteristic of Platform as a Service (PaaS)?"
+                            </div>
+                            
+                            <div class="quiz-options">
+                                <div class="quiz-option">Complete control over infrastructure</div>
+                                <div class="quiz-option">Managed runtime environment and deployment</div>
+                                <div class="quiz-option">Pre-built software applications</div>
+                                <div class="quiz-option">Virtual machines only</div>
+                            </div>
+                        </div>
+                        
+                        <button class="wes-button">Submit Answer</button>
+                        <button class="wes-button secondary">Skip Question</button>
+                    </div>
+                </div>
+                
+                <div class="wes-tab-bar">
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">I</div>
+                        <div class="wes-tab-label">Home</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">II</div>
+                        <div class="wes-tab-label">Learn</div>
+                    </div>
+                    <div class="wes-tab-item active">
+                        <div class="wes-tab-icon">III</div>
+                        <div class="wes-tab-label">Quiz</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">IV</div>
+                        <div class="wes-tab-label">Challenge</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">V</div>
+                        <div class="wes-tab-label">Progress</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Challenges Screen -->
+        <div class="phone-mockup wes-wiggle" style="transform: rotate(1deg);">
+            <div class="phone-screen">
+                <div class="status-bar">
+                    <span>9:41 AM</span>
+                    <span>MONDAY, DECEMBER 2</span>
+                </div>
+                
+                <div class="symmetrical-header">
+                    <div class="wes-title">Challenges</div>
+                    <div class="wes-subtitle">Daily Adventures</div>
+                </div>
+                
+                <div class="content-area">
+                    <div class="challenge-card wes-card">
+                        <div class="challenge-title">Tech Tuesday Challenge</div>
+                        <div class="challenge-description">
+                            "Complete three technology lessons and score eighty percent or higher on the reinforcement quiz"
+                        </div>
+                        <div class="wes-subtitle">One of Three Lessons Complete</div>
+                    </div>
+                    
+                    <div class="lesson-list">
+                        <div class="lesson-card wes-card">
+                            <div class="lesson-content">
+                                <div class="lesson-title">Finance Wednesday</div>
+                                <div class="lesson-meta">Begins in Fourteen Hours • Two Lessons + Quiz</div>
+                            </div>
+                        </div>
+                        
+                        <div class="lesson-card wes-card">
+                            <div class="lesson-content">
+                                <div class="lesson-title">Culture Thursday</div>
+                                <div class="lesson-meta">Begins in Thirty-Eight Hours • Three Lessons + Quiz</div>
+                            </div>
+                        </div>
+                        
+                        <div class="lesson-card wes-card">
+                            <div class="lesson-content">
+                                <div class="lesson-title">Monday Mindset</div>
+                                <div class="lesson-meta">Completed • Thirty Experience Points Earned</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="wes-tab-bar">
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">I</div>
+                        <div class="wes-tab-label">Home</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">II</div>
+                        <div class="wes-tab-label">Learn</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">III</div>
+                        <div class="wes-tab-label">Quiz</div>
+                    </div>
+                    <div class="wes-tab-item active">
+                        <div class="wes-tab-icon">IV</div>
+                        <div class="wes-tab-label">Challenge</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">V</div>
+                        <div class="wes-tab-label">Progress</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Screen -->
+        <div class="phone-mockup wes-wiggle">
+            <div class="phone-screen">
+                <div class="status-bar">
+                    <span>9:41 AM</span>
+                    <span>MONDAY, DECEMBER 2</span>
+                </div>
+                
+                <div class="symmetrical-header">
+                    <div class="wes-title">Progress</div>
+                    <div class="wes-subtitle">Your Academic Journey</div>
+                </div>
+                
+                <div class="content-area">
+                    <div class="stats-grid">
+                        <div class="stat-card wes-card">
+                            <div class="stat-value">247</div>
+                            <div class="stat-label">Lessons Completed</div>
+                        </div>
+                        <div class="stat-card wes-card">
+                            <div class="stat-value">18.5</div>
+                            <div class="stat-label">Hours Learned</div>
+                        </div>
+                        <div class="stat-card wes-card">
+                            <div class="stat-value">89%</div>
+                            <div class="stat-label">Quiz Average</div>
+                        </div>
+                        <div class="stat-card wes-card">
+                            <div class="stat-value">12</div>
+                            <div class="stat-label">Day Streak</div>
+                        </div>
+                    </div>
+                    
+                    <div class="challenge-card wes-card">
+                        <div class="challenge-title">Recent Achievements</div>
+                        <div class="wes-subtitle">Week Streak • Speed Reader • Perfect Score</div>
+                    </div>
+                    
+                    <div class="lesson-list">
+                        <div class="lesson-card wes-card">
+                            <div class="lesson-content">
+                                <div class="lesson-title">Technology</div>
+                                <div class="lesson-meta">Seventy-Three Percent Complete • Forty-Five of Sixty-Two Lessons</div>
+                            </div>
+                        </div>
+                        
+                        <div class="lesson-card wes-card">
+                            <div class="lesson-content">
+                                <div class="lesson-title">Finance</div>
+                                <div class="lesson-meta">Fifty-Eight Percent Complete • Twenty-Six of Forty-Five Lessons</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="wes-tab-bar">
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">I</div>
+                        <div class="wes-tab-label">Home</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">II</div>
+                        <div class="wes-tab-label">Learn</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">III</div>
+                        <div class="wes-tab-label">Quiz</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">IV</div>
+                        <div class="wes-tab-label">Challenge</div>
+                    </div>
+                    <div class="wes-tab-item active">
+                        <div class="wes-tab-icon">V</div>
+                        <div class="wes-tab-label">Progress</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- News Screen -->
+        <div class="phone-mockup wes-wiggle" style="transform: rotate(1deg);">
+            <div class="phone-screen">
+                <div class="status-bar">
+                    <span>9:41 AM</span>
+                    <span>MONDAY, DECEMBER 2</span>
+                </div>
+                
+                <div class="symmetrical-header">
+                    <div class="wes-title">Field News</div>
+                    <div class="wes-subtitle">Current Affairs & Learning</div>
+                </div>
+                
+                <div class="content-area">
+                    <div class="lesson-list">
+                        <div class="news-card wes-card">
+                            <div class="news-source">TechCrunch</div>
+                            <div class="news-title">AI Revolution: How Machine Learning is Transforming Cloud Computing</div>
+                            <div class="news-summary">
+                                "Latest developments in AI integration with major cloud platforms are reshaping how businesses approach infrastructure..."
+                            </div>
+                            <div class="lesson-meta">Five Minutes Read • Technology</div>
+                        </div>
+                        
+                        <div class="news-card wes-card">
+                            <div class="news-source">Financial Times</div>
+                            <div class="news-title">Central Banks Digital Currency Initiatives Gain Momentum</div>
+                            <div class="news-summary">
+                                "Multiple countries accelerate their CBDC programs as digital payments become increasingly mainstream..."
+                            </div>
+                            <div class="lesson-meta">Four Minutes Read • Finance</div>
+                        </div>
+                        
+                        <div class="news-card wes-card">
+                            <div class="news-source">The Economist</div>
+                            <div class="news-title">Global Supply Chain Resilience: Economic Perspectives</div>
+                            <div class="news-summary">
+                                "Economists analyze the long-term impacts of recent supply chain disruptions on global trade patterns..."
+                            </div>
+                            <div class="lesson-meta">Six Minutes Read • Economics</div>
+                        </div>
+                        
+                        <div class="news-card wes-card">
+                            <div class="news-source">Artnet News</div>
+                            <div class="news-title">Digital Art Markets: NFTs and Cultural Transformation</div>
+                            <div class="news-summary">
+                                "How blockchain technology is revolutionizing art ownership and cultural expression in the digital age..."
+                            </div>
+                            <div class="lesson-meta">Five Minutes Read • Culture</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="wes-tab-bar">
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">I</div>
+                        <div class="wes-tab-label">Home</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">II</div>
+                        <div class="wes-tab-label">Learn</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">III</div>
+                        <div class="wes-tab-label">Quiz</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">IV</div>
+                        <div class="wes-tab-label">Challenge</div>
+                    </div>
+                    <div class="wes-tab-item">
+                        <div class="wes-tab-icon">V</div>
+                        <div class="wes-tab-label">Progress</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

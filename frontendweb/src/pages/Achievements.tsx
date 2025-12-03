@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
 import Navbar from '../components/Navbar';
+import ClayMascot from '../components/ClayMascot';
 
 export default function Achievements() {
   const [achievements, setAchievements] = useState<any[]>([]);
@@ -62,11 +63,18 @@ export default function Achievements() {
               <div
                 key={achievement.id}
                 className={`card transition-all ${
-                  achievement.unlocked ? 'card-sage' : 'opacity-60 grayscale hover:opacity-80 hover:grayscale-0'
+                  achievement.unlocked ? 'card-sage animate-scale-in' : 'opacity-60 grayscale hover:opacity-80 hover:grayscale-0'
                 }`}
               >
                 <div className="flex items-start justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-charcoal">{achievement.name}</h3>
+                  <div className="flex items-center gap-3">
+                    {achievement.unlocked && (
+                      <div className="animate-celebrate">
+                        <ClayMascot field="Technology" size="sm" animation="celebrate" />
+                      </div>
+                    )}
+                    <h3 className="text-lg font-semibold text-charcoal">{achievement.name}</h3>
+                  </div>
                   {achievement.unlocked && (
                     <span className="pill pill-sage text-xs">Unlocked</span>
                   )}

@@ -48,7 +48,7 @@ async def set_schedule_preferences(request: SchedulePreferencesRequest):
     try:
         logger.info(f"Setting schedule preferences for user {request.user_id}")
         
-        client = db.get_client()
+        client = db.client
         
         # Store preferences
         preferences_data = {
@@ -123,7 +123,7 @@ async def get_upcoming_sessions(
         List of upcoming sessions
     """
     try:
-        client = db.get_client()
+        client = db.client
         
         # Get all sessions for user
         response = client.table("scheduled_sessions").select("*").eq(
@@ -164,7 +164,7 @@ async def get_next_session(user_id: str):
         Next session or null
     """
     try:
-        client = db.get_client()
+        client = db.client
         
         # Get all incomplete sessions
         response = client.table("scheduled_sessions").select("*").eq(
@@ -207,7 +207,7 @@ async def complete_session(
         Completion status and next session
     """
     try:
-        client = db.get_client()
+        client = db.client
         
         # Mark session as complete
         update_data = {
@@ -254,7 +254,7 @@ async def get_schedule_preferences(user_id: str):
         Schedule preferences
     """
     try:
-        client = db.get_client()
+        client = db.client
         response = client.table("schedule_preferences").select("*").eq(
             "user_id", user_id
         ).execute()
@@ -289,7 +289,7 @@ async def delete_schedule_preferences(user_id: str):
         Deletion status
     """
     try:
-        client = db.get_client()
+        client = db.client
         
         # Delete preferences
         client.table("schedule_preferences").delete().eq("user_id", user_id).execute()

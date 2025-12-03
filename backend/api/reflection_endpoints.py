@@ -49,7 +49,7 @@ async def get_daily_reflection_prompt():
         Daily reflection prompt
     """
     try:
-        client = db.get_client()
+        client = db.client
         
         # Get all prompts
         response = client.table("reflection_prompts").select("*").execute()
@@ -116,7 +116,7 @@ async def submit_reflection(request: ReflectionSubmissionRequest):
         logger.info(f"Processing reflection for user {request.user_id}")
         
         # Get user's previous reflections for context
-        client = db.get_client()
+        client = db.client
         history_response = client.table("reflections").select("*").eq(
             "user_id", request.user_id
         ).order("submitted_at", desc=True).limit(3).execute()
@@ -201,7 +201,7 @@ async def get_reflection_history(
         List of past reflections
     """
     try:
-        client = db.get_client()
+        client = db.client
         response = client.table("reflections").select("*").eq(
             "user_id", user_id
         ).order("submitted_at", desc=True).range(offset, offset + limit - 1).execute()
@@ -250,7 +250,7 @@ async def get_reflection_stats(user_id: str):
         Reflection statistics
     """
     try:
-        client = db.get_client()
+        client = db.client
         response = client.table("reflections").select("*").eq("user_id", user_id).execute()
         
         reflections = response.data if response.data else []

@@ -30,6 +30,15 @@ export const apiService = {
     return data;
   },
 
+  generateQuiz: async (lessonId: string, lessonContent: string, numQuestions: number = 5) => {
+    const { data } = await api.post('/api/quiz/generate', {
+      lesson_id: lessonId,
+      lesson_content: lessonContent,
+      num_questions: numQuestions
+    });
+    return data;
+  },
+
   submitQuiz: async (submission: any) => {
     const { data } = await api.post('/api/quiz/submit', submission);
     return data;
@@ -111,6 +120,75 @@ export const apiService = {
   // Progress
   getProgress: async (userId: string) => {
     const { data } = await api.get(`/api/progress/${userId}`);
+    return data;
+  },
+
+  // Lesson completion
+  completeLesson: async (lessonId: string, userId: string) => {
+    const { data } = await api.post(`/api/lessons/${lessonId}/complete`, { user_id: userId });
+    return data;
+  },
+
+  // Free content generation
+  generateFreeLesson: async (fieldId: string, topic: string, generateVideo: boolean = true) => {
+    const { data } = await api.post('/api/free/generate', {
+      field_id: fieldId,
+      topic: topic,
+      num_sources: 3,
+      generate_video: generateVideo
+    });
+    return data;
+  },
+
+  generateVideoOnDemand: async (lessonId: string) => {
+    const { data } = await api.get(`/api/free/video/${lessonId}`);
+    return data;
+  },
+
+  getFreeStats: async () => {
+    const { data } = await api.get('/api/free/stats');
+    return data;
+  },
+
+  testFreeServices: async () => {
+    const { data } = await api.post('/api/free/test-services');
+    return data;
+  },
+
+  analyzeReflection: async (userId: string, reflectionText: string, reflectionId?: string) => {
+    const { data } = await api.post('/api/free/analyze-reflection', {
+      user_id: userId,
+      reflection_text: reflectionText,
+      reflection_id: reflectionId
+    });
+    return data;
+  },
+
+  getLearningProfile: async (userId: string) => {
+    const { data } = await api.get(`/api/free/learning-profile/${userId}`);
+    return data;
+  },
+
+  // Flashcards
+  getFlashcards: async (fieldId?: string, limit: number = 50) => {
+    const params = new URLSearchParams();
+    if (fieldId) params.append('field_id', fieldId);
+    params.append('limit', limit.toString());
+    const { data } = await api.get(`/api/quiz/flashcards?${params}`);
+    return data;
+  },
+
+  getFlashcardsForLesson: async (lessonId: string) => {
+    const { data } = await api.get(`/api/quiz/flashcards/${lessonId}`);
+    return data;
+  },
+
+  generateFlashcards: async (lessonId: string, lessonContent: string, numCards: number = 10) => {
+    const { data } = await api.post('/api/quiz/flashcards/generate', {
+      lesson_id: lessonId,
+      lesson_content: lessonContent,
+      num_cards: numCards
+    });
     return data;
   },
 };

@@ -17,7 +17,10 @@ from .adapters.youtube_adapter import YouTubeAdapter
 from .adapters.bbcnews_adapter import BBCNewsAdapter
 from .adapters.wikipedia_adapter import WikipediaAdapter
 from .adapters.rss_adapter import RSSAdapter
+from .adapters.nasa_adapter import NASAAdapter
+from .adapters.arxiv_adapter import ArxivAdapter
 from .cache_service import get_cache
+from .api_registry import APIRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +35,17 @@ class ContentOrchestrator:
     FIELD_ADAPTERS = {
         "tech": ["hackernews", "reddit", "youtube", "bbc_news", "wikipedia"],
         "technology": ["hackernews", "reddit", "youtube", "bbc_news", "wikipedia"],
-        "ai": ["hackernews", "reddit", "youtube", "google_books", "wikipedia"],
+        "ai": ["hackernews", "reddit", "youtube", "google_books", "arxiv", "wikipedia"],
+        "science": ["arxiv", "nasa", "wikipedia", "youtube", "google_books"],
+        "physics": ["arxiv", "nasa", "wikipedia", "youtube"],
+        "math": ["arxiv", "wikipedia", "youtube"],
+        "mathematics": ["arxiv", "wikipedia", "youtube"],
+        "biology": ["arxiv", "wikipedia", "youtube", "google_books"],
+        "chemistry": ["arxiv", "wikipedia", "youtube"],
+        "astronomy": ["nasa", "arxiv", "wikipedia", "youtube"],
+        "space": ["nasa", "arxiv", "wikipedia", "youtube"],
         "finance": ["finance", "fred", "bbc_news", "wikipedia"],
-        "economics": ["fred", "finance", "bbc_news", "wikipedia"],
+        "economics": ["fred", "finance", "bbc_news", "arxiv", "wikipedia"],
         "business": ["finance", "bbc_news", "reddit", "wikipedia"],
         "culture": ["reddit", "bbc_news", "google_books", "wikipedia"],
         "influence": ["reddit", "google_books", "youtube", "wikipedia"],
@@ -43,7 +54,8 @@ class ContentOrchestrator:
         "news": ["bbc_news", "rss", "reddit", "wikipedia"],
         "books": ["google_books", "reddit", "wikipedia"],
         "video": ["youtube", "reddit", "wikipedia"],
-        "education": ["youtube", "google_books", "reddit", "wikipedia"]
+        "education": ["youtube", "google_books", "arxiv", "wikipedia"],
+        "research": ["arxiv", "google_books", "wikipedia"]
     }
     
     def __init__(self):
@@ -57,9 +69,12 @@ class ContentOrchestrator:
             "youtube": YouTubeAdapter(),
             "bbc_news": BBCNewsAdapter(),
             "wikipedia": WikipediaAdapter(),
-            "rss": RSSAdapter()
+            "rss": RSSAdapter(),
+            "nasa": NASAAdapter(),
+            "arxiv": ArxivAdapter(),
         }
         self.cache = get_cache()
+        self.use_intelligent_selection = True  # Toggle for intelligent API selection
     
     def _get_adapters_for_field(self, field: str) -> List[str]:
         """
@@ -80,6 +95,49 @@ class ContentOrchestrator:
         
         # Default: use wikipedia + rss
         return ["wikipedia", "rss"]
+    
+    async def _select_apis_intelligently(
+        self,
+        topic: str,
+        field: str,
+        num_sources: int = 3
+    ) -> List[str]:
+        """
+        Use LLM-powered API Selector Agent to choose relevant APIs.
+        
+        Args:
+            topic: Specific topic to search for
+            field: Learning field
+            num_sources: Number of APIs to select
+            
+        Returns:
+            List of selected API names
+        """
+        try:
+            from agents.api_selector_agent import APISelectorAgent
+            from services.llm_service import get_llm_service
+            
+            # Initialize selector agent
+            selector = APISelectorAgent(llm_service=get_llm_service())
+            
+            # Get API selection
+            response = await selector.process({
+                "topic": topic,
+                "field": field,
+                "max_apis": num_sources
+            })
+            
+            if response.status == AgentStatus.COMPLETED:
+                selected_apis = response.result.get("selected_apis", [])
+                logger.info(f"Intelligent selection for '{topic}': {selected_apis}")
+                return selected_apis
+            else:
+                logger.warning(f"API selection failed, falling back to field-based selection")
+                return self._get_adapters_for_field(field)
+                
+        except Exception as e:
+            logger.error(f"Intelligent API selection error: {e}")
+            return self._get_adapters_for_field(field)
     
     async def fetch_multi_source(
         self,
@@ -102,7 +160,11 @@ class ContentOrchestrator:
         Returns:
             List of NormalizedContent from multiple sources
         """
-        adapter_names = self._get_adapters_for_field(field)[:num_sources]
+        # Use intelligent selection if enabled, otherwise use field-based
+        if self.use_intelligent_selection:
+            adapter_names = await self._select_apis_intelligently(topic, field, num_sources)
+        else:
+            adapter_names = self._get_adapters_for_field(field)[:num_sources]
         
         logger.info(
             f"Fetching from {len(adapter_names)} sources for field '{field}', "

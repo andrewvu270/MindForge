@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindForge - Professional Learning Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Professional Swiss Color Palette */
+            --primary-black: #000000;
+            --primary-white: #FFFFFF;
+            --primary-gray: #F5F5F5;
+            --accent-blue: #0066FF;
+            --accent-green: #00A652;
+            --gray-50: #FAFAFA;
+            --gray-100: #F5F5F5;
+            --gray-200: #E5E5E5;
+            --gray-300: #D4D4D4;
+            --gray-400: #A3A3A3;
+            --gray-500: #737373;
+            --gray-600: #525252;
+            --gray-700: #404040;
+            --gray-800: #262626;
+            --gray-900: #171717;
+            
+            /* Typography */
+            --font-primary: -apple-system, BlinkMacSystemFont, 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            --font-mono: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: var(--gray-50);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .mockup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 30px;
+            max-width: 1600px;
+            width: 100%;
+        }
+
+        .phone-mockup {
+            width: 380px;
+            height: 820px;
+            background: var(--primary-black);
+            border-radius: 40px;
+            padding: 8px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: var(--primary-white);
+            border-radius: 32px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .status-bar {
+            height: 44px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-700);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        /* Professional Claymorphism Components */
+        .clay-card {
+            background: var(--primary-white);
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
+            box-shadow: 
+                8px 8px 16px rgba(0, 0, 0, 0.06),
+                -8px -8px 16px rgba(255, 255, 255, 0.9),
+                inset 1px 1px 2px rgba(0, 0, 0, 0.02);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .clay-card:hover {
+            box-shadow: 
+                12px 12px 24px rgba(0, 0, 0, 0.08),
+                -12px -12px 24px rgba(255, 255, 255, 0.95),
+                inset 1px 1px 2px rgba(0, 0, 0, 0.04);
+            transform: translateY(-2px);
+        }
+
+        .clay-button {
+            background: var(--primary-black);
+            border: none;
+            border-radius: 12px;
+            padding: 16px 32px;
+            font-family: var(--font-primary);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary-white);
+            text-align: center;
+            box-shadow: 
+                6px 6px 12px rgba(0, 0, 0, 0.15),
+                -6px -6px 12px rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+        }
+
+        .clay-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 
+                8px 8px 16px rgba(0, 0, 0, 0.2),
+                -8px -8px 16px rgba(255, 255, 255, 0.9);
+        }
+
+        .clay-button.secondary {
+            background: var(--primary-white);
+            color: var(--primary-black);
+            border: 2px solid var(--gray-300);
+        }
+
+        .clay-input {
+            background: var(--primary-white);
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-family: var(--font-primary);
+            font-size: 16px;
+            color: var(--gray-800);
+            box-shadow: 
+                4px 4px 8px rgba(0, 0, 0, 0.04),
+                -4px -4px 8px rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+
+        .clay-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 
+                4px 4px 8px rgba(0, 0, 0, 0.04),
+                -4px -4px 8px rgba(255, 255, 255, 0.8),
+                0 0 0 4px rgba(0, 102, 255, 0.08);
+        }
+
+        /* Onboarding Screen */
+        .onboarding-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 32px;
+            height: 100%;
+            background: var(--gray-50);
+        }
+
+        .brand-container {
+            margin-bottom: 48px;
+            text-align: center;
+        }
+
+        .brand-logo {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-black);
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 16px;
+            box-shadow: 
+                12px 12px 24px rgba(0, 0, 0, 0.15),
+                -12px -12px 24px rgba(255, 255, 255, 0.8);
+        }
+
+        .brand-text {
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--primary-black);
+            letter-spacing: -1px;
+        }
+
+        .onboarding-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-black);
+            text-align: center;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .onboarding-description {
+            font-size: 16px;
+            color: var(--gray-600);
+            text-align: center;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            max-width: 300px;
+        }
+
+        .features-list {
+            width: 100%;
+            margin-bottom: 48px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            background: var(--primary-white);
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 
+                4px 4px 8px rgba(0, 0, 0, 0.04),
+                -4px -4px 8px rgba(255, 255, 255, 0.8);
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-blue);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--primary-white);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .feature-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .pagination {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--gray-300);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .dot.active {
+            background: var(--primary-black);
+            width: 32px;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 32px;
+            height: 100%;
+            background: var(--gray-50);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .login-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--primary-black);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .login-subtitle {
+            font-size: 16px;
+            color: var(--gray-600);
+        }
+
+        .form-container {
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .forgot-link {
+            text-align: right;
+            margin-bottom: 32px;
+        }
+
+        .forgot-link a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 32px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--gray-200);
+        }
+
+        .divider span {
+            background: var(--gray-50);
+            padding: 0 16px;
+            font-size: 12px;
+            color: var(--gray-500);
+            position: relative;
+        }
+
+        .signup-prompt {
+            text-align: center;
+            margin-top: 32px;
+            font-size: 14px;
+            color: var(--gray-600);
+        }
+
+        .signup-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Dashboard Screen */
+        .dashboard-screen {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            height: 100%;
+            background: var(--gray-50);
+            overflow-y: auto;
+        }
+
+        .dashboard-header {
+            margin-bottom: 32px;
+        }
+
+        .dashboard-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--primary-black);
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        .dashboard-subtitle {
+            font-size: 16px;
+            color: var(--gray-600);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            padding: 24px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--primary-black);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--gray-600);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary-black);
+            letter-spacing: -0.5px;
+        }
+
+        .section-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .course-card {
+            padding: 20px;
+            cursor: pointer;
+        }
+
+        .course-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .course-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-black);
+            margin-bottom: 4px;
+        }
+
+        .course-category {
+            font-size: 12px;
+            color: var(--gray-500);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .course-progress {
+            margin-bottom: 12px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--gray-200);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-blue);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .course-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--gray-500);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Learn Screen */
+        .learn-screen {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            height: 100%;
+            background: var(--gray-50);
+            overflow-y: auto;
+        }
+
+        .search-bar {
+            margin-bottom: 24px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: var(--primary-white);
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            font-size: 16px;
+            color: var(--gray-800);
+            box-shadow: 
+                4px 4px 8px rgba(0, 0, 0, 0.04),
+                -4px -4px 8px rgba(255, 255, 255, 0.8);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            background: var(--primary-white);
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-tab.active {
+            background: var(--primary-black);
+            color: var(--primary-white);
+            border-color: var(--primary-black);
+        }
+
+        .lessons-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .lesson-card {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .lesson-number {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-blue);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--primary-white);
+            font-weight: 700;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .lesson-content {
+            flex: 1;
+        }
+
+        .lesson-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-black);
+            margin-bottom: 4px;
+        }
+
+        .lesson-duration {
+            font-size: 12px;
+            color: var(--gray-500);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .lesson-status {
+            width: 8px;
+            height: 8px;
+            background: var(--gray-300);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .lesson-status.completed {
+            background: var(--accent-green);
+        }
+
+        /* Progress Screen */
+        .progress-screen {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            height: 100%;
+            background: var(--gray-50);
+            overflow-y: auto;
+        }
+
+        .overview-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .overview-card {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .overview-value {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--primary-black);
+            margin-bottom: 4px;
+        }
+
+        .overview-label {
+            font-size: 11px;
+            color: var(--gray-600);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .progress-section {
+            margin-bottom: 32px;
+        }
+
+        .progress-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .progress-item {
+            padding: 20px;
+        }
+
+        .progress-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .progress-item-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-black);
+        }
+
+        .progress-item-percentage {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+
+        .progress-item-bar {
+            height: 8px;
+            background: var(--gray-200);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-item-fill {
+            height: 100%;
+            background: var(--accent-blue);
+            border-radius: 4px;
+        }
+
+        .progress-item-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--gray-500);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Profile Screen */
+        .profile-screen {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            height: 100%;
+            background: var(--gray-50);
+            overflow-y: auto;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 16px;
+            color: var(--primary-white);
+            font-size: 32px;
+            font-weight: 700;
+            box-shadow: 
+                8px 8px 16px rgba(0, 0, 0, 0.1),
+                -8px -8px 16px rgba(255, 255, 255, 0.8);
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--primary-black);
+            margin-bottom: 4px;
+        }
+
+        .profile-role {
+            font-size: 14px;
+            color: var(--gray-600);
+            margin-bottom: 16px;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+
+        .profile-stat {
+            text-align: center;
+        }
+
+        .profile-stat-value {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--primary-black);
+            margin-bottom: 2px;
+        }
+
+        .profile-stat-label {
+            font-size: 10px;
+            color: var(--gray-600);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .achievements-section {
+            margin-bottom: 32px;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .achievement-card {
+            padding: 16px 12px;
+            text-align: center;
+        }
+
+        .achievement-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-green);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 8px;
+            color: var(--primary-white);
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .achievement-name {
+            font-size: 10px;
+            color: var(--gray-700);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Settings Screen */
+        .settings-screen {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            height: 100%;
+            background: var(--gray-50);
+            overflow-y: auto;
+        }
+
+        .settings-section {
+            margin-bottom: 32px;
+        }
+
+        .settings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .settings-item {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .settings-item-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .settings-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--gray-200);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--gray-600);
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .settings-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .settings-arrow {
+            color: var(--gray-400);
+            font-size: 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .mockup-grid {
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mockup-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .phone-mockup {
+                width: 360px;
+                height: 760px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mockup-grid">
+        <!-- Onboarding Screen -->
+        <div class="phone-mockup">
+            <div class="phone-screen">
+                <div class="status-bar">
+                    <span>9:41</span>
+                    <span>LTE 100%</span>
+                </div>
+                <div class="onboarding-screen">
+                    <div class="brand-container">
+                        <div class="brand-logo">
+                            <span style="color: white; font-size: 32px; font-weight: 900;">MF</span>
+                        </div>
+                        <div class="brand-text">MindForge</div>
+                    </div>
+                    
+                    <h1 class="onboarding-title">Professional Learning Platform</h1>
+                    <p class="onboarding-description">Master essential skills through structured micro-learning designed for ambitious professionals.</p>
+                    
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <div class="feature-icon">5</div>
+                            <div class="feature-text">5-minute focused lessons</div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">6</div>
+                            <div class="feature-text">6 core knowledge domains</div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">∞</div>
+                            <div class="feature-text">Continuous progress tracking</div>
+                        </div>
+                    </div>
+                    
+                    <div class="pagination">
+                        <div class="dot"></div>
+                        <div class="dot active"></div>
+                        <div class="dot"></div>
+                    </div>
+                    
+                    <button class="clay-button">Get Started</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Screen -->
+        <div class="phone-mockup">
+            <div class="phone-screen">
+                <div class="status-bar">
+                    <span>9:41</span>
+                    <span>LTE 100%</span>
+                </div>
+                <div class="login-screen">
+                    <div class="login-header">
+                        <div class="brand-logo" style="width: 60px; height: 60px; margin-bottom: 24px;">
+                            <span style="color: white; font-size: 24px; font-weight: 900;">MF</span>
+                        </div>
+                        <h1 class="login-title">Sign In</h1>
+                        <p class="login-subtitle">Access your learning dashboard</p>
+                    </div>
+                    
+                    <div class="form-container">
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="clay-input" placeholder="Enter your email">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="clay-input" placeholder="Enter your password">
+                        </div>
+                    </div>
+                    
+                    <div class="forgot-link">
+                        <a href="#">Forgot Password?</a>
+                    </div>
+                    
+                    <button class="clay-button">Sign In</button>
+                    
+                    <div class="divider">
+                        <span>OR</span>
+                    </div>
+                    
+                    <button class="clay-button secondary">Enterprise SSO</button>
+                    
+                    <div class="signup-prompt">
+                        New to MindForge? <a href="#" class="signup-link">Request Access</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Screen -->
+        <div class="phone-mockup">
+            <div class="phone-screen">
+                <div class="status-bar">
+                    <span>9:41</span>
+                    <span>LTE 100%</span>
+                </div>
+                <div class="dashboard-screen">
+                    <div class="dashboard-header">
+                        <h1 class="dashboard-title">Dashboard</h1>
+                        <p class="dashboard-subtitle">Track your learning progress</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card clay-card">
+                            <div class="stat-value">247</div>
+                            <div class="stat-label">Total Lessons</div>
+                        </div>
+                        <div class="stat-card clay-card">
+                            <div class="stat-value">62%</div>
+                            <div class="stat-label">Completion Rate</div>
+                        </div>
+                        <div class="stat-card clay-card">
+                            <div class="stat-value">12</div>
+                            <div class="stat-label">Day Streak</div>
+                        </div>
+                        <div class="stat-card clay-card">
+                            <div class="stat-value">#2</div>
+                            <div class="stat-label">Team Rank</div>
+                        </div>
+                    </div>
+                    
+                    <div class="section-header">
+                        <h2 class="section-title">Continue Learning</h2>
+                        <a href="#" class="section-link">View All</a>
+                    </div>
+                    
+                    <div class="courses-grid">
+                        <div class="course-card clay-card">
+                            <div class="course-header">
+                                <div>
+                                    <div class="course-title">Technology Fundamentals</div>
+                                    <div class="course-category">Technology</div>
+                                </div>
+                            </div>
+                            <div class="course-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 73%;"></div>
+                                </div>
+                            </div>
+                            <div class="course-meta">
+                                <span>45 of 62 lessons</span>
+                                <span>73% Complete</span>
+                            </div>
+                        </div>
+                        
+                        <div class="course-card clay-card">
+                            <div class="course-header">
+                                <div>
+                                    <div class="course-title">Financial Markets</div>
+                                    <div class="course-category">Finance</div>
+                                </div>
+                            </div>
+                            <div class="course-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 58%;"></div>
+                                </div>
+                            </div>
+                            <div class="course-meta">
+                                <span>26 of 45 lessons</span>
+                                <span>58% Complete</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Learn Screen -->
+        <div class="phone-mockup">
+            <div class="phone-screen">
+                <div class="status-bar">
+                    <span>9:41</span>
+                    <span>LTE 100%</span>
+                </div>
+                <div class="learn-screen">
+                    <div class="dashboard-header">
+                        <h1 class="dashboard-title">Learn</h1>
+                        <p class="dashboard-subtitle">Technology Track</p>
+                    </div>
+                    
+                    <div class="search-bar">
+                        <input type="text" class="search-input" placeholder="Search lessons...">
+                    </div>
+                    
+                    <div class="filter-tabs">
+                        <div class="filter-tab active">All</div>
+                        <div class="filter-tab">In Progress</div>
+                        <div class="filter-tab">Completed</div>
+                        <div class="filter-tab">Bookmarked</div>
+                    </div>
+                    
+                    <div class="lessons-list">
+                        <div class="lesson-card clay-card">
+                            <div class="lesson-number">1</div>
+                            <div class="lesson-content">
+                                <div class="lesson-title">Introduction to Cloud Computing</div>
+                                <div class="lesson-duration">5 minutes</div>
+                            </div>
+                            <div class="lesson-status completed"></div>
+                        </div>
+                        
+                        <div class="lesson-card clay-card">
+                            <div class="lesson-number">2</div>
+                            <div class="lesson-content">
+                                <div class="lesson-title">Understanding Infrastructure as a Service</div>
+                                <div class="lesson-duration">7 minutes</div>
+                            </div>
+                            <div class="lesson-status completed"></div>
+                        </div>
+                        
+                        <div class="lesson-card clay-card">
+                            <div class="lesson-number">3</div>
+                            <div class="lesson-content">
+                                <div class="lesson-title">Platform as a Service Explained</div>
+                                <div class="lesson-duration">6 minutes</div>
+                            </div>
+                            <div class="lesson-status"></div>
+                        </div>
+                        
+                        <div class="lesson-card clay-card">
+                            <div class="lesson-number">4</div>
+                            <div class="lesson-content">
+                                <div class="lesson-title">Software as a Service Models</div>
+                                <div class="lesson-duration">8 minutes</div>
+                            </div>
+                            <div class="lesson-status"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Screen -->
+        <div class="phone-mockup">
+            <div class="phone-screen">
+                <div class="status-bar">
+                    <span>9:41</span>
+                    <span>LTE 100%</span>
+                </div>
+                <div class="progress-screen">
+                    <div class="dashboard-header">
+                        <h1 class="dashboard-title">Progress</h1>
+                        <p class="dashboard-subtitle">Your learning analytics</p>
+                    </div>
+                    
+                    <div class="overview-cards">
+                        <div class="overview-card clay-card">
+                            <div class="overview-value">247</div>
+                            <div class="overview-label">Lessons Completed</div>
+                        </div>
+                        <div class="overview-card clay-card">
+                            <div class="overview-value">18.5</div>
+                            <div class="overview-label">Hours Learned</div>
+                        </div>
+                        <div class="overview-card clay-card">
+                            <div class="overview-value">89%</div>
+                            <div class="overview-label">Quiz Average</div>
+                        </div>
+                        <div class="overview-card clay-card">
+                            <div class="overview-value">12</div>
+                            <div class="overview-label">Current Streak</div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Domain Progress</h2>
+                            <a href="#" class="section-link">Details</a>
+                        </div>
+                        
+                        <div class="progress-list">
+                            <div class="progress-item clay-card">
+                                <div class="progress-item-header">
+                                    <div class="progress-item-title">Technology</div>
+                                    <div class="progress-item-percentage">73%</div>
+                                </div>
+                                <div class="progress-item-bar">
+                                    <div class="progress-item-fill" style="width: 73%;"></div>
+                                </div>
+                                <div class="progress-item-details">
+                                    <span>45 of 62 lessons</span>
+                                    <span>6h 15min total</span>
+                                </div>
+                            </div>
+                            
+                            <div class="progress-item clay-card">
+                                <div class="progress-item-header">
+                                    <div class="progress-item-title">Finance</div>
+                                    <div class="progress-item-percentage">58%</div>
+                                </div>
+                                <div class="progress-item-bar">
+                                    <div class="progress-item-fill" style="width: 58%;"></div>
+                                </div>
+                                <div class="progress-item-details">
+                                    <span>26 of 45 lessons</span>
+                                    <span>4h 30min total</span>
+                                </div>
+                            </div>
+                            
+                            <div class="progress-item clay-card">
+                                <div class="progress-item-header">
+                                    <div class="progress-item-title">Economics</div>
+                                    <div class="progress-item-percentage">42%</div>
+                                </div>
+                                <div class="progress-item-bar">
+                                    <div class="progress-item-fill" style="width: 42%;"></div>
+                                </div>
+                                <div class="progress-item-details">
+                                    <span>16 of 38 lessons</span>
+                                    <span>2h 45min total</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Screen -->
+        <div class="phone-mockup">
+            <div class="phone-screen">
+                <div class="status-bar">
+                    <span>9:41</span>
+                    <span>LTE 100%</span>
+                </div>
+                <div class="profile-screen">
+                    <div class="profile-header">
+                        <div class="profile-avatar">AC</div>
+                        <div class="profile-name">Alex Chen</div>
+                        <div class="profile-role">Senior Developer</div>
+                        
+                        <div class="profile-stats">
+                            <div class="profile-stat">
+                                <div class="profile-stat-value">12</div>
+                                <div class="profile-stat-label">Level</div>
+                            </div>
+                            <div class="profile-stat">
+                                <div class="profile-stat-value">2.4k</div>
+                                <div class="profile-stat-label">Points</div>
+                            </div>
+                            <div class="profile-stat">
+                                <div class="profile-stat-value">#2</div>
+                                <div class="profile-stat-label">Rank</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="achievements-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Achievements</h2>
+                            <a href="#" class="section-link">View All</a>
+                        </div>
+                        
+                        <div class="achievements-grid">
+                            <div class="achievement-card clay-card">
+                                <div class="achievement-icon">✓</div>
+                                <div class="achievement-name">Quick Learner</div>
+                            </div>
+                            <div class="achievement-card clay-card">
+                                <div class="achievement-icon">⚡</div>
+                                <div class="achievement-name">Speed Reader</div>
+                            </div>
+                            <div class="achievement-card clay-card">
+                                <div class="achievement-icon">🎯</div>
+                                <div class="achievement-name">Perfect Score</div>
+                            </div>
+                            <div class="achievement-card clay-card">
+                                <div class="achievement-icon">🔥</div>
+                                <div class="achievement-name">Week Streak</div>
+                            </div>
+                            <div class="achievement-card clay-card">
+                                <div class="achievement-icon">💎</div>
+                                <div class="achievement-name">Dedicated</div>
+                            </div>
+                            <div class="achievement-card clay-card">
+                                <div class="achievement-icon">📚</div>
+                                <div class="achievement-name">Scholar</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Screen -->
+        <div class="phone-mockup">
+            <div class="phone-screen">
+                <div class="status-bar">
+                    <span>9:41</span>
+                    <span>LTE 100%</span>
+                </div>
+                <div class="settings-screen">
+                    <div class="dashboard-header">
+                        <h1 class="dashboard-title">Settings</h1>
+                        <p class="dashboard-subtitle">Manage your preferences</p>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Account</h2>
+                        </div>
+                        
+                        <div class="settings-list">
+                            <div class="settings-item clay-card">
+                                <div class="settings-item-left">
+                                    <div class="settings-icon">👤</div>
+                                    <div class="settings-text">Profile Information</div>
+                                </div>
+                                <div class="settings-arrow">›</div>
+                            </div>
+                            
+                            <div class="settings-item clay-card">
+                                <div class="settings-item-left">
+                                    <div class="settings-icon">🔐</div>
+                                    <div class="settings-text">Security</div>
+                                </div>
+                                <div class="settings-arrow">›</div>
+                            </div>
+                            
+                            <div class="settings-item clay-card">
+                                <div class="settings-item-left">
+                                    <div class="settings-icon">🔔</div>
+                                    <div class="settings-text">Notifications</div>
+                                </div>
+                                <div class="settings-arrow">›</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Learning</h2>
+                        </div>
+                        
+                        <div class="settings-list">
+                            <div class="settings-item clay-card">
+                                <div class="settings-item-left">
+                                    <div class="settings-icon">⏰</div>
+                                    <div class="settings-text">Daily Reminders</div>
+                                </div>
+                                <div class="settings-arrow">›</div>
+                            </div>
+                            
+                            <div class="settings-item clay-card">
+                                <div class="settings-item-left">
+                                    <div class="settings-icon">📊</div>
+                                    <div class="settings-text">Progress Reports</div>
+                                </div>
+                                <div class="settings-arrow">›</div>
+                            </div>
+                            
+                            <div class="settings-item clay-card">
+                                <div class="settings-item-left">
+                                    <div class="settings-icon">🎯</div>
+                                    <div class="settings-text">Learning Goals</div>
+                                </div>
+                                <div class="settings-arrow">›</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

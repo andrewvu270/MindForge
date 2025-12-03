@@ -91,7 +91,7 @@ async def generate_lesson(request: LessonGenerationRequest):
         # Step 3: Store synthesized lesson in database
         lesson_id = str(uuid.uuid4())
         try:
-            client = db.get_client()
+            client = db.client
             
             # Map field name to category_id (simplified - in production, query categories table)
             field_to_category = {
@@ -199,7 +199,7 @@ async def get_synthesized_lessons(
         List of synthesized lessons
     """
     try:
-        client = db.get_client()
+        client = db.client
         query = client.table("synthesized_lessons").select("*")
         
         if category_id:
@@ -232,7 +232,7 @@ async def get_synthesized_lesson(lesson_id: str):
         Synthesized lesson details
     """
     try:
-        client = db.get_client()
+        client = db.client
         response = client.table("synthesized_lessons").select("*").eq("id", lesson_id).execute()
         
         if not response.data:

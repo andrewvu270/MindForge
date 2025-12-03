@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
 import Navbar from '../components/Navbar';
+import ClayMascot, { MascotLoader } from '../components/ClayMascot';
 
 export default function Leaderboard() {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
@@ -14,9 +15,7 @@ export default function Leaderboard() {
     return (
       <div className="min-h-screen bg-cream">
         <Navbar />
-        <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-coral border-t-transparent rounded-full animate-spin" />
-        </div>
+        <MascotLoader field="Technology" message="Loading leaderboard..." />
       </div>
     );
   }
@@ -37,7 +36,8 @@ export default function Leaderboard() {
         {leaderboard.length >= 3 && (
           <div className="grid grid-cols-3 gap-4 mb-12 items-end">
             {/* 2nd Place */}
-            <div className="card-sage text-center py-6">
+            <div className="card-sage text-center py-6 animate-scale-in" style={{ animationDelay: '0.1s' }}>
+              <div className="text-3xl mb-2">🥈</div>
               <div className="text-2xl font-semibold text-muted mb-3">2</div>
               <div className="w-12 h-12 rounded-full bg-warm-white mx-auto mb-3 flex items-center justify-center font-semibold text-charcoal">
                 {leaderboard[1]?.username?.charAt(0)}
@@ -47,7 +47,11 @@ export default function Leaderboard() {
             </div>
             
             {/* 1st Place */}
-            <div className="card-honey text-center py-8">
+            <div className="card-honey text-center py-8 animate-scale-in relative">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <ClayMascot field="Technology" size="sm" animation="celebrate" />
+              </div>
+              <div className="text-4xl mb-2">🏆</div>
               <div className="text-3xl font-semibold text-honey mb-3">1</div>
               <div className="w-14 h-14 rounded-full bg-warm-white mx-auto mb-3 flex items-center justify-center font-semibold text-charcoal text-lg">
                 {leaderboard[0]?.username?.charAt(0)}
@@ -57,7 +61,8 @@ export default function Leaderboard() {
             </div>
             
             {/* 3rd Place */}
-            <div className="card-coral text-center py-6">
+            <div className="card-coral text-center py-6 animate-scale-in" style={{ animationDelay: '0.2s' }}>
+              <div className="text-3xl mb-2">🥉</div>
               <div className="text-2xl font-semibold text-muted mb-3">3</div>
               <div className="w-12 h-12 rounded-full bg-warm-white mx-auto mb-3 flex items-center justify-center font-semibold text-charcoal">
                 {leaderboard[2]?.username?.charAt(0)}

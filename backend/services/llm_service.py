@@ -1,12 +1,14 @@
 """
-LLM Service - Wraps OpenAI/Hugging Face for AI reasoning
-Can use MCP in development or direct API in production
+LLM Service - Multi-provider LLM with automatic fallback
+Primary: Groq (free, fast, 14,400 requests/day)
+Fallback: OpenAI (paid, reliable)
 """
 import os
 import logging
 import asyncio
 from typing import List, Optional, Dict, Any
 from openai import AsyncOpenAI, OpenAIError, RateLimitError, APITimeoutError
+from groq import AsyncGroq
 from datetime import datetime
 
 from .content_models import NormalizedContent
@@ -16,13 +18,17 @@ logger = logging.getLogger(__name__)
 
 class LLMService:
     """
-    Service for AI/LLM operations.
-    Wraps OpenAI API with Hugging Face fallback and retry logic.
+    Service for AI/LLM operations with automatic provider fallback.
+    
+    Provider Priority:
+    1. Groq (free, fast, 14,400 req/day)
+    2. OpenAI (paid, reliable)
     """
     
     def __init__(
         self, 
-        api_key: Optional[str] = None, 
+        groq_api_key: Optional[str] = None,
+        openai_api_key: Optional[str] = None, 
         hf_api_key: Optional[str] = None,
         use_mcp: bool = False,
         max_retries: int = 3,
@@ -32,35 +38,96 @@ class LLMService:
         Initialize LLM service.
         
         Args:
-            api_key: OpenAI API key (defaults to env var)
+            groq_api_key: Groq API key (defaults to env var)
+            openai_api_key: OpenAI API key (defaults to env var)
             hf_api_key: Hugging Face API key (defaults to env var)
             use_mcp: Whether to use MCP for development (not implemented yet)
             max_retries: Maximum number of retry attempts
             retry_delays: List of delays between retries in seconds
         """
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        self.groq_api_key = groq_api_key or os.getenv("GROQ_API_KEY")
+        self.openai_api_key = openai_api_key or os.getenv("OPENAI_API_KEY")
         self.hf_api_key = hf_api_key or os.getenv("HUGGINGFACE_API_KEY")
         self.use_mcp = use_mcp
         self.max_retries = max_retries
         self.retry_delays = retry_delays or [1.0, 2.0, 4.0]  # Exponential backoff
         
-        # Initialize OpenAI client
-        if not self.use_mcp:
-            if not self.api_key:
-                logger.warning("OPENAI_API_KEY not set, will rely on Hugging Face fallback")
-            else:
-                self.client = AsyncOpenAI(api_key=self.api_key)
+        # Initialize Groq client (primary)
+        self.groq_client = None
+        if self.groq_api_key:
+            self.groq_client = AsyncGroq(api_key=self.groq_api_key)
+            logger.info("Groq client initialized (primary LLM)")
         else:
-            # TODO: Implement MCP client for development
-            logger.warning("MCP mode not yet implemented, falling back to OpenAI")
-            if self.api_key:
-                self.client = AsyncOpenAI(api_key=self.api_key)
+            logger.warning("GROQ_API_KEY not set, will use OpenAI only")
+        
+        # Initialize OpenAI client (fallback)
+        self.openai_client = None
+        if self.openai_api_key:
+            self.openai_client = AsyncOpenAI(api_key=self.openai_api_key)
+            logger.info("OpenAI client initialized (fallback LLM)")
+        else:
+            logger.warning("OPENAI_API_KEY not set")
+        
+        # For backward compatibility
+        self.client = self.groq_client or self.openai_client
         
         # Hugging Face client setup (if needed)
         self.hf_client = None
         if self.hf_api_key:
-            # Lazy initialization - only create when needed
             logger.info("Hugging Face API key configured for fallback")
+    
+    async def _call_llm(self, messages: List[Dict], model: Optional[str] = None, **kwargs):
+        """
+        Call LLM with automatic provider fallback.
+        
+        Tries Groq first, falls back to OpenAI if Groq fails.
+        
+        Args:
+            messages: Chat messages
+            model: Specific model to use (optional)
+            **kwargs: Additional parameters
+            
+        Returns:
+            LLM response
+        """
+        # Try Groq first (free, fast)
+        if self.groq_client:
+            try:
+                groq_model = model or "llama-3.3-70b-versatile"
+                logger.info(f"Trying Groq ({groq_model})...")
+                
+                response = await self.groq_client.chat.completions.create(
+                    model=groq_model,
+                    messages=messages,
+                    **kwargs
+                )
+                
+                logger.info(f"✅ Groq success (tokens: {response.usage.total_tokens})")
+                return response
+                
+            except Exception as e:
+                logger.warning(f"Groq failed: {e}, falling back to OpenAI...")
+        
+        # Fallback to OpenAI
+        if self.openai_client:
+            try:
+                openai_model = model or "gpt-4o-mini"
+                logger.info(f"Using OpenAI fallback ({openai_model})...")
+                
+                response = await self.openai_client.chat.completions.create(
+                    model=openai_model,
+                    messages=messages,
+                    **kwargs
+                )
+                
+                logger.info(f"✅ OpenAI success (tokens: {response.usage.total_tokens})")
+                return response
+                
+            except Exception as e:
+                logger.error(f"OpenAI also failed: {e}")
+                raise
+        
+        raise Exception("No LLM providers available")
     
     async def _call_with_retry(self, func, *args, **kwargs):
         """
@@ -167,35 +234,24 @@ class LLMService:
                 for i, content in enumerate(contents)
             ])
             
-            prompt = f"""You are an expert educator creating a microlearning lesson in the field of {field}.
-
-You have been given content from {len(contents)} different sources with different formats (discussions, news, data, etc.).
-
-Your task is to synthesize these sources into ONE coherent, educational lesson.
+            prompt = f"""Synthesize these {len(contents)} sources into ONE educational lesson about {field}.
 
 Sources:
 {sources_text}
 
-Create a lesson with:
-1. A clear, engaging title
-2. A summary that integrates insights from ALL sources (max {max_words} words)
-3. 3-5 specific learning objectives
-4. Key concepts covered
-
-Format your response as JSON:
+Return ONLY valid JSON with NO additional text, explanations, or formatting:
 {{
-    "title": "lesson title",
-    "summary": "integrated summary under {max_words} words",
-    "learning_objectives": ["objective 1", "objective 2", ...],
-    "key_concepts": ["concept 1", "concept 2", ...]
+    "title": "clear engaging title",
+    "summary": "integrated educational summary under {max_words} words",
+    "learning_objectives": ["objective 1", "objective 2", "objective 3"],
+    "key_concepts": ["concept 1", "concept 2", "concept 3"]
 }}
 
-Remember: Synthesize and integrate - don't just concatenate. Find connections between sources."""
+CRITICAL: Return ONLY the JSON object. No preamble, no explanation, no markdown formatting, no code blocks."""
 
-            response = await self.client.chat.completions.create(
-                model="gpt-4o-mini",  # Using mini for cost efficiency
+            response = await self._call_llm(
                 messages=[
-                    {"role": "system", "content": "You are an expert educator who creates engaging microlearning content."},
+                    {"role": "system", "content": "You are a JSON API that returns educational lesson data. Return ONLY valid JSON with no additional text."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.7,
@@ -261,8 +317,7 @@ Format as JSON array:
     ...
 ]"""
 
-            response = await self.client.chat.completions.create(
-                model="gpt-4o-mini",
+            response = await self._call_llm(
                 messages=[
                     {"role": "system", "content": "You are an expert at creating educational assessments."},
                     {"role": "user", "content": prompt}
@@ -287,6 +342,39 @@ Format as JSON array:
         except Exception as e:
             logger.error(f"Failed to generate quiz after retries: {e}")
             raise
+    
+    async def generate_flashcards(
+        self,
+        lesson_content: str,
+        num_cards: int = 10
+    ) -> List[Dict[str, Any]]:
+        """Generate flashcards from lesson content."""
+        async def _generate():
+            prompt = f"""Create {num_cards} flashcards from this lesson:
+
+{lesson_content}
+
+Format as JSON:
+{{"flashcards": [{{"front": "What is X?", "back": "X is...", "difficulty": "easy", "topic": "topic name"}}]}}"""
+
+            response = await self._call_llm(
+                messages=[
+                    {"role": "system", "content": "You are an expert at creating educational flashcards."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                response_format={"type": "json_object"}
+            )
+            
+            import json
+            result = json.loads(response.choices[0].message.content)
+            return result.get("flashcards", [])
+        
+        try:
+            return await self._call_with_retry(_generate)
+        except Exception as e:
+            logger.error(f"Failed to generate flashcards: {e}")
+            return []
     
     async def analyze_reflection(
         self,
@@ -330,8 +418,7 @@ Format as JSON:
     "suggestion": "specific suggestion"
 }}"""
 
-            response = await self.client.chat.completions.create(
-                model="gpt-4o-mini",
+            response = await self._call_llm(
                 messages=[
                     {"role": "system", "content": "You are a supportive coach helping people develop influence skills."},
                     {"role": "user", "content": prompt}
@@ -394,8 +481,7 @@ Recommend {num_recommendations} lessons that:
 Return JSON array of lesson IDs:
 {{"lesson_ids": ["id1", "id2", ...]}}"""
 
-            response = await self.client.chat.completions.create(
-                model="gpt-4o-mini",
+            response = await self._call_llm(
                 messages=[
                     {"role": "system", "content": "You are an AI learning advisor."},
                     {"role": "user", "content": prompt}

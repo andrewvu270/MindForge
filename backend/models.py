@@ -30,10 +30,18 @@ class Lesson(BaseModel):
     title: str
     content: str
     field_id: str
-    difficulty_level: DifficultyLevel
+    difficulty_level: str  # Changed from DifficultyLevel enum to str for flexibility
     estimated_minutes: int
-    learning_objectives: List[str]
-    key_concepts: List[str]
+    learning_objectives: Optional[List[str]] = []
+    key_concepts: Optional[List[str]] = []
+    video_url: Optional[str] = None
+    video_duration_seconds: Optional[int] = None
+    images: Optional[List[str]] = None
+    audio: Optional[str] = None
+    field_name: Optional[str] = None
+    sources: Optional[List[dict]] = []
+    is_generated: Optional[bool] = False
+    is_auto_generated: Optional[bool] = False
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

@@ -17,7 +17,7 @@ def seed_database():
     print("🌱 Starting database seeding...")
     
     try:
-        client = db.get_client()
+        client = db.client
         seed_data = get_seed_data()
         
         # Seed Fields

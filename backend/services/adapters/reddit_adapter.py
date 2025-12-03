@@ -63,46 +63,76 @@ class RedditAdapter(SourceAdapter):
     
     async def fetch(self, topic: str, limit: int = 5) -> List[dict]:
         """
-        Fetch top posts from relevant subreddits.
+        Search Reddit for posts matching the topic.
         
         Args:
-            topic: Topic or field to search for
+            topic: Topic to search for
             limit: Maximum number of posts to fetch
             
         Returns:
             List of post dictionaries
         """
         async def _fetch_posts():
-            subreddits = self._get_subreddits_for_topic(topic)
             all_posts = []
             
-            for subreddit in subreddits:
+            # First try: Search across all of Reddit
+            try:
+                url = f"{self.BASE_URL}/search.json"
+                response = await self.client.get(
+                    url,
+                    params={
+                        "q": topic,
+                        "sort": "relevance",
+                        "t": "week",  # Posts from last week
+                        "limit": limit
+                    }
+                )
+                response.raise_for_status()
+                
+                data = response.json()
+                posts = data.get("data", {}).get("children", [])
+                
+                for post in posts:
+                    post_data = post.get("data", {})
+                    if not post_data.get("stickied") and not post_data.get("promoted"):
+                        all_posts.append(post_data)
+                
+                if len(all_posts) >= limit:
+                    return all_posts[:limit]
+                    
+            except Exception as e:
+                logger.warning(f"Reddit search failed for '{topic}': {e}")
+            
+            # Second try: Search in relevant subreddits
+            subreddits = self._get_subreddits_for_topic(topic)
+            for subreddit in subreddits[:2]:  # Try first 2 relevant subreddits
                 try:
-                    # Fetch hot posts from subreddit
-                    url = f"{self.BASE_URL}/r/{subreddit}/hot.json"
+                    url = f"{self.BASE_URL}/r/{subreddit}/search.json"
                     response = await self.client.get(
                         url,
-                        params={"limit": limit}
+                        params={
+                            "q": topic,
+                            "restrict_sr": "on",  # Search only in this subreddit
+                            "sort": "relevance",
+                            "t": "week",
+                            "limit": limit
+                        }
                     )
                     response.raise_for_status()
                     
                     data = response.json()
                     posts = data.get("data", {}).get("children", [])
                     
-                    # Extract post data
                     for post in posts:
                         post_data = post.get("data", {})
-                        
-                        # Filter out stickied posts and ads
                         if not post_data.get("stickied") and not post_data.get("promoted"):
                             all_posts.append(post_data)
                     
-                    # Stop if we have enough posts
                     if len(all_posts) >= limit:
                         break
                         
                 except Exception as e:
-                    logger.warning(f"Failed to fetch from r/{subreddit}: {e}")
+                    logger.warning(f"Failed to search r/{subreddit} for '{topic}': {e}")
                     continue
             
             return all_posts[:limit]

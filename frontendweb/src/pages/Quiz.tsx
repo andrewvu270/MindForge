@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import Navbar from '../components/Navbar';
+import { MascotLoader } from '../components/ClayMascot';
+import Confetti from '../components/Confetti';
+import { LottieCelebration } from '../components/LottieEnhanced';
 
 export default function Quiz() {
   const { lessonId } = useParams();
@@ -11,31 +14,90 @@ export default function Quiz() {
   const [answers, setAnswers] = useState<{ [key: number]: number }>({});
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [lessonField, setLessonField] = useState('Technology');
 
   useEffect(() => {
-    if (lessonId) apiService.getQuiz(lessonId).then(setQuiz).catch(console.error).finally(() => setLoading(false));
+    const loadQuiz = async () => {
+      if (!lessonId) return;
+      
+      try {
+        // First get the lesson to know the field
+        const lesson = await apiService.getLesson(lessonId);
+        setLessonField(lesson.field_name || 'Technology');
+        
+        // Try to get existing quiz
+        const quizData = await apiService.getQuiz(lessonId);
+        
+        if (quizData && quizData.questions && quizData.questions.length > 0) {
+          // Select random 5 questions from the pool
+          const questionPool = [...quizData.questions];
+          const numQuestions = Math.min(5, questionPool.length);
+          
+          // Shuffle and take first N questions
+          const selectedQuestions = questionPool
+            .sort(() => Math.random() - 0.5)
+            .slice(0, numQuestions);
+          
+          // Randomize options for each selected question
+          const randomizedQuiz = {
+            ...quizData,
+            questions: selectedQuestions.map(q => ({
+              ...q,
+              options: q.options ? [...q.options].sort(() => Math.random() - 0.5) : []
+            }))
+          };
+          
+          setQuiz(randomizedQuiz);
+        } else {
+          // Generate quiz if none exists
+          const generated = await apiService.generateQuiz(lessonId, lesson.content);
+          setQuiz(generated);
+        }
+      } catch (error) {
+        console.error('Error loading quiz:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadQuiz();
   }, [lessonId]);
 
   const handleSubmit = async () => {
-    const submission = { 
-      quiz_id: quiz.id, 
-      user_id: 'user_1', 
-      answers: Object.entries(answers).map(([q, a]) => ({ 
-        question_id: quiz.questions[parseInt(q)].id, 
-        selected_option: a 
-      })) 
-    };
-    const res = await apiService.submitQuiz(submission);
-    setResult(res);
+    try {
+      // Format answers as { question_id: selected_answer }
+      const formattedAnswers: { [key: string]: string } = {};
+      Object.entries(answers).forEach(([questionIndex, optionIndex]) => {
+        const question = questions[parseInt(questionIndex)];
+        if (question && question.options) {
+          formattedAnswers[question.id] = question.options[optionIndex];
+        }
+      });
+      
+      const submission = { 
+        quiz_id: lessonId!, 
+        user_id: 'user_1', 
+        answers: formattedAnswers
+      };
+      
+      const res = await apiService.submitQuiz(submission);
+      setResult(res);
+      
+      // Show celebration if passing
+      if (res.percentage >= 70) {
+        setShowCelebration(true);
+      }
+    } catch (error) {
+      console.error('Error submitting quiz:', error);
+    }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-cream">
         <Navbar />
-        <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-coral border-t-transparent rounded-full animate-spin" />
-        </div>
+        <MascotLoader field={lessonField} message="Preparing your quiz..." />
       </div>
     );
   }
@@ -57,20 +119,39 @@ export default function Quiz() {
 
   // Results screen
   if (result) {
-    const isPassing = result.score >= 70;
+    const isPassing = result.percentage >= 70;
     return (
       <div className="min-h-screen bg-cream">
         <Navbar />
+        
+        {/* Celebration overlay */}
+        {showCelebration && (
+          <>
+            {result.percentage === 100 && <Confetti />}
+            <LottieCelebration 
+              message={result.percentage === 100 ? 'Perfect score! 🎉' : 'Great job! 🌟'}
+              onComplete={() => setShowCelebration(false)}
+            />
+          </>
+        )}
+        
         <div className="max-w-2xl mx-auto px-6 py-12">
-          <div className={`card text-center py-12 ${isPassing ? 'card-sage' : 'card-coral'}`}>
-            <div className="text-6xl mb-4">{isPassing ? '🎉' : '📚'}</div>
+          <div className={`card text-center py-12 ${isPassing ? 'card-sage' : 'card-coral'} animate-scale-in`}>
+            <div className="text-6xl mb-4 animate-celebrate">{isPassing ? '🎉' : '📚'}</div>
             <h1 className="text-3xl font-semibold text-charcoal mb-2">
               {isPassing ? 'Great job!' : 'Keep learning!'}
             </h1>
-            <div className="text-6xl font-semibold text-charcoal my-6">{result.score}%</div>
-            <p className="text-muted mb-8">
-              {result.correct_count} of {result.total_questions} correct
+            <div className="text-6xl font-semibold text-charcoal my-6">{Math.round(result.percentage)}%</div>
+            <p className="text-muted mb-4">
+              {result.score} of {result.total_questions} correct
             </p>
+            
+            {/* Points earned */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-honey-light rounded-full mb-8">
+              <span className="text-2xl">⭐</span>
+              <span className="font-semibold text-charcoal">+{result.points_earned} points</span>
+            </div>
+            
             <div className="flex gap-4 justify-center">
               <button onClick={() => navigate(`/lessons/${lessonId}`)} className="btn-secondary">
                 Back to Lesson
