@@ -4,7 +4,7 @@
 
 ### Backend
 - FastAPI setup with Supabase
-- 16 source adapters (HackerNews, Reddit, Wikipedia, YouTube, NASA, arXiv, etc.)
+- Source adapters (HackerNews, Reddit, Wikipedia, YouTube, NASA, arXiv, etc.)
 - Multi-provider LLM (Groq + OpenAI fallback)
 - Multi-provider images (Pollinations + Ollama + HuggingFace)
 - Intelligent API selection (LLM-powered)
