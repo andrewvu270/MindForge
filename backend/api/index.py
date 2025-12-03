@@ -13,19 +13,8 @@ if parent_dir not in sys.path:
 # Set environment variable to indicate we're in Vercel
 os.environ["VERCEL"] = "1"
 
-try:
-    # Import the FastAPI app
-    from main import app
-    
-    # Export for Vercel
-    handler = app
-except Exception as e:
-    # Create a minimal error app if import fails
-    from fastapi import FastAPI
-    app = FastAPI()
-    
-    @app.get("/")
-    async def error_root():
-        return {"error": f"Failed to initialize app: {str(e)}"}
-    
-    handler = app
+# Import the FastAPI app
+from main import app
+
+# Vercel expects 'app' to be the ASGI application
+# No need for 'handler' - just export 'app'
