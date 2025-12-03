@@ -10,9 +10,22 @@ parent_dir = str(Path(__file__).parent.parent)
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-# Import the FastAPI app
-from main import app
+# Set environment variable to indicate we're in Vercel
+os.environ["VERCEL"] = "1"
 
-# Export for Vercel
-handler = app
-app = app
+try:
+    # Import the FastAPI app
+    from main import app
+    
+    # Export for Vercel
+    handler = app
+except Exception as e:
+    # Create a minimal error app if import fails
+    from fastapi import FastAPI
+    app = FastAPI()
+    
+    @app.get("/")
+    async def error_root():
+        return {"error": f"Failed to initialize app: {str(e)}"}
+    
+    handler = app

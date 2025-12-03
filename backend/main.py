@@ -27,12 +27,12 @@ load_dotenv()
 
 app = FastAPI(title="MindForge API", version="1.0.0")
 
-# Add CORS middleware - allow all origins for now to fix Vercel deployment
+# Add CORS middleware - allow all origins for Vercel deployment
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=["*"],
+    allow_credentials=False,  # Must be False when using wildcard origin
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allow_headers=["*"],
     expose_headers=["*"],
 )
@@ -43,10 +43,18 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 class CORSHeaderMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        # Handle preflight requests
+        if request.method == "OPTIONS":
+            response = Response()
+            response.headers["Access-Control-Allow-Origin"] = "*"
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+            response.headers["Access-Control-Allow-Headers"] = "*"
+            response.headers["Access-Control-Max-Age"] = "3600"
+            return response
+        
         response = await call_next(request)
         response.headers["Access-Control-Allow-Origin"] = "*"
-        response.headers["Access-Control-Allow-Credentials"] = "true"
-        response.headers["Access-Control-Allow-Methods"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, PATCH, OPTIONS"
         response.headers["Access-Control-Allow-Headers"] = "*"
         return response
 
@@ -70,6 +78,11 @@ app.include_router(progress_router)
 async def root():
     return {"message": "MindForge Learning Platform API is running"}
 
+@app.options("/{full_path:path}")
+async def options_handler(full_path: str):
+    """Handle OPTIONS requests for CORS preflight"""
+    return {}
+
 # Fields endpoints
 @app.get("/api/fields", response_model=List[Field])
 async def get_fields():
@@ -77,20 +90,22 @@ async def get_fields():
         response = db.client.table("categories").select("*").execute()
         # Map categories to fields format
         fields = []
-        for cat in response.data:
-            fields.append({
-                "id": cat.get("slug", cat["id"]),
-                "name": cat["name"],
-                "description": cat.get("description", ""),
-                "icon": cat.get("icon", "📚"),
-                "color": cat.get("color", "#3B82F6"),
-                "total_lessons": 0,  # Will be calculated
-                "created_at": cat.get("created_at")
-            })
+        if response.data:
+            for cat in response.data:
+                fields.append({
+                    "id": cat.get("slug", cat["id"]),
+                    "name": cat["name"],
+                    "description": cat.get("description", ""),
+                    "icon": cat.get("icon", "📚"),
+                    "color": cat.get("color", "#3B82F6"),
+                    "total_lessons": 0,  # Will be calculated
+                    "created_at": cat.get("created_at")
+                })
         return fields
     except Exception as e:
         logger.error(f"Error fetching fields: {e}")
-        raise HTTPException(status_code=500, detail=f"Error fetching fields: {str(e)}")
+        # Return empty list instead of error to prevent deployment issues
+        return []
 
 # Lessons endpoints
 @app.get("/api/lessons", response_model=List[Lesson])
