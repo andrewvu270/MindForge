@@ -61,6 +61,14 @@ export const theme = {
       mint: '#A8D5BA', // Soft Mint
       cream: '#FDFBF7',
     },
+    // Field-specific colors (matching frontendweb)
+    coral: '#FF6B6B',
+    sage: '#84A98C',
+    honey: '#F2C94C',
+    sky: '#56CCF2',
+    lavender: '#BB6BD9',
+    rose: '#EB5757',
+    charcoal: '#2C2C2C',
   },
   gradients: {
     primary: ['#2F3E46', '#354F52'], // Navy gradient

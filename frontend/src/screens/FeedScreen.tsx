@@ -2,16 +2,14 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { theme } from '../theme';
 
-// This matches frontendweb/src/pages/Learn.tsx
-// Main learning interface for a specific lesson
-export default function LearnScreen({ route }: any) {
-  const { id } = route.params || {};
-
+// This matches frontendweb/src/pages/Feed.tsx
+// Video feed interface (TikTok-style)
+export default function FeedScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Learn: Lesson {id}</Text>
-        <Text style={styles.subtitle}>Main learning interface</Text>
+        <Text style={styles.title}>Feed</Text>
+        <Text style={styles.subtitle}>Scroll through bite-sized lessons</Text>
       </View>
     </ScrollView>
   );

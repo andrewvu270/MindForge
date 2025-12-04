@@ -2,16 +2,16 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { theme } from '../theme';
 
-// This matches frontendweb/src/pages/Learn.tsx
-// Main learning interface for a specific lesson
-export default function LearnScreen({ route }: any) {
+// This matches frontendweb/src/pages/LearnRead.tsx
+// Reading-focused learning interface
+export default function LearnReadScreen({ route }: any) {
   const { id } = route.params || {};
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Learn: Lesson {id}</Text>
-        <Text style={styles.subtitle}>Main learning interface</Text>
+        <Text style={styles.title}>Read: Lesson {id}</Text>
+        <Text style={styles.subtitle}>Reading interface</Text>
       </View>
     </ScrollView>
   );

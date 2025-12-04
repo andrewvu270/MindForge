@@ -148,6 +148,76 @@ class ApiService {
       method: 'POST',
     });
   }
+
+  // Daily Challenge Progress
+  async getDailyChallengeProgress(userId: string): Promise<any> {
+    return this.request<any>(`/api/progress/${userId}/daily-challenge`);
+  }
+
+  // Lesson completion
+  async completeLesson(lessonId: string, userId: string, timeSpentSeconds?: number): Promise<any> {
+    return this.request<any>(`/api/progress/${userId}/lessons/${lessonId}/complete`, {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: userId,
+        time_spent_seconds: timeSpentSeconds || 300,
+      }),
+    });
+  }
+
+  // Flashcards
+  async getFlashcards(fieldId?: string, limit: number = 50): Promise<any[]> {
+    const params = new URLSearchParams();
+    if (fieldId) params.append('field_id', fieldId);
+    params.append('limit', limit.toString());
+    return this.request<any[]>(`/api/quiz/flashcards?${params}`);
+  }
+
+  async getFlashcardsForLesson(lessonId: string): Promise<any[]> {
+    return this.request<any[]>(`/api/quiz/flashcards/${lessonId}`);
+  }
+
+  async generateFlashcards(lessonId: string, lessonContent: string, numCards: number = 10): Promise<any> {
+    return this.request<any>('/api/quiz/flashcards/generate', {
+      method: 'POST',
+      body: JSON.stringify({
+        lesson_id: lessonId,
+        lesson_content: lessonContent,
+        num_cards: numCards,
+      }),
+    });
+  }
+
+  // Reflections
+  async getDailyReflection(): Promise<any> {
+    return this.request<any>('/api/reflections/daily');
+  }
+
+  async submitReflection(userId: string, response: string): Promise<any> {
+    return this.request<any>('/api/reflections', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, response }),
+    });
+  }
+
+  async getReflectionHistory(userId: string): Promise<any[]> {
+    return this.request<any[]>(`/api/reflections/history?user_id=${userId}`);
+  }
+
+  // Learning Paths
+  async getLearningPaths(fieldId: string): Promise<any[]> {
+    return this.request<any[]>(`/api/learning-paths/${fieldId}`);
+  }
+
+  async generateLearningPaths(fieldId: string, fieldName: string): Promise<any> {
+    return this.request<any>('/api/learning-paths/generate', {
+      method: 'POST',
+      body: JSON.stringify({
+        field_id: fieldId,
+        field_name: fieldName,
+      }),
+    });
+  }
 }
 
 export const apiService = new ApiService();

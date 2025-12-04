@@ -2,312 +2,529 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
+  StyleSheet,
   ActivityIndicator,
-  Dimensions,
 } from 'react-native';
-import { Lesson, Field } from '../types';
-import apiService from '../services/api';
+import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
+import { theme } from '../theme';
+import ClayMascot from '../components/ClayMascot';
+import { apiService } from '../services/api';
 
-const { width } = Dimensions.get('window');
-
-interface Props {
-  route: {
-    params: {
-      categoryId: string;
-    };
-  };
-  navigation: any;
-}
-
-const LessonsScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { categoryId } = route.params;
-  const [lessons, setLessons] = useState<Lesson[]>([]);
-  const [category, setCategory] = useState<Field | null>(null);
+export default function LessonsScreen() {
+  const navigation = useNavigation();
+  const [lessons, setLessons] = useState<any[]>([]);
+  const [fields, setFields] = useState<any[]>([]);
+  const [selectedField, setSelectedField] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadCategoryAndLessons();
-  }, [categoryId]);
+    Promise.all([
+      apiService.getLessons(selectedField || ''),
+      apiService.getFields(),
+    ])
+      .then(([l, f]) => {
+        setLessons(l);
+        setFields(f);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [selectedField]);
 
-  const loadCategoryAndLessons = async () => {
-    try {
-      setLoading(true);
-      
-      // Get all fields to find the current category
-      const fields = await apiService.getFields();
-      const currentCategory = fields.find(f => f.id === categoryId);
-      setCategory(currentCategory || null);
+  const fieldData = [
+    { name: 'Technology', color: 'coral', description: 'AI, software, digital trends', icon: '💻' },
+    { name: 'Finance', color: 'sage', description: 'Markets, investing, money', icon: '💰' },
+    { name: 'Economics', color: 'honey', description: 'Policy, trade, macro trends', icon: '📊' },
+    { name: 'Culture', color: 'sky', description: 'Society, media, ideas', icon: '🎭' },
+    { name: 'Influence', color: 'lavender', description: 'Persuasion, leadership', icon: '🎯' },
+    { name: 'Global Events', color: 'rose', description: 'Geopolitics, world affairs', icon: '🌍' },
+  ];
 
-      // Get lessons for this category
-      const lessonsData = await apiService.getLessons(categoryId);
-      setLessons(lessonsData);
-    } catch (err) {
-      setError('Failed to load lessons');
-      console.error('Error loading lessons:', err);
-    } finally {
-      setLoading(false);
-    }
+  const getFieldData = (fieldName: string) => {
+    return fieldData.find((f) => f.name === fieldName) || fieldData[0];
   };
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'beginner': return '#00FF88';
-      case 'intermediate': return '#FFD700';
-      case 'advanced': return '#FF6B6B';
-      default: return '#999';
-    }
-  };
-
-  const renderLessonCard = (lesson: Lesson) => (
-    <TouchableOpacity
-      key={lesson.id}
-      style={styles.lessonCard}
-      onPress={() => navigation.navigate('LessonDetail', { lessonId: lesson.id })}
-    >
-      <View style={styles.lessonHeader}>
-        <Text style={styles.lessonTitle}>{lesson.title}</Text>
-        <View style={styles.lessonMeta}>
-          <Text style={[styles.difficultyBadge, { color: getDifficultyColor(lesson.difficulty) }]}>
-            {lesson.difficulty.charAt(0).toUpperCase() + lesson.difficulty.slice(1)}
-          </Text>
-          <Text style={styles.pointsBadge}>🏆 {lesson.points} pts</Text>
-        </View>
-      </View>
-      
-      <View style={styles.lessonContent}>
-        <Text style={styles.lessonDescription} numberOfLines={3}>
-          {lesson.content.replace(/[#*`]/g, '').substring(0, 150)}...
-        </Text>
-        
-        <View style={styles.lessonFooter}>
-          <View style={styles.tagsContainer}>
-            {lesson.tags.slice(0, 3).map((tag, index) => (
-              <View key={index} style={styles.tag}>
-                <Text style={styles.tagText}>{tag}</Text>
-              </View>
-            ))}
-          </View>
-          <Text style={styles.readingTime}>⏱️ {lesson.reading_time} min</Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+  const selectedFieldData = selectedField
+    ? (() => {
+        const field = fields.find((f) => f.id === selectedField);
+        return getFieldData(field?.name || 'Technology');
+      })()
+    : null;
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#00FFF0" />
-          <Text style={styles.loadingText}>Loading lessons...</Text>
-        </View>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={loadCategoryAndLessons}>
-            <Text style={styles.retryText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={theme.colors.coral} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={[styles.header, { borderColor: category?.color || '#00FFF0' }]}>
-          <Text style={styles.categoryIcon}>{category?.icon}</Text>
-          <View style={styles.headerContent}>
-            <Text style={styles.categoryName}>{category?.name}</Text>
-            <Text style={styles.categoryDescription}>{category?.description}</Text>
-            <Text style={styles.lessonCount}>{lessons.length} lessons available</Text>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {!selectedField ? (
+        /* STEP 1: Field Selection */
+        <>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Choose Your Field</Text>
+            <Text style={styles.headerSubtitle}>
+              Select a field to explore curated lessons. Each field has its own mascot guide to help you learn.
+            </Text>
           </View>
-        </View>
 
-        {/* Lessons List */}
-        <View style={styles.lessonsContainer}>
+          {/* Field Cards */}
+          <View style={styles.fieldsContainer}>
+            {fieldData.map((field) => {
+              const fieldObj = fields.find((f) => f.name === field.name);
+              const fieldLessons = fieldObj ? lessons.filter((l) => l.field_id === fieldObj.id) : [];
+              const lessonCount = fieldLessons.length;
+
+              return (
+                <TouchableOpacity
+                  key={field.name}
+                  style={[
+                    styles.fieldCard,
+                    { backgroundColor: `${theme.colors[field.color as keyof typeof theme.colors]}10` },
+                  ]}
+                  onPress={() => {
+                    if (fieldObj) {
+                      setSelectedField(fieldObj.id);
+                      setLoading(true);
+                    }
+                  }}
+                >
+                  {/* Mascot */}
+                  <View style={styles.mascotContainer}>
+                    <ClayMascot field={field.name} size="lg" animation="idle" />
+                  </View>
+
+                  {/* Field name */}
+                  <Text style={styles.fieldName}>{field.name}</Text>
+
+                  {/* Description */}
+                  <Text style={styles.fieldDescription}>{field.description}</Text>
+
+                  {/* Stats footer */}
+                  <View style={styles.fieldFooter}>
+                    <View style={styles.lessonCount}>
+                      <Text style={styles.lessonCountNumber}>{lessonCount}</Text>
+                      <Text style={styles.lessonCountLabel}>lessons</Text>
+                    </View>
+
+                    <View style={styles.arrowContainer}>
+                      <Ionicons name="chevron-forward" size={16} color={theme.colors.charcoal} />
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Bottom CTA */}
+          <View style={styles.bottomCta}>
+            <Text style={styles.ctaEmoji}>✨</Text>
+            <Text style={styles.ctaTitle}>Can't find what you're looking for?</Text>
+            <Text style={styles.ctaSubtitle}>Generate a custom lesson on any topic using AI</Text>
+            <TouchableOpacity
+              style={styles.ctaButton}
+              onPress={() => navigation.navigate('Generate')}
+            >
+              <Text style={styles.ctaButtonText}>Generate Custom Lesson</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      ) : (
+        /* STEP 2: Lesson List for Selected Field */
+        <>
+          {/* Back button */}
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => {
+              setSelectedField(null);
+              setLessons([]);
+            }}
+          >
+            <Ionicons name="chevron-back" size={16} color={theme.colors.textMuted} />
+            <Text style={styles.backButtonText}>Back to all fields</Text>
+          </TouchableOpacity>
+
+          {/* Field Header Card */}
+          {selectedFieldData && (
+            <View
+              style={[
+                styles.fieldHeader,
+                { backgroundColor: `${theme.colors[selectedFieldData.color as keyof typeof theme.colors]}10` },
+              ]}
+            >
+              <ClayMascot field={selectedFieldData.name} size="lg" animation="wave" />
+              <View style={styles.fieldHeaderContent}>
+                <Text style={styles.fieldHeaderTitle}>{selectedFieldData.name}</Text>
+                <Text style={styles.fieldHeaderDescription}>{selectedFieldData.description}</Text>
+                <View style={styles.fieldHeaderStats}>
+                  <Text style={styles.fieldHeaderStatsNumber}>{lessons.length}</Text>
+                  <Text style={styles.fieldHeaderStatsLabel}>lessons available</Text>
+                  <Text style={styles.fieldHeaderStatsSeparator}>·</Text>
+                  <Text style={styles.fieldHeaderStatsLabel}>
+                    {lessons.reduce((acc, l) => acc + (l.estimated_minutes || 5), 0)} min total
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* Lessons List */}
           {lessons.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No lessons available yet</Text>
-              <Text style={styles.emptySubtext}>We're adding new content regularly!</Text>
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyEmoji}>📚</Text>
+              <Text style={styles.emptyTitle}>No lessons yet</Text>
+              <Text style={styles.emptySubtitle}>
+                We're working on adding content to this field. Check back soon!
+              </Text>
+              <TouchableOpacity
+                style={styles.emptyButton}
+                onPress={() => navigation.navigate('Generate')}
+              >
+                <Text style={styles.emptyButtonText}>Generate a Custom Lesson</Text>
+              </TouchableOpacity>
             </View>
           ) : (
-            lessons.map(renderLessonCard)
+            <View style={styles.lessonsContainer}>
+              {lessons.map((lesson, index) => (
+                <TouchableOpacity
+                  key={lesson.id}
+                  style={styles.lessonCard}
+                  onPress={() =>
+                    navigation.navigate('Learn', { id: lesson.id })
+                  }
+                >
+                  {/* Lesson number badge */}
+                  <View style={styles.lessonBadge}>
+                    <Text style={styles.lessonBadgeText}>{index + 1}</Text>
+                  </View>
+
+                  {/* Lesson content */}
+                  <View style={styles.lessonCardContent}>
+                    <View style={styles.lessonMeta}>
+                      <View style={styles.difficultyPill}>
+                        <Text style={styles.difficultyText}>{lesson.difficulty_level || 'Beginner'}</Text>
+                      </View>
+                      <Text style={styles.lessonMetaText}>
+                        {lesson.estimated_minutes || 5} min
+                      </Text>
+                      {lesson.sources?.length > 0 && (
+                        <>
+                          <Text style={styles.lessonMetaSeparator}>·</Text>
+                          <Text style={styles.lessonMetaText}>{lesson.sources.length} sources</Text>
+                        </>
+                      )}
+                    </View>
+                    <Text style={styles.lessonCardTitle}>{lesson.title}</Text>
+                    {lesson.description && (
+                      <Text style={styles.lessonCardDescription} numberOfLines={1}>
+                        {lesson.description}
+                      </Text>
+                    )}
+                  </View>
+
+                  {/* Arrow */}
+                  <View style={styles.lessonArrow}>
+                    <Ionicons name="chevron-forward" size={20} color={theme.colors.textMuted} />
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
           )}
-        </View>
-      </ScrollView>
-    </View>
+        </>
+      )}
+
+      <View style={{ height: 40 }} />
+    </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0E27',
-  },
-  scrollView: {
-    flex: 1,
+    backgroundColor: theme.colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#CCC',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#FF6B6B',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  retryButton: {
-    backgroundColor: '#00FFF0',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  retryText: {
-    color: '#0A0E27',
-    fontWeight: 'bold',
+    backgroundColor: theme.colors.background,
   },
   header: {
-    flexDirection: 'row',
-    padding: 20,
-    backgroundColor: '#252B3D',
-    borderBottomWidth: 2,
-    margin: 20,
-    borderRadius: 16,
-  },
-  categoryIcon: {
-    fontSize: 40,
-    marginRight: 15,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  categoryName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFF',
-    marginBottom: 5,
-  },
-  categoryDescription: {
-    fontSize: 14,
-    color: '#CCC',
-    marginBottom: 8,
-  },
-  lessonCount: {
-    fontSize: 12,
-    color: '#00FFF0',
-    fontWeight: '600',
-  },
-  lessonsContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 100,
-  },
-  lessonCard: {
-    backgroundColor: '#252B3D',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: '#333',
-  },
-  lessonHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  lessonTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#FFF',
-    flex: 1,
-    marginRight: 10,
-  },
-  lessonMeta: {
-    alignItems: 'flex-end',
-  },
-  difficultyBadge: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  pointsBadge: {
-    fontSize: 11,
-    color: '#FFD700',
-  },
-  lessonContent: {
-    flex: 1,
-  },
-  lessonDescription: {
-    fontSize: 13,
-    color: '#CCC',
-    lineHeight: 18,
-    marginBottom: 12,
-  },
-  lessonFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.xl,
+    paddingBottom: theme.spacing.lg,
     alignItems: 'center',
   },
-  tagsContainer: {
-    flexDirection: 'row',
-    flex: 1,
-    flexWrap: 'wrap',
-  },
-  tag: {
-    backgroundColor: '#1A1F2E',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    marginRight: 6,
-    marginBottom: 4,
-  },
-  tagText: {
-    fontSize: 10,
-    color: '#999',
-  },
-  readingTime: {
-    fontSize: 12,
-    color: '#999',
-    marginLeft: 10,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    paddingVertical: 60,
-  },
-  emptyText: {
-    fontSize: 18,
-    color: '#FFF',
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#999',
+  headerTitle: {
+    fontSize: theme.typography.sizes.xxxl,
+    fontFamily: theme.typography.fontFamily.bold,
+    color: theme.colors.charcoal,
+    marginBottom: theme.spacing.md,
     textAlign: 'center',
   },
+  headerSubtitle: {
+    fontSize: theme.typography.sizes.md,
+    color: theme.colors.textMuted,
+    textAlign: 'center',
+    lineHeight: theme.typography.sizes.md * 1.5,
+  },
+  fieldsContainer: {
+    paddingHorizontal: theme.spacing.lg,
+  },
+  fieldCard: {
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+    ...theme.shadows.soft,
+  },
+  mascotContainer: {
+    alignItems: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  fieldName: {
+    fontSize: theme.typography.sizes.xl,
+    fontFamily: theme.typography.fontFamily.bold,
+    color: theme.colors.charcoal,
+    textAlign: 'center',
+    marginBottom: theme.spacing.sm,
+  },
+  fieldDescription: {
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.textMuted,
+    textAlign: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  fieldFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: theme.spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: `${theme.colors.charcoal}10`,
+  },
+  lessonCount: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  lessonCountNumber: {
+    fontSize: theme.typography.sizes.xxl,
+    fontFamily: theme.typography.fontFamily.bold,
+    color: theme.colors.charcoal,
+  },
+  lessonCountLabel: {
+    fontSize: theme.typography.sizes.xs,
+    color: theme.colors.textMuted,
+  },
+  arrowContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: `${theme.colors.charcoal}05`,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  bottomCta: {
+    marginHorizontal: theme.spacing.lg,
+    marginTop: theme.spacing.xl,
+    backgroundColor: theme.colors.cardBackground,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.xl,
+    alignItems: 'center',
+    ...theme.shadows.soft,
+  },
+  ctaEmoji: {
+    fontSize: 40,
+    marginBottom: theme.spacing.md,
+  },
+  ctaTitle: {
+    fontSize: theme.typography.sizes.xl,
+    fontFamily: theme.typography.fontFamily.bold,
+    color: theme.colors.charcoal,
+    marginBottom: theme.spacing.sm,
+    textAlign: 'center',
+  },
+  ctaSubtitle: {
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.textMuted,
+    marginBottom: theme.spacing.lg,
+    textAlign: 'center',
+  },
+  ctaButton: {
+    backgroundColor: theme.colors.coral,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.sm,
+  },
+  ctaButtonText: {
+    fontSize: theme.typography.sizes.md,
+    fontFamily: theme.typography.fontFamily.medium,
+    color: '#FFFFFF',
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    gap: theme.spacing.sm,
+  },
+  backButtonText: {
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.textMuted,
+  },
+  fieldHeader: {
+    marginHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.lg,
+    ...theme.shadows.soft,
+  },
+  fieldHeaderContent: {
+    flex: 1,
+  },
+  fieldHeaderTitle: {
+    fontSize: theme.typography.sizes.xxl,
+    fontFamily: theme.typography.fontFamily.bold,
+    color: theme.colors.charcoal,
+    marginBottom: theme.spacing.sm,
+  },
+  fieldHeaderDescription: {
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.textMuted,
+    marginBottom: theme.spacing.sm,
+  },
+  fieldHeaderStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  fieldHeaderStatsNumber: {
+    fontSize: theme.typography.sizes.xl,
+    fontFamily: theme.typography.fontFamily.bold,
+    color: theme.colors.charcoal,
+  },
+  fieldHeaderStatsLabel: {
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.textMuted,
+  },
+  fieldHeaderStatsSeparator: {
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.textMuted,
+  },
+  emptyState: {
+    marginHorizontal: theme.spacing.lg,
+    backgroundColor: theme.colors.cardBackground,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.xxxl,
+    alignItems: 'center',
+    ...theme.shadows.soft,
+  },
+  emptyEmoji: {
+    fontSize: 60,
+    marginBottom: theme.spacing.md,
+  },
+  emptyTitle: {
+    fontSize: theme.typography.sizes.xl,
+    fontFamily: theme.typography.fontFamily.medium,
+    color: theme.colors.charcoal,
+    marginBottom: theme.spacing.sm,
+  },
+  emptySubtitle: {
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.textMuted,
+    marginBottom: theme.spacing.lg,
+    textAlign: 'center',
+  },
+  emptyButton: {
+    backgroundColor: theme.colors.bgGradientDark,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.sm,
+  },
+  emptyButtonText: {
+    fontSize: theme.typography.sizes.md,
+    fontFamily: theme.typography.fontFamily.medium,
+    color: theme.colors.charcoal,
+  },
+  lessonsContainer: {
+    paddingHorizontal: theme.spacing.lg,
+  },
+  lessonCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.cardBackground,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    ...theme.shadows.soft,
+  },
+  lessonBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: theme.borderRadius.sm,
+    backgroundColor: theme.colors.coral,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: theme.spacing.md,
+  },
+  lessonBadgeText: {
+    fontSize: theme.typography.sizes.md,
+    fontFamily: theme.typography.fontFamily.bold,
+    color: '#FFFFFF',
+  },
+  lessonCardContent: {
+    flex: 1,
+  },
+  lessonMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
+    gap: theme.spacing.xs,
+  },
+  difficultyPill: {
+    backgroundColor: `${theme.colors.coral}20`,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 2,
+    borderRadius: theme.borderRadius.full,
+  },
+  difficultyText: {
+    fontSize: theme.typography.sizes.xs,
+    fontFamily: theme.typography.fontFamily.medium,
+    color: theme.colors.coral,
+  },
+  lessonMetaText: {
+    fontSize: theme.typography.sizes.xs,
+    color: theme.colors.textMuted,
+  },
+  lessonMetaSeparator: {
+    fontSize: theme.typography.sizes.xs,
+    color: theme.colors.textMuted,
+  },
+  lessonCardTitle: {
+    fontSize: theme.typography.sizes.md,
+    fontFamily: theme.typography.fontFamily.bold,
+    color: theme.colors.charcoal,
+    marginBottom: theme.spacing.xs,
+  },
+  lessonCardDescription: {
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.textMuted,
+  },
+  lessonArrow: {
+    width: 40,
+    height: 40,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.bgGradientDark,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
-
-export default LessonsScreen;

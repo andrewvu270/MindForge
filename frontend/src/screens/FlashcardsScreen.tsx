@@ -2,16 +2,18 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { theme } from '../theme';
 
-// This matches frontendweb/src/pages/Learn.tsx
-// Main learning interface for a specific lesson
-export default function LearnScreen({ route }: any) {
-  const { id } = route.params || {};
+// This matches frontendweb/src/pages/Flashcards.tsx
+// Flashcard review interface
+export default function FlashcardsScreen({ route }: any) {
+  const { field } = route.params || {};
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Learn: Lesson {id}</Text>
-        <Text style={styles.subtitle}>Main learning interface</Text>
+        <Text style={styles.title}>Flashcards</Text>
+        <Text style={styles.subtitle}>
+          {field ? `Review ${field} flashcards` : 'Review your flashcards'}
+        </Text>
       </View>
     </ScrollView>
   );
