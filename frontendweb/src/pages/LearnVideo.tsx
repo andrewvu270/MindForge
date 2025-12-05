@@ -91,19 +91,37 @@ export default function LearnVideo() {
           </div>
 
           {/* Actions below video */}
-          <div className="flex gap-4 mt-6">
-            <Link
-              to={`/learn/read/${id}`}
-              className="btn-secondary px-6 py-3"
-            >
-              📖 Read Mode
-            </Link>
-            <Link
-              to={`/quiz/${id}`}
-              className="btn-primary px-6 py-3"
-            >
-              Take Quiz
-            </Link>
+          <div className="w-full max-w-2xl mt-6 space-y-4">
+            {/* Try Other Learning Styles */}
+            <div className="flex flex-wrap gap-3 justify-center">
+              <Link
+                to={`/learn/${id}`}
+                className="px-6 py-3 bg-white text-charcoal rounded-xl font-medium hover:bg-cream transition-colors"
+              >
+                Swipe Cards
+              </Link>
+              <Link
+                to={`/learn/read/${id}`}
+                className="px-6 py-3 bg-white text-charcoal rounded-xl font-medium hover:bg-cream transition-colors"
+              >
+                Deep Read
+              </Link>
+              <Link
+                to={`/flashcards`}
+                className="px-6 py-3 bg-white text-charcoal rounded-xl font-medium hover:bg-cream transition-colors"
+              >
+                Review
+              </Link>
+            </div>
+            
+            <div className="flex gap-4 justify-center">
+              <Link
+                to={`/quiz/${id}`}
+                className="btn-primary px-8 py-4 text-lg"
+              >
+                Take the Quiz
+              </Link>
+            </div>
           </div>
         </div>
       ) : (

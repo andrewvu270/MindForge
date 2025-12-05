@@ -78,6 +78,12 @@ app.include_router(progress_router)
 async def root():
     return {"message": "MindForge Learning Platform API is running"}
 
+@app.get("/favicon.ico")
+async def favicon():
+    """Return 204 No Content for favicon requests to avoid 405 errors"""
+    from fastapi.responses import Response
+    return Response(status_code=204)
+
 @app.options("/{full_path:path}")
 async def options_handler(full_path: str):
     """Handle OPTIONS requests for CORS preflight"""

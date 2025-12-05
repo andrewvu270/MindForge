@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
 import { theme } from '../theme';
+import Navbar from '../components/Navbar';
 
 // This matches frontendweb/src/pages/Learn.tsx
 // Main learning interface for a specific lesson
@@ -8,16 +9,23 @@ export default function LearnScreen({ route }: any) {
   const { id } = route.params || {};
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Learn: Lesson {id}</Text>
-        <Text style={styles.subtitle}>Main learning interface</Text>
-      </View>
-    </ScrollView>
+    <SafeAreaView style={styles.safeArea}>
+      <Navbar />
+      <ScrollView style={styles.container}>
+        <View style={styles.content}>
+          <Text style={styles.title}>Learn: Lesson {id}</Text>
+          <Text style={styles.subtitle}>Main learning interface</Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

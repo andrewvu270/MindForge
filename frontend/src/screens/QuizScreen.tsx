@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StatusBar,
+  SafeAreaView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { theme } from '../theme';
+import Navbar from '../components/Navbar';
 import { ClayButton } from '../components/ClayButton';
 import { apiService } from '../services/api';
 
@@ -102,12 +104,13 @@ const QuizScreen: React.FC<Props> = ({ route, navigation }) => {
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
+        <Navbar />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
           <Text style={styles.loadingText}>Loading quiz...</Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -116,7 +119,8 @@ const QuizScreen: React.FC<Props> = ({ route, navigation }) => {
     const passed = percentage >= 70;
 
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
+        <Navbar />
         <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
         <ScrollView contentContainerStyle={styles.resultsContainer}>
           <Animated.View entering={FadeInUp.duration(600)} style={styles.resultsCard}>
@@ -189,7 +193,7 @@ const QuizScreen: React.FC<Props> = ({ route, navigation }) => {
             })}
           </Animated.View>
         </ScrollView>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -197,7 +201,8 @@ const QuizScreen: React.FC<Props> = ({ route, navigation }) => {
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <Navbar />
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
       
       {/* Header */}
@@ -280,7 +285,7 @@ const QuizScreen: React.FC<Props> = ({ route, navigation }) => {
           containerStyle={styles.nextButton}
         />
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -54,12 +54,12 @@ class AutoContentGenerator:
         
         # Field-specific topics to track
         self.field_topics = {
-            'tech': ['AI', 'machine learning', 'blockchain', 'cybersecurity', 'cloud computing'],
-            'finance': ['stock market', 'cryptocurrency', 'investing', 'personal finance', 'trading'],
-            'economics': ['inflation', 'GDP', 'monetary policy', 'trade', 'labor market'],
-            'culture': ['social media', 'art', 'philosophy', 'communication', 'trends'],
-            'influence': ['leadership', 'persuasion', 'negotiation', 'public speaking', 'emotional intelligence'],
-            'global': ['breaking news', 'world news', 'international', 'geopolitics', 'current events']  # Prioritize latest news
+            'tech': ['quantum computing', 'neural networks', 'robotics', 'space exploration', 'biotechnology', 'renewable energy tech'],
+            'finance': ['sustainable investing', 'fintech innovation', 'DeFi', 'venture capital', 'financial literacy', 'market psychology'],
+            'economics': ['circular economy', 'behavioral economics', 'supply chain', 'economic inequality', 'digital currencies', 'green economics'],
+            'culture': ['digital culture', 'creative industries', 'cultural diversity', 'media literacy', 'design thinking', 'storytelling'],
+            'influence': ['authentic leadership', 'digital influence', 'conflict resolution', 'team dynamics', 'personal branding', 'change management'],
+            'global': ['climate action', 'sustainable development', 'global health', 'human rights', 'innovation trends', 'future of work']
         }
         
         # Field-specific source preferences
@@ -446,12 +446,16 @@ class AutoContentGenerator:
             lesson: Lesson data
         """
         try:
-            # Generate a larger pool of questions (10-15)
-            # Users will see random 5 questions from this pool each time
+            # Generate a pool of questions (5 to avoid truncation)
+            # Users will see random questions from this pool each time
             questions = await self.llm_service.generate_quiz(
-                lesson_content=lesson['content'],
-                num_questions=15  # Create question pool
+                lesson_content=lesson['content'][:2000],  # Limit content length
+                num_questions=5  # Reduced to avoid JSON truncation
             )
+            
+            if not questions or len(questions) == 0:
+                logger.warning(f"No quiz questions generated for lesson {lesson.get('id')}")
+                return
             
             if questions:
                 

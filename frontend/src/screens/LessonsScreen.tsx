@@ -6,11 +6,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  SafeAreaView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme';
 import ClayMascot from '../components/ClayMascot';
+import Navbar from '../components/Navbar';
 import { apiService } from '../services/api';
 
 export default function LessonsScreen() {
@@ -55,14 +57,19 @@ export default function LessonsScreen() {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.colors.coral} />
-      </View>
+      <SafeAreaView style={styles.loadingContainer}>
+        <Navbar />
+        <View style={styles.loadingContent}>
+          <ActivityIndicator size="large" color={theme.colors.coral} />
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={styles.safeArea}>
+      <Navbar />
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {!selectedField ? (
         /* STEP 1: Field Selection */
         <>
@@ -241,19 +248,27 @@ export default function LessonsScreen() {
 
       <View style={{ height: 40 }} />
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
   },
   loadingContainer: {
     flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  loadingContent: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.background,
   },
   header: {
     paddingHorizontal: theme.spacing.lg,

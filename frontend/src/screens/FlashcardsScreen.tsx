@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
 import { theme } from '../theme';
+import Navbar from '../components/Navbar';
 
 // This matches frontendweb/src/pages/Flashcards.tsx
 // Flashcard review interface
@@ -8,18 +9,25 @@ export default function FlashcardsScreen({ route }: any) {
   const { field } = route.params || {};
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Flashcards</Text>
-        <Text style={styles.subtitle}>
-          {field ? `Review ${field} flashcards` : 'Review your flashcards'}
-        </Text>
-      </View>
-    </ScrollView>
+    <SafeAreaView style={styles.safeArea}>
+      <Navbar />
+      <ScrollView style={styles.container}>
+        <View style={styles.content}>
+          <Text style={styles.title}>Flashcards</Text>
+          <Text style={styles.subtitle}>
+            {field ? `Review ${field} flashcards` : 'Review your flashcards'}
+          </Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

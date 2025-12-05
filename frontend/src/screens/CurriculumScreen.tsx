@@ -7,10 +7,12 @@ import {
     TouchableOpacity,
     ActivityIndicator,
     Alert,
+    SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../theme';
+import Navbar from '../components/Navbar';
 import { apiService } from '../services/api';
 
 const CurriculumScreen = ({ route, navigation }: any) => {
@@ -111,15 +113,19 @@ const CurriculumScreen = ({ route, navigation }: any) => {
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={color} />
-                <Text style={styles.loadingText}>Loading path...</Text>
-            </View>
+            <SafeAreaView style={styles.loadingContainer}>
+                <Navbar />
+                <View style={styles.loadingContent}>
+                    <ActivityIndicator size="large" color={color} />
+                    <Text style={styles.loadingText}>Loading path...</Text>
+                </View>
+            </SafeAreaView>
         );
     }
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
+            <Navbar />
             <LinearGradient
                 colors={[color + '40', theme.colors.background]}
                 style={styles.header}
@@ -171,7 +177,7 @@ const CurriculumScreen = ({ route, navigation }: any) => {
                     </View>
                 )}
             </ScrollView>
-        </View>
+        </SafeAreaView>
     );
 };
 
@@ -182,9 +188,12 @@ const styles = StyleSheet.create({
     },
     loadingContainer: {
         flex: 1,
+        backgroundColor: theme.colors.background,
+    },
+    loadingContent: {
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: theme.colors.background,
     },
     loadingText: {
         marginTop: 10,

@@ -285,9 +285,32 @@ export default function LearnRead() {
             <h2 className="text-2xl font-semibold text-charcoal mb-4">
               Great job! You've completed the lesson.
             </h2>
-            <p className="text-muted mb-8 max-w-md mx-auto">
+            <p className="text-muted mb-6 max-w-md mx-auto">
               Ready to test your knowledge? Take the quiz to see how much you've learned.
             </p>
+            
+            {/* Try Other Learning Styles */}
+            <div className="mb-8 flex flex-wrap gap-3 justify-center">
+              <Link
+                to={`/learn/${id}`}
+                className="px-6 py-3 bg-white text-charcoal rounded-xl font-medium hover:bg-cream transition-colors"
+              >
+                Swipe Cards
+              </Link>
+              <Link
+                to={`/learn/video/${id}`}
+                className="px-6 py-3 bg-white text-charcoal rounded-xl font-medium hover:bg-cream transition-colors"
+              >
+                Video
+              </Link>
+              <Link
+                to={`/flashcards`}
+                className="px-6 py-3 bg-white text-charcoal rounded-xl font-medium hover:bg-cream transition-colors"
+              >
+                Review
+              </Link>
+            </div>
+            
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={handleComplete}

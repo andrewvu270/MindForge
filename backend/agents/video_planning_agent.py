@@ -46,44 +46,43 @@ class VideoPlanningAgent:
         """
         try:
             # Use LLM to analyze content and create video plan
-            prompt = f"""Analyze this educational lesson and create an optimal video structure.
+            prompt = f"""You are an expert instructional designer creating a microlearning video for mobile viewing.
 
-Lesson Title: {lesson_title}
+LESSON DETAILS:
+Title: {lesson_title}
 Field: {field}
 Difficulty: {difficulty}
-Target Duration: {target_duration} seconds
+Target: {target_duration} seconds
 
-Lesson Content:
-{lesson_content}
+CONTENT:
+{lesson_content[:1500]}
 
-Create a video plan with:
-1. Optimal number of slides (4-8 slides recommended)
-2. Content breakdown for each slide
-3. Duration for each slide (total should equal {target_duration}s)
-4. Visual description for each slide
+CREATE A VIDEO PLAN:
+- 4-7 slides (keep it concise for microlearning)
+- Each slide should have ONE clear concept
+- Visual descriptions must be specific and vivid (not generic)
+- Timing should create good pacing (vary between 8-12 seconds)
 
-Consider:
-- Content complexity (more complex = more slides)
-- Key concepts that need visual explanation
-- Natural content breaks
-- Engagement (vary slide duration to maintain interest)
+VISUAL REQUIREMENTS:
+- Describe concrete, specific imagery (not abstract concepts)
+- Consider mobile 9:16 portrait format
+- Each visual should enhance understanding, not just decorate
 
-Return as JSON:
+Return ONLY valid JSON:
 {{
-    "total_slides": 6,
+    "total_slides": 5,
     "total_duration": {target_duration},
     "slides": [
         {{
             "slide_number": 1,
-            "title": "Introduction",
-            "content_summary": "Brief overview of the topic",
+            "title": "Hook/Introduction",
+            "content_summary": "What this slide covers in 1 sentence",
             "duration_seconds": 10,
-            "visual_prompt": "Title slide with engaging visual for {lesson_title}",
-            "key_points": ["point 1", "point 2"]
-        }},
-        ...
+            "visual_prompt": "Specific, vivid description of what to show (e.g., 'Close-up of quantum computer chip with glowing circuits' not 'technology image')",
+            "key_points": ["specific point 1", "specific point 2"]
+        }}
     ],
-    "reasoning": "Why this structure works for this content"
+    "reasoning": "Brief explanation of structure choice"
 }}"""
 
             response = await self.llm.generate_text(prompt, max_tokens=800)
@@ -249,21 +248,39 @@ Return as JSON:
         """
         prompts = []
         
-        # Base style for consistency (can be adjusted per field if needed)
-        base_style = "High quality educational illustration, modern flat design with subtle texture, professional color palette."
+        # Field-specific visual styles for better relevance
+        field_styles = {
+            'tech': "Modern tech aesthetic, vibrant blues and purples, clean geometric shapes, futuristic elements",
+            'finance': "Professional business style, gold and navy palette, charts and graphs, sophisticated design",
+            'economics': "Analytical visualization, data-driven graphics, balanced composition, clear infographics",
+            'culture': "Colorful and diverse imagery, cultural symbols, warm tones, inclusive representation",
+            'influence': "Human-centered design, warm professional tones, connection and growth themes",
+            'global': "World map elements, international perspective, balanced news aesthetic, credible design"
+        }
+        
+        # Get field-specific style or use default
+        field_key = field.lower() if field else 'tech'
+        style_guide = field_styles.get(field_key, "Modern educational design, professional quality")
+        
+        # Base quality requirements for mobile viewing
+        base_quality = "High quality, sharp details, optimized for mobile screens, 9:16 portrait format"
         
         for i, slide in enumerate(video_plan.get('slides', [])):
             # Use the specific visual prompt from the plan if available
             visual_prompt = slide.get('visual_prompt', '')
             slide_title = slide.get('title', 'Slide')
+            content_summary = slide.get('content_summary', '')
             
             if not visual_prompt:
-                # Fallback if no visual prompt in plan
-                visual_prompt = f"Educational illustration for '{slide_title}' related to {lesson_title}"
+                # Create intelligent fallback based on content
+                visual_prompt = f"Educational visual representing '{slide_title}': {content_summary[:100]}"
             
-            # Combine into a full image generation prompt
-            # 9:16 aspect ratio is handled by the image service, but we specify the composition here
-            enhanced_prompt = f"{visual_prompt}. {base_style} 9:16 portrait composition, clear focal point, minimal text."
+            # Enhanced prompt engineering for better results
+            enhanced_prompt = f"""{visual_prompt}. 
+Style: {style_guide}. 
+Composition: Vertical 9:16 mobile-optimized layout, clear focal point in center, important elements in safe zone (avoid edges).
+Quality: {base_quality}, no text overlays, suitable for narration overlay.
+Mood: Engaging and educational, professional yet approachable.""".replace('\n', ' ').strip()
             
             prompts.append(enhanced_prompt)
         

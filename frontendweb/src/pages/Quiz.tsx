@@ -81,6 +81,15 @@ export default function Quiz() {
       const res = await apiService.submitQuiz(submission);
       setResult(res);
       
+      // Mark lesson as complete if user passes with 60% or more (3/5 questions)
+      if (res.percentage >= 60 && lessonId) {
+        try {
+          await apiService.completeLesson(lessonId, 'user_1');
+        } catch (error) {
+          console.error('Error completing lesson:', error);
+        }
+      }
+      
       // Show celebration if passing
       if (res.percentage >= 70) {
         setShowCelebration(true);

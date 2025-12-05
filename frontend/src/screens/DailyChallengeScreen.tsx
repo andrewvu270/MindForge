@@ -7,9 +7,11 @@ import {
   TouchableOpacity,
   Alert,
   StatusBar,
+  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme';
+import Navbar from '../components/Navbar';
 import { BentoCard } from '../components/BentoCard';
 
 const DailyChallengeScreen = ({ navigation }: { navigation: any }) => {
@@ -175,7 +177,8 @@ const DailyChallengeScreen = ({ navigation }: { navigation: any }) => {
   const progress = (completedSteps.length / (challenge.lessons.length + 1)) * 100;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <Navbar />
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
       <ScrollView
         style={styles.scrollView}
@@ -204,7 +207,7 @@ const DailyChallengeScreen = ({ navigation }: { navigation: any }) => {
           </TouchableOpacity>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

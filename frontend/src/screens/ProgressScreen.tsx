@@ -7,10 +7,12 @@ import {
   Dimensions,
   StatusBar,
   TouchableOpacity,
+  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../theme';
+import Navbar from '../components/Navbar';
 import { BentoCard } from '../components/BentoCard';
 import { ClayStatCard } from '../components/ClayStatCard';
 import StatCard from '../components/StatCard';
@@ -282,7 +284,8 @@ const ProgressScreen = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <Navbar />
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
       <ScrollView
         style={styles.scrollView}
@@ -299,7 +302,7 @@ const ProgressScreen = () => {
 
         {renderWeeklyActivity()}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -10,10 +10,12 @@ import {
   StatusBar,
   KeyboardAvoidingView,
   Platform,
+  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { theme } from '../theme';
+import Navbar from '../components/Navbar';
 import { ClayButton } from '../components/ClayButton';
 import { apiService } from '../services/api';
 
@@ -95,24 +97,27 @@ const ReflectionScreen = ({ navigation }: { navigation: any }) => {
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
+        <Navbar />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
           <Text style={styles.loadingText}>Loading reflection...</Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
-      
-      {/* Header */}
-      <View style={styles.header}>
+    <SafeAreaView style={styles.container}>
+      <Navbar />
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
+        
+        {/* Header */}
+        <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
@@ -269,7 +274,8 @@ const ReflectionScreen = ({ navigation }: { navigation: any }) => {
           </Animated.View>
         )}
       </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
@@ -277,6 +283,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  keyboardView: {
+    flex: 1,
   },
   loadingContainer: {
     flex: 1,

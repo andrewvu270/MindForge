@@ -5,7 +5,7 @@ import { LottieLoader } from '../components/LottieEnhanced';
 
 interface LessonCard {
   id: string;
-  type: 'intro' | 'context' | 'insight' | 'deepdive' | 'sowhat' | 'takeaway' | 'sources';
+  type: 'intro' | 'context' | 'insight' | 'deepdive' | 'sowhat' | 'takeaway' | 'learningstyles' | 'sources';
   title?: string;
   content: string;
   subContent?: string;
@@ -78,7 +78,15 @@ export default function Learn() {
       content: lesson.learning_objectives?.[0] || extractTakeaway(lesson.content || ''),
     });
 
-    // 6. Sources - Transparency
+    // 6. Try Other Learning Styles
+    cards.push({
+      id: 'learningstyles',
+      type: 'learningstyles',
+      title: 'Try Other Learning Styles',
+      content: 'Learn the same content in different ways',
+    });
+
+    // 7. Sources - Transparency
     if (lesson.sources?.length > 0) {
       cards.push({
         id: 'sources',
@@ -175,6 +183,7 @@ export default function Learn() {
       case 'deepdive': return 'bg-cream text-charcoal';
       case 'sowhat': return 'bg-honey-light text-charcoal';
       case 'takeaway': return 'bg-sage-light text-charcoal';
+      case 'learningstyles': return 'bg-gradient-to-br from-coral/10 via-sage/10 to-sky/10 text-charcoal';
       case 'sources': return 'bg-lavender-light text-charcoal';
       default: return 'bg-warm-white text-charcoal';
     }
@@ -214,6 +223,7 @@ export default function Learn() {
               {card.type === 'deepdive' && 'Going deeper'}
               {card.type === 'sowhat' && 'Why it matters'}
               {card.type === 'takeaway' && 'Remember this'}
+              {card.type === 'learningstyles' && 'More ways to learn'}
               {card.type === 'sources' && 'Our sources'}
             </div>
 
@@ -234,7 +244,28 @@ export default function Learn() {
 
             {/* Content */}
             <div className="flex-1 flex flex-col justify-center">
-              {card.type === 'sources' && card.sources ? (
+              {card.type === 'learningstyles' ? (
+                <div className="flex flex-col gap-3">
+                  <Link
+                    to={`/learn/read/${id}`}
+                    className="px-6 py-3 bg-white text-charcoal rounded-xl font-medium hover:bg-cream transition-colors text-center"
+                  >
+                    Deep Read
+                  </Link>
+                  <Link
+                    to={`/learn/video/${id}`}
+                    className="px-6 py-3 bg-white text-charcoal rounded-xl font-medium hover:bg-cream transition-colors text-center"
+                  >
+                    Video
+                  </Link>
+                  <Link
+                    to={`/flashcards`}
+                    className="px-6 py-3 bg-white text-charcoal rounded-xl font-medium hover:bg-cream transition-colors text-center"
+                  >
+                    Review
+                  </Link>
+                </div>
+              ) : card.type === 'sources' && card.sources ? (
                 <div className="space-y-3">
                   <p className="text-sm text-charcoal/70 mb-4">{card.content}</p>
                   {card.sources.map((src: any, i: number) => (

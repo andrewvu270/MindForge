@@ -7,8 +7,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Dimensions,
+  SafeAreaView,
 } from 'react-native';
 import { Lesson, QuizQuestion } from '../types';
+import Navbar from '../components/Navbar';
 import apiService from '../services/api';
 
 const { width, height } = Dimensions.get('window');
@@ -127,30 +129,33 @@ const LessonDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
+        <Navbar />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#00FFF0" />
           <Text style={styles.loadingText}>Loading lesson...</Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (error || !lesson) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
+        <Navbar />
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error || 'Lesson not found'}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={loadLessonAndQuiz}>
             <Text style={styles.retryText}>Retry</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <Navbar />
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={[styles.header, { borderColor: lesson.category?.color || '#00FFF0' }]}>
@@ -207,7 +212,7 @@ const LessonDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
