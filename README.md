@@ -22,9 +22,6 @@ AI-powered microlearning platform that synthesizes content from multiple sources
 - **Agents**: LessonSynthesis Agent, QuizGeneration Agent, ReflectionAnalysis Agent, Recommendation Agent, APISelector Agent, ContentSmart Agent, VideoPlanning Agent
 - **Animations**: LottieFiles, MagicUI
 
-## Current Status
+## License
 
-- Backend: 100% functional
-- Frontend UI: 100% complete
-- Video Generation: 80% 
-- Testing: 70% coverage
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
