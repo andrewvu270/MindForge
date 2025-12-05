@@ -176,5 +176,3 @@ web-build/
 # Cache directories
 .cache/
 *.cache
-
-.kiro
