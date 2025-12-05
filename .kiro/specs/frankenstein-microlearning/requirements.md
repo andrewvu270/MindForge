@@ -1,130 +1,196 @@
-# Requirements Document
+# Requirements Document - MindForge (As Built)
 
 ## Introduction
 
-MindForge + Frankenstein Microlearning Hub is an AI-powered microlearning platform that delivers bite-sized lessons (5-25 minutes) across multiple knowledge domains. The system pulls content from external APIs, uses AI to generate summaries and quizzes, automatically schedules learning sessions, and includes gamification features with progress analytics. The platform is designed for busy professionals seeking efficient, structured learning across technology, finance, economics, culture, influence skills, and global events.
+MindForge is an AI-powered microlearning platform that delivers bite-sized lessons (5-10 minutes) across multiple knowledge domains through an engaging, mobile-first web interface. The system uses AI to automatically generate complete lessons with content, quizzes, images, and video plans from real-world sources. The platform features multiple learning modalities (swipe cards, deep read, video, flashcards), intelligent progress tracking with quiz-based validation, and gamification elements.
 
-**Platform:** React Native mobile app with FastAPI backend (existing foundation will be extended)
+**Platform:** React web app (mobile-optimized) with FastAPI backend + Supabase PostgreSQL
 
 ## Glossary
 
 - **MindForge**: The microlearning platform system
-- **Lesson**: A structured learning unit lasting 5-25 minutes
-- **Field**: A knowledge domain (Technology, Finance, Economics, Culture, Influence Skills, Global Events)
-- **Quiz**: A set of questions generated to reinforce lesson content
-- **Reflection**: A daily prompt for soft skills development with AI feedback
-- **Streak**: Consecutive days of completed learning activities
-- **Leaderboard**: A ranking system showing user performance
-- **AI Agent**: Backend service that processes content using AI models
-- **External API**: Third-party data sources (Hacker News, Yahoo Finance, FRED, Google Books, YouTube, BBC News, Reddit, Wikipedia)
-- **MCP**: Model Context Protocol used during development in Kiro IDE
-- **Session**: A scheduled learning activity (lesson, quiz, or reflection)
+- **Lesson**: A structured learning unit lasting 5-10 minutes with content, quiz, and media
+- **Field**: A knowledge domain (Technology, Finance, Economics, Culture, Influence, Global Events)
+- **Quiz**: 5 multiple-choice questions generated to validate learning
+- **Learning Modes**: Swipe Cards, Deep Read, Video, Review (Flashcards)
+- **Streak**: Consecutive days of completed learning activities (passing quizzes)
+- **Completion**: Lessons marked complete only when user passes quiz with 60%+ (3/5 questions)
+- **AI Agent**: Backend service that orchestrates content generation using LLMs
+- **External API**: Third-party data sources (arXiv, Reddit, HackerNews, NASA, Financial APIs, etc.)
+- **LLM**: Large Language Model (Groq Llama 3 70B, OpenAI GPT-4)
+- **ML Model**: Machine Learning model (Hugging Face Stable Diffusion for images)
 
-## Requirements
+## Core Requirements (As Implemented)
 
-### Requirement 1
+### Requirement 1: AI-Powered Lesson Generation
 
-**User Story:** As a learner, I want to access field-specific bite-sized lessons synthesized from multiple heterogeneous sources within that field, so that I can efficiently learn with unified, coherent content that combines different data types and formats.
+**User Story:** As a learner, I want AI-generated lessons synthesized from multiple real-world sources, so that I can learn current, relevant information across different fields.
 
-#### Acceptance Criteria
+#### Acceptance Criteria (Implemented)
 
-1. WHEN a user requests a lesson for a specific field THEN the MindForge SHALL retrieve content from 2 to 4 different sources within that field simultaneously
-2. WHEN content is retrieved from multiple sources THEN the MindForge SHALL normalize different data formats (numeric data, informal text, news articles, video transcripts, structured lessons) into a unified format
-3. WHEN content is normalized THEN the MindForge SHALL use AI to synthesize a coherent lesson summary of less than 200 words that integrates all source materials
-4. WHEN a lesson is displayed THEN the MindForge SHALL present content in a structured format with clear learning objectives and source attribution
-5. WHERE the field is Technology THEN the MindForge SHALL fetch content from Hacker News API, Reddit API, and internal MindForge technology lessons
-6. WHERE the field is Finance THEN the MindForge SHALL fetch content from Yahoo Finance API, convert numeric stock data to readable insights, and combine with internal MindForge finance lessons
-7. WHERE the field is Economics THEN the MindForge SHALL fetch content from FRED API, convert economic indicators to simplified explanations, and combine with internal MindForge economics lessons
-8. WHERE the field is Culture THEN the MindForge SHALL fetch content from Google Books API, Reddit API, and internal MindForge culture lessons
-9. WHERE the field is Influence Skills THEN the MindForge SHALL fetch content from YouTube Data API, extract transcripts or captions, and combine with internal MindForge influence lessons
-10. WHERE the field is Global Events THEN the MindForge SHALL fetch content from BBC News API and internal MindForge global events lessons
-11. WHEN supplemental context is needed for any field THEN the MindForge SHALL fetch content from Wikipedia API
-12. WHEN multiple sources within a field have conflicting information THEN the MindForge SHALL use AI to reconcile differences and present balanced perspectives
-13. WHEN video content is retrieved THEN the MindForge SHALL extract transcripts or captions before processing
-14. WHEN numeric data is retrieved THEN the MindForge SHALL convert it to human-readable insights before synthesis
+1. ✅ System fetches content from 2-4 external APIs per field
+2. ✅ AI synthesizes coherent lesson content from multiple sources
+3. ✅ Lessons include title, content, learning objectives, and source attribution
+4. ✅ System generates 5 contextual quiz questions per lesson
+5. ✅ System generates mobile-optimized images (1080x1920, 9:16 portrait)
+6. ✅ System plans video structure with scene breakdowns
+7. ✅ Fallback mechanisms when APIs fail (Groq → OpenAI → Fallback quiz)
+8. ✅ Lessons stored in Supabase with all metadata
 
-### Requirement 2
+**Fields and Sources:**
+- Technology: arXiv, Reddit, HackerNews
+- Finance: Financial APIs, Reddit
+- Economics: FRED, arXiv
+- Culture: Google Books, Reddit
+- Influence: YouTube, Reddit
+- Global Events: BBC News, NASA
 
-**User Story:** As a learner, I want AI-generated quizzes after each lesson, so that I can reinforce my understanding of the material.
+### Requirement 2: Multi-Modal Learning Experience
 
-#### Acceptance Criteria
+**User Story:** As a learner, I want to consume lessons in different formats, so that I can learn in the way that suits me best.
 
-1. WHEN a lesson is completed THEN the MindForge SHALL generate a quiz with 3 to 5 questions based on the lesson content
-2. WHEN a quiz is generated THEN the MindForge SHALL use consistent question format with multiple choice options
-3. WHEN a user submits quiz answers THEN the MindForge SHALL calculate the score and provide immediate feedback
-4. WHEN quiz feedback is provided THEN the MindForge SHALL include explanations for correct and incorrect answers
-5. WHEN a quiz is completed THEN the MindForge SHALL store the results for progress tracking
+#### Acceptance Criteria (Implemented)
 
-### Requirement 3
+1. ✅ **Swipe Cards**: TikTok-style cards with intro, context, insights, takeaway
+2. ✅ **Deep Read**: Long-form article with progress tracking and scroll-based navigation
+3. ✅ **Video Mode**: Mobile-optimized video player (9:16 portrait)
+4. ✅ **Review Mode**: Flashcard system for spaced repetition
+5. ✅ Cross-navigation between modes with "Try Other Learning Styles" buttons
+6. ✅ Consistent lesson content across all modes
 
-**User Story:** As a learner, I want a gamified dashboard with points and achievements, so that I stay motivated to continue learning.
+### Requirement 3: Quiz-Based Learning Validation
 
-#### Acceptance Criteria
+**User Story:** As a learner, I want to prove my understanding through quizzes, so that I only get credit for lessons I actually learned.
 
-1. WHEN a user completes a lesson THEN the MindForge SHALL award points based on lesson difficulty and completion time
-2. WHEN a user completes activities on consecutive days THEN the MindForge SHALL increment the user streak counter
-3. WHEN a user achieves specific milestones THEN the MindForge SHALL unlock and display achievements
-4. WHEN a user views the leaderboard THEN the MindForge SHALL display rankings based on total points earned
-5. WHEN user points are updated THEN the MindForge SHALL recalculate leaderboard positions in real-time
+#### Acceptance Criteria (Implemented)
 
-### Requirement 4
+1. ✅ 5 multiple-choice questions per lesson
+2. ✅ Questions generated from lesson content using AI
+3. ✅ Immediate scoring and feedback
+4. ✅ Lessons marked complete only when user scores 60%+ (3/5 correct)
+5. ✅ Quiz results stored for progress tracking
+6. ✅ Celebration animations for passing scores
 
-**User Story:** As a learner, I want AI-powered lesson recommendations, so that I can discover relevant content based on my progress and interests.
+### Requirement 4: Intelligent Progress Tracking
 
-#### Acceptance Criteria
+**User Story:** As a learner, I want to track my learning progress, so that I can see my improvement over time.
 
-1. WHEN a user completes a lesson THEN the MindForge SHALL analyze completion history and performance
-2. WHEN generating recommendations THEN the MindForge SHALL consider user field preferences and difficulty progression
-3. WHEN recommendations are displayed THEN the MindForge SHALL present 3 to 5 suggested next lessons
-4. WHEN a user has completed lessons in multiple fields THEN the MindForge SHALL recommend cross-field learning opportunities
+#### Acceptance Criteria (Implemented)
 
-### Requirement 5
+1. ✅ Topics learned counter (lessons completed with passing quiz)
+2. ✅ Total study time tracking
+3. ✅ Daily streak tracking (consecutive days with completed lessons)
+4. ✅ Real-time stats updates on dashboard
+5. ✅ Progress only counts when quiz passed (60%+)
+6. ✅ Streak calculation based on last activity date
 
-**User Story:** As a learner developing influence skills, I want daily reflection prompts with AI feedback, so that I can improve my soft skills over time.
+### Requirement 5: Gamification System
 
-#### Acceptance Criteria
+**User Story:** As a learner, I want points and achievements, so that I stay motivated to continue learning.
 
-1. WHEN a new day begins THEN the MindForge SHALL generate a daily reflection prompt related to influence skills
-2. WHEN a user submits a reflection THEN the MindForge SHALL analyze the response using AI
-3. WHEN AI analysis is complete THEN the MindForge SHALL provide constructive feedback on the reflection
-4. WHEN feedback is provided THEN the MindForge SHALL track reflection quality and progress over time
-5. WHEN a user views reflection history THEN the MindForge SHALL display past reflections with feedback and progress trends
+#### Acceptance Criteria (Implemented)
 
-### Requirement 6
+1. ✅ Points awarded for lesson completion
+2. ✅ Streak tracking with current and longest streak
+3. ✅ Daily challenge system (4 tasks: watch, quiz, reflection, flashcards)
+4. ✅ Leaderboard system (implemented but not fully populated)
+5. ✅ Achievement system (framework in place)
 
-**User Story:** As a learner, I want learning sessions automatically scheduled into my calendar, so that I maintain consistent learning habits.
+### Requirement 6: Mobile-First Design
 
-#### Acceptance Criteria
+**User Story:** As a mobile learner, I want an optimized mobile experience, so that I can learn on my phone.
 
-1. WHEN a user sets learning preferences THEN the MindForge SHALL create a schedule for lessons, quizzes, and reflections
-2. WHEN a session is scheduled THEN the MindForge SHALL add the session to the user calendar with appropriate time blocks
-3. WHERE a user enables notifications THEN the MindForge SHALL send reminders before scheduled sessions
-4. WHEN a scheduled session time arrives THEN the MindForge SHALL make the session available for immediate access
-5. WHEN a user completes a scheduled session THEN the MindForge SHALL mark it as complete and schedule the next session
+#### Acceptance Criteria (Implemented)
 
-### Requirement 7
+1. ✅ Responsive design with TailwindCSS
+2. ✅ Touch-friendly UI elements
+3. ✅ Mobile-optimized images (9:16 portrait)
+4. ✅ Vertical video support
+5. ✅ Swipe gestures for card navigation
+6. ✅ Progress bars and visual feedback
 
-**User Story:** As a learner, I want comprehensive progress analytics, so that I can track my learning performance across all fields.
+### Requirement 7: Content Feed
 
-#### Acceptance Criteria
+**User Story:** As a learner, I want a social media-style feed, so that I can discover and consume lessons easily.
 
-1. WHEN a user views analytics THEN the MindForge SHALL display completion rates for each field
-2. WHEN a user views analytics THEN the MindForge SHALL show quiz scores with trends over time
-3. WHEN a user views analytics THEN the MindForge SHALL display current streak and longest streak achieved
-4. WHEN a user views analytics THEN the MindForge SHALL show cross-field learning distribution
-5. WHEN analytics are calculated THEN the MindForge SHALL update metrics in real-time as activities are completed
+#### Acceptance Criteria (Implemented)
 
-### Requirement 8
+1. ✅ Vertical scrolling feed of lessons
+2. ✅ Lesson cards with images, titles, and metadata
+3. ✅ "Learn More" button navigates to lesson detail
+4. ✅ Field-based filtering
+5. ✅ Engaging visual design with animations
 
-**User Story:** As a developer, I want the backend to implement AI agent functions that orchestrate multi-source content integration, so that the production system can seamlessly process heterogeneous data and generate unified learning materials.
+## Technical Requirements (As Implemented)
 
-#### Acceptance Criteria
+### Backend Architecture
 
-1. WHEN the backend receives a lesson request THEN the AI Agent SHALL call multiple external APIs in parallel based on the field
-2. WHEN content is retrieved from multiple sources THEN the AI Agent SHALL transform different data types (numeric, text, video transcripts) into a common format
-3. WHEN content is normalized THEN the AI Agent SHALL call OpenAI or Hugging Face API to synthesize a coherent summary from multiple sources
-4. WHEN a quiz is needed THEN the AI Agent SHALL call AI models to generate questions that span content from multiple sources
-5. WHEN a reflection is submitted THEN the AI Agent SHALL call AI models to analyze and provide feedback
-6. WHEN recommendations are requested THEN the AI Agent SHALL use AI models to analyze user data and suggest next lessons
-7. WHEN the leaderboard is updated THEN the AI Agent SHALL recalculate rankings and persist changes to the database
-8. WHEN API rate limits are encountered THEN the AI Agent SHALL implement fallback strategies and queue requests appropriately
+1. ✅ FastAPI async web framework
+2. ✅ Supabase PostgreSQL database
+3. ✅ AI agent architecture for content generation
+4. ✅ LLM integration (Groq + OpenAI fallback)
+5. ✅ ML model integration (Hugging Face Stable Diffusion)
+6. ✅ External API adapters (10+ sources)
+7. ✅ Robust error handling and fallback chains
+
+### Frontend Architecture
+
+1. ✅ React 18 + TypeScript
+2. ✅ Vite build system
+3. ✅ TailwindCSS styling
+4. ✅ Lottie animations
+5. ✅ React Router for navigation
+6. ✅ Axios for API communication
+
+### AI/ML Pipeline
+
+1. ✅ Multi-agent content orchestration
+2. ✅ API selector agent for source selection
+3. ✅ Content intelligence agent for synthesis
+4. ✅ Quiz generation agent with fallbacks
+5. ✅ Image generation with prompt engineering
+6. ✅ Video planning agent for scene structure
+
+## Non-Functional Requirements (As Implemented)
+
+### Performance
+
+1. ✅ Async API calls for parallel processing
+2. ✅ Caching strategy for external APIs
+3. ✅ Optimized database queries
+4. ✅ Lazy loading of content
+
+### Reliability
+
+1. ✅ Fallback chains (Groq → OpenAI → Hardcoded)
+2. ✅ Error handling at all layers
+3. ✅ Retry logic for transient failures
+4. ✅ JSON repair for incomplete LLM responses
+
+### Security
+
+1. ✅ Environment variables for API keys
+2. ✅ Supabase authentication (framework in place)
+3. ✅ Input validation
+4. ✅ CORS configuration
+
+### Usability
+
+1. ✅ Intuitive navigation
+2. ✅ Clear visual hierarchy
+3. ✅ Immediate feedback
+4. ✅ Accessible design patterns
+5. ✅ Consistent UI across pages
+
+## Future Enhancements (Not Yet Implemented)
+
+1. ⏳ Complete video generation pipeline
+2. ⏳ Social features (sharing, friends)
+3. ⏳ Offline mode
+4. ⏳ More fields and topics
+5. ⏳ Personalized AI tutor
+6. ⏳ Community-generated content
+7. ⏳ Advanced analytics
+8. ⏳ Reflection system with AI feedback
+9. ⏳ Automated scheduling
+10. ⏳ Push notifications

@@ -1,743 +1,635 @@
-# Design Document
+# Design Document - As Built
 
 ## Overview
 
-MindForge + Frankenstein Microlearning Hub is an AI-powered platform that orchestrates multiple heterogeneous data sources within each learning field to create unified, coherent micro-lessons. The system's core innovation is using AI as an integration layer that normalizes different data types (numeric, informal text, video transcripts, structured content) and synthesizes them into bite-sized lessons with automatically generated quizzes, reflections, and scheduling.
+MindForge is an AI-powered microlearning platform that delivers personalized education through multiple learning modalities. The system uses AI agents to orchestrate content generation from 10+ external APIs, synthesize lessons, generate quizzes, and create mobile-optimized media.
 
-The platform extends the existing React Native + FastAPI architecture with new AI orchestration services, external API integrations, and gamification features.
+**Key Innovation:** Multi-modal learning (swipe cards, deep read, video, flashcards) combined with AI-powered content generation and quiz-based validation ensures actual learning, not just content consumption.
+
+The platform is built with React (web) + FastAPI architecture with AI orchestration services, external API integrations, and gamification features.
 
 ## Architecture
 
-### High-Level Architecture
+### High-Level Architecture (As Built)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    React Native Frontend                     │
-│  (Existing screens + New: Reflections, Leaderboard, Calendar)│
+│              React Web Frontend (Vite + TypeScript)          │
+│  Feed │ Learn (Swipe) │ LearnRead │ LearnVideo │ Review     │
+│  Quiz │ Progress │ Curriculum │ Achievements │ Leaderboard  │
 └────────────────────┬────────────────────────────────────────┘
                      │ REST API
 ┌────────────────────▼────────────────────────────────────────┐
 │                    FastAPI Backend                           │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │         Content Orchestration Service                │   │
-│  │  (Multi-source fetching + normalization)             │   │
+│  │         AI Agent Orchestration                       │   │
+│  │  - API Selector Agent (chooses best sources)        │   │
+│  │  - Content Intelligence Agent (synthesizes)         │   │
+│  │  - Quiz Generation Agent (creates assessments)      │   │
+│  │  - Video Planning Agent (structures videos)         │   │
 │  └──────────────────────────────────────────────────────┘   │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │         AI Synthesis Service                         │   │
-│  │  (OpenAI/Hugging Face integration)                   │   │
+│  │         LLM Service (Groq + OpenAI Fallback)        │   │
+│  │  - Lesson synthesis                                  │   │
+│  │  - Quiz generation (5 questions, batch processing)  │   │
+│  │  - JSON repair logic                                │   │
 │  └──────────────────────────────────────────────────────┘   │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │         Gamification Service                         │   │
-│  │  (Points, streaks, achievements, leaderboard)        │   │
+│  │         Media Generation Services                    │   │
+│  │  - Image: Hugging Face Stable Diffusion (9:16)     │   │
+│  │  - Audio: TTS + Music Mixing                        │   │
+│  │  - Video: Planning + Scene Generation               │   │
+│  └──────────────────────────────────────────────────────┘   │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │         Progress & Gamification Service              │   │
+│  │  - Quiz-based completion (60%+ pass)                │   │
+│  │  - Streak tracking, points, achievements            │   │
 │  └──────────────────────────────────────────────────────┘   │
 └────────────────────┬────────────────────────────────────────┘
                      │
 ┌────────────────────▼────────────────────────────────────────┐
-│                  External APIs Layer                         │
-│  Hacker News │ Reddit │ Yahoo Finance │ FRED │ Google Books │
-│  YouTube │ BBC News │ Wikipedia                              │
+│                  External APIs (10+ sources)                 │
+│  arXiv │ Reddit │ HackerNews │ NASA │ FRED │ Yahoo Finance │
+│  Google Books │ YouTube │ BBC News │ RSS Feeds              │
 └─────────────────────────────────────────────────────────────┘
                      │
 ┌────────────────────▼────────────────────────────────────────┐
-│              Supabase (PostgreSQL + Auth)                    │
-│  Tables: lessons, quizzes, progress, reflections,           │
-│          achievements, leaderboard, scheduled_sessions       │
+│              Supabase (PostgreSQL + Storage)                 │
+│  Tables: lessons, quizzes, quiz_questions, user_progress,   │
+│          learning_paths, flashcards, achievements            │
+│  Storage: Generated images, audio, videos                    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Key Architectural Decisions
+### Key Architectural Decisions (As Built)
 
-1. **AI as Integration Layer**: AI models (OpenAI/Hugging Face) serve as the "glue" that normalizes and synthesizes heterogeneous data types
-2. **Parallel API Fetching**: Multiple external APIs are called concurrently to minimize latency
-3. **Caching Strategy**: External API responses cached for 1-6 hours depending on content freshness requirements
-4. **Fallback Mechanisms**: If external APIs fail, system falls back to internal MindForge content only
-5. **Rate Limiting**: Implement request queuing and exponential backoff for API rate limits
+1. **Multi-Agent AI Architecture**: Specialized agents for API selection, content synthesis, quiz generation, and video planning
+2. **LLM Fallback Chain**: Groq (Llama 3 70B) → OpenAI (GPT-4) → Hardcoded fallback for resilience
+3. **Mobile-First Media**: All images 9:16 portrait (1080x1920), videos vertical, optimized for mobile consumption
+4. **Quiz-Based Validation**: Lessons only marked complete when users pass quiz with 60%+ (validates actual learning)
+5. **Batch Processing**: Quizzes generated in batches of 3 questions to avoid JSON truncation
+6. **JSON Repair Logic**: Handles incomplete LLM responses gracefully
+7. **Multi-Modal Learning**: Four learning modes (swipe, read, video, review) for different learning styles
+8. **Real-Time Progress**: Stats update immediately on quiz completion (topics learned, minutes, streaks)
 
-## Components and Interfaces
+## Components and Interfaces (As Built)
 
 ### Backend Components
 
-#### 1. Content Orchestration Service
+#### 1. AI Agent System
 
-**Purpose**: Fetch and normalize content from multiple heterogeneous sources
-
-**Key Classes**:
-- `ContentOrchestrator`: Main coordinator for multi-source fetching
-- `SourceAdapter`: Abstract base class for API-specific adapters
-- `HackerNewsAdapter`, `RedditAdapter`, `YahooFinanceAdapter`, etc.
-- `ContentNormalizer`: Transforms different data types into common format
-
-**Interfaces**:
-```python
-class SourceAdapter(ABC):
-    @abstractmethod
-    async def fetch(self, topic: str, limit: int) -> List[RawContent]
-    
-    @abstractmethod
-    def normalize(self, raw_content: RawContent) -> NormalizedContent
-
-class ContentOrchestrator:
-    async def fetch_multi_source(
-        self, 
-        field: str, 
-        topic: str, 
-        sources: List[str]
-    ) -> List[NormalizedContent]
-```
-
-#### 2. AI Synthesis Service
-
-**Purpose**: Use AI models to synthesize content, generate quizzes, and provide feedback
+**Purpose**: Orchestrate content generation using specialized AI agents
 
 **Key Classes**:
-- `AIClient`: Wrapper for OpenAI/Hugging Face API calls
-- `LessonSynthesizer`: Generates coherent lesson summaries from multiple sources
-- `QuizGenerator`: Creates quiz questions from lesson content
-- `ReflectionAnalyzer`: Analyzes user reflections and provides feedback
+- `APISelector` (`backend/agents/api_selector_agent.py`): Intelligently selects best APIs for each topic
+- `ContentIntelligence` (`backend/agents/content_intelligence_agent.py`): Synthesizes multi-source content
+- `QuizGenerator` (`backend/agents/quiz_generation_agent.py`): Creates contextual quizzes
+- `VideoPlanningAgent` (`backend/agents/video_planning_agent.py`): Plans video structure
 
-**Interfaces**:
+**Implementation**:
 ```python
-class AIClient:
-    async def synthesize_lesson(
-        self, 
-        contents: List[NormalizedContent], 
-        max_words: int = 200
-    ) -> str
-    
-    async def generate_quiz(
-        self, 
-        lesson_content: str, 
-        num_questions: int = 5
-    ) -> List[QuizQuestion]
-    
-    async def analyze_reflection(
-        self, 
-        reflection_text: str, 
-        user_history: List[Reflection]
-    ) -> ReflectionFeedback
-    
-    async def recommend_lessons(
-        self, 
-        user_progress: UserProgress, 
-        available_lessons: List[Lesson]
-    ) -> List[str]
+# API Selector Agent
+class APISelector:
+    async def select_apis(self, field: str, topic: str, available_apis: List[str]) -> List[str]:
+        # Uses LLM to intelligently choose best sources
+        
+# Content Intelligence Agent  
+class ContentIntelligence:
+    async def synthesize_lesson(self, sources: List[dict]) -> dict:
+        # Multi-source content fusion with AI
 ```
 
-#### 3. Gamification Service
+#### 2. LLM Service with Fallback Chain
 
-**Purpose**: Manage points, streaks, achievements, and leaderboard
+**Purpose**: Robust LLM calls with automatic fallback
 
 **Key Classes**:
-- `PointsCalculator`: Calculates points based on activity
-- `StreakTracker`: Manages daily streaks
-- `AchievementManager`: Unlocks and tracks achievements
-- `LeaderboardManager`: Updates and retrieves leaderboard rankings
+- `FreeLLMService` (`backend/services/free_llm_service.py`): Main LLM orchestrator
+- Groq client (primary, fast)
+- OpenAI client (fallback, reliable)
+- JSON repair logic for incomplete responses
 
-**Interfaces**:
+**Implementation**:
 ```python
-class GamificationService:
-    async def award_points(
-        self, 
-        user_id: str, 
-        activity_type: str, 
-        metadata: dict
-    ) -> int
-    
-    async def update_streak(self, user_id: str) -> int
-    
-    async def check_achievements(
-        self, 
-        user_id: str, 
-        user_stats: UserStats
-    ) -> List[Achievement]
-    
-    async def get_leaderboard(
-        self, 
-        scope: str = "global", 
-        limit: int = 100
-    ) -> List[LeaderboardEntry]
+class FreeLLMService:
+    async def generate_quiz(self, lesson_content: str) -> List[dict]:
+        # Batch processing (3 questions at a time)
+        # Groq → OpenAI fallback
+        # JSON repair for incomplete responses
+        # Retry logic (2 attempts)
 ```
 
-#### 4. Scheduling Service
+#### 3. Media Generation Services
 
-**Purpose**: Automatically schedule learning sessions
+**Purpose**: Generate mobile-optimized images, audio, and video content
 
 **Key Classes**:
-- `SessionScheduler`: Creates and manages scheduled sessions
-- `NotificationManager`: Sends reminders for upcoming sessions
+- `ImageGenerationService` (`backend/services/image_generation_service.py`): Hugging Face Stable Diffusion
+- `TTSService` (`backend/services/tts_service.py`): Text-to-speech for narration
+- `MusicService` (`backend/services/music_service.py`): Background music generation
+- `AudioMixerService` (`backend/services/audio_mixer_service.py`): Mix narration + music
+- `VideoGenerationService` (`backend/services/video_generation_service.py`): Video assembly
 
-**Interfaces**:
+**Implementation**:
 ```python
-class SessionScheduler:
-    async def create_schedule(
-        self, 
-        user_id: str, 
-        preferences: SchedulePreferences
-    ) -> List[ScheduledSession]
-    
-    async def get_upcoming_sessions(
-        self, 
-        user_id: str, 
-        days: int = 7
-    ) -> List[ScheduledSession]
+class ImageGenerationService:
+    async def generate_lesson_image(self, lesson_content: str, field: str) -> str:
+        # Mobile-optimized 9:16 portrait (1080x1920)
+        # Field-specific visual styles
+        # No text overlays, safe zones for UI
+        # Uploads to Supabase storage
 ```
 
-### Frontend Components
+#### 4. Progress & Gamification Service
 
-#### New Screens
-- `ReflectionScreen`: Daily reflection prompts and feedback
-- `LeaderboardScreen`: Global and friend leaderboards
-- `CalendarScreen`: View scheduled learning sessions
-- `AchievementsScreen`: View unlocked achievements
+**Purpose**: Track learning progress with quiz-based validation
 
-#### Enhanced Screens
-- `LessonDetailScreen`: Show source attribution for multi-source lessons
-- `ProgressScreen`: Add streak tracking and cross-field analytics
+**Key Classes**:
+- `ProgressService` (`backend/services/progress_service.py`): Tracks completion, streaks, study time
+- `GamificationService` (`backend/services/gamification_service.py`): Points, achievements, leaderboard
 
-## Data Models
+**Implementation**:
+```python
+class ProgressService:
+    async def complete_lesson(self, user_id: str, lesson_id: str):
+        # Only called when user passes quiz (60%+)
+        # Increments lessons_completed
+        # Updates total_study_time_minutes
+        # Calculates streak (consecutive days)
+        # Updates last_activity timestamp
+        
+    async def get_user_stats(self, user_id: str) -> dict:
+        # Returns: topics_learned, minutes, current_streak
+```
+
+#### 5. Auto Content Generator
+
+**Purpose**: Automatically generate complete lessons with all components
+
+**Key Classes**:
+- `AutoContentGenerator` (`backend/services/auto_content_generator.py`): Orchestrates full lesson generation
+
+**Implementation**:
+```python
+class AutoContentGenerator:
+    async def generate_lesson(self, field: str, topic: str) -> dict:
+        # 1. Select best APIs for topic
+        # 2. Fetch content from multiple sources
+        # 3. Synthesize lesson content
+        # 4. Generate 5 quiz questions (batch processing)
+        # 5. Create mobile-optimized image (9:16)
+        # 6. Plan video structure
+        # 7. Generate flashcards
+        # 8. Store everything in database
+```
+
+### Frontend Components (As Built)
+
+#### Core Learning Pages
+- `Feed.tsx`: TikTok-style feed of lessons with "Learn More" button → `/lessons/:id`
+- `Learn.tsx`: Swipe cards mode (TikTok-style vertical swipe)
+- `LearnRead.tsx`: Deep read mode (long-form article)
+- `LearnVideo.tsx`: Video learning mode (9:16 portrait)
+- `Flashcards.tsx`: Review mode (spaced repetition)
+- `Quiz.tsx`: Assessment with 60% pass threshold for completion
+
+#### Navigation Features
+- **Cross-Learning Styles**: Each learning page shows 3 other modes (Swipe Cards, Video, Deep Read, Review)
+- **Simple Button UI**: Text-only buttons for quick mode switching
+- **Consistent Routing**: All modes accessible from any learning page
+
+#### Progress & Gamification
+- `Dashboard.tsx`: Home page with stats (topics learned, minutes, day streak)
+- `Progress.tsx`: Detailed progress tracking
+- `Achievements.tsx`: Unlocked achievements and badges
+- `Leaderboard.tsx`: Global rankings
+- `Curriculum.tsx`: Learning paths and structured courses
+
+#### Key UI Decisions
+- **Mobile-first design**: All layouts optimized for mobile screens
+- **Text contrast**: `text-gray-900` and `text-gray-600` on white backgrounds for readability
+- **9:16 images**: All lesson images portrait format for mobile
+- **Lottie animations**: Smooth, engaging animations throughout
+
+## Data Models (As Built)
 
 ### Core Models
 
 ```python
-class NormalizedContent(BaseModel):
-    source: str  # "hackernews", "reddit", "yahoo_finance", etc.
-    source_type: str  # "text", "numeric", "video_transcript"
-    title: str
-    content: str
-    url: Optional[str]
-    metadata: dict
-    fetched_at: datetime
-
-class SynthesizedLesson(BaseModel):
+# Lessons (backend/models.py)
+class Lesson(BaseModel):
     id: str
     field_id: str
     title: str
-    summary: str  # AI-generated, <200 words
-    sources: List[str]  # Source attribution
-    learning_objectives: List[str]
+    content: str  # AI-synthesized from multiple sources
+    summary: str
     estimated_minutes: int
     difficulty_level: str
+    image_url: Optional[str]  # 9:16 portrait from Hugging Face
+    video_url: Optional[str]
+    audio_url: Optional[str]
+    sources: Optional[List[str]]  # Source attribution
     created_at: datetime
 
+# Quiz Questions (stored in quiz_questions table)
 class QuizQuestion(BaseModel):
     id: str
     lesson_id: str
     question: str
-    question_type: str  # "multiple_choice", "true_false"
-    options: Optional[List[str]]
+    options: List[str]  # 4 options for multiple choice
     correct_answer: str
     explanation: str
-    created_at: datetime
+    order: int  # Question order (1-5)
 
-class Reflection(BaseModel):
-    id: str
+# Quiz Submissions
+class QuizSubmission(BaseModel):
     user_id: str
-    prompt: str
-    response: str
-    ai_feedback: str
-    quality_score: float  # 0-100
+    lesson_id: str
+    answers: dict  # question_id -> user_answer
+    score: int  # Number correct
+    percentage: float  # Score percentage
+    passed: bool  # True if >= 60%
     submitted_at: datetime
 
+# User Progress (tracks completion via quiz validation)
 class UserProgress(BaseModel):
     user_id: str
     field_id: str
-    lessons_completed: int
-    quizzes_completed: int
-    average_quiz_score: float
-    total_points: int
-    current_streak: int
+    lessons_completed: int  # Only increments on quiz pass (60%+)
+    total_study_time_minutes: int
+    current_streak: int  # Consecutive days
     longest_streak: int
     last_activity: datetime
 
-class Achievement(BaseModel):
+# Learning Paths
+class LearningPath(BaseModel):
     id: str
-    name: str
+    field_id: str
+    title: str
     description: str
-    icon: str
-    criteria: dict
-    points_reward: int
+    difficulty_level: str
+    estimated_hours: int
+    lessons: List[str]  # Ordered lesson IDs
+    created_at: datetime
 
-class LeaderboardEntry(BaseModel):
-    rank: int
-    user_id: str
-    username: str
-    total_points: int
-    current_streak: int
-    lessons_completed: int
-
-class ScheduledSession(BaseModel):
+# Flashcards (for review mode)
+class Flashcard(BaseModel):
     id: str
-    user_id: str
-    session_type: str  # "lesson", "quiz", "reflection"
-    content_id: Optional[str]
-    scheduled_time: datetime
-    completed: bool
-    completed_at: Optional[datetime]
+    lesson_id: str
+    front: str  # Question/term
+    back: str  # Answer/definition
+    difficulty: int  # Spaced repetition difficulty
+    next_review: datetime
 ```
 
-### Database Schema Extensions
+### Database Schema (As Built)
+
+See `database/migrations/` for complete schema:
+
+**Key Tables:**
 
 ```sql
--- New tables to add to existing schema
-
-CREATE TABLE synthesized_lessons (
+-- Lessons (000_base_schema.sql)
+CREATE TABLE lessons (
     id UUID PRIMARY KEY,
     field_id VARCHAR(50) REFERENCES fields(id),
     title TEXT NOT NULL,
-    summary TEXT NOT NULL,
-    sources JSONB NOT NULL,  -- Array of source names
-    learning_objectives JSONB,
+    content TEXT NOT NULL,
+    summary TEXT,
     estimated_minutes INT,
     difficulty_level VARCHAR(20),
+    image_url TEXT,  -- Supabase storage URL
+    video_url TEXT,
+    audio_url TEXT,
+    sources JSONB,  -- Array of source APIs used
     created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE reflections (
+-- Quiz Questions (002_flashcards_and_quizzes.sql)
+CREATE TABLE quiz_questions (
+    id UUID PRIMARY KEY,
+    lesson_id UUID REFERENCES lessons(id),
+    question TEXT NOT NULL,
+    options JSONB NOT NULL,  -- Array of 4 options
+    correct_answer TEXT NOT NULL,
+    explanation TEXT,
+    order INT,  -- 1-5
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Quiz Submissions
+CREATE TABLE quiz_submissions (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL,
-    prompt TEXT NOT NULL,
-    response TEXT NOT NULL,
-    ai_feedback TEXT,
-    quality_score FLOAT,
+    lesson_id UUID REFERENCES lessons(id),
+    answers JSONB NOT NULL,
+    score INT NOT NULL,
+    percentage FLOAT NOT NULL,
+    passed BOOLEAN NOT NULL,  -- True if >= 60%
     submitted_at TIMESTAMP DEFAULT NOW()
 );
 
+-- User Progress (tracks quiz-validated completion)
 CREATE TABLE user_progress (
     user_id UUID NOT NULL,
     field_id VARCHAR(50) REFERENCES fields(id),
-    lessons_completed INT DEFAULT 0,
-    quizzes_completed INT DEFAULT 0,
-    average_quiz_score FLOAT DEFAULT 0,
-    total_points INT DEFAULT 0,
-    current_streak INT DEFAULT 0,
+    lessons_completed INT DEFAULT 0,  -- Only increments on quiz pass
+    total_study_time_minutes INT DEFAULT 0,
+    current_streak INT DEFAULT 0,  -- Consecutive days
     longest_streak INT DEFAULT 0,
     last_activity TIMESTAMP,
     PRIMARY KEY (user_id, field_id)
 );
 
-CREATE TABLE achievements (
+-- Learning Paths (004_learning_paths.sql)
+CREATE TABLE learning_paths (
     id UUID PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
+    field_id VARCHAR(50) REFERENCES fields(id),
+    title TEXT NOT NULL,
     description TEXT,
-    icon VARCHAR(50),
-    criteria JSONB NOT NULL,
-    points_reward INT DEFAULT 0
-);
-
-CREATE TABLE user_achievements (
-    user_id UUID NOT NULL,
-    achievement_id UUID REFERENCES achievements(id),
-    unlocked_at TIMESTAMP DEFAULT NOW(),
-    PRIMARY KEY (user_id, achievement_id)
-);
-
-CREATE TABLE leaderboard (
-    user_id UUID PRIMARY KEY,
-    username VARCHAR(100),
-    total_points INT DEFAULT 0,
-    current_streak INT DEFAULT 0,
-    lessons_completed INT DEFAULT 0,
-    last_updated TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE scheduled_sessions (
-    id UUID PRIMARY KEY,
-    user_id UUID NOT NULL,
-    session_type VARCHAR(20) NOT NULL,
-    content_id UUID,
-    scheduled_time TIMESTAMP NOT NULL,
-    completed BOOLEAN DEFAULT FALSE,
-    completed_at TIMESTAMP,
+    difficulty_level VARCHAR(20),
+    estimated_hours INT,
+    lessons JSONB NOT NULL,  -- Ordered array of lesson IDs
     created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE INDEX idx_scheduled_sessions_user_time 
-    ON scheduled_sessions(user_id, scheduled_time);
-CREATE INDEX idx_leaderboard_points 
-    ON leaderboard(total_points DESC);
+-- Flashcards (002_flashcards_and_quizzes.sql)
+CREATE TABLE flashcards (
+    id UUID PRIMARY KEY,
+    lesson_id UUID REFERENCES lessons(id),
+    front TEXT NOT NULL,
+    back TEXT NOT NULL,
+    difficulty INT DEFAULT 0,
+    next_review TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW()
+);
 ```
 
 
-## Correctness Properties
+## Key Implementation Details
 
-*A property is a characteristic or behavior that should hold true across all valid executions of a system-essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
+### Quiz Generation System
 
-### Multi-Source Content Integration Properties
+**Challenge:** LLMs generating incomplete JSON, causing fallback quizzes
 
-**Property 1: Multi-source retrieval count**
-*For any* lesson request for a valid field, the system should retrieve content from 2 to 4 different sources within that field
-**Validates: Requirements 1.1**
+**Solution Implemented:**
+1. **Batch Processing**: Generate 3 questions at a time instead of all 5
+2. **JSON Repair Logic**: Handle incomplete JSON responses gracefully
+3. **Fallback Chain**: Groq → OpenAI → Hardcoded fallback
+4. **Retry Logic**: 2 attempts per generation
+5. **Environment Loading**: Explicit `load_dotenv()` for API keys
 
-**Property 2: Format normalization**
-*For any* set of retrieved content with different data formats (numeric, text, video transcripts), the normalization process should produce outputs that all conform to the same NormalizedContent schema
-**Validates: Requirements 1.2**
+### Quiz-Based Completion Validation
 
-**Property 3: Summary word count constraint**
-*For any* set of normalized content, the AI-synthesized lesson summary should contain fewer than 200 words
-**Validates: Requirements 1.3**
+**Philosophy:** Lessons only count as "complete" when users demonstrate learning
 
-**Property 4: Lesson structure completeness**
-*For any* displayed lesson, the output should contain all required fields: learning objectives, source attribution, title, and content
-**Validates: Requirements 1.4**
+**Implementation:**
+- Quiz pass threshold: 60% (3/5 questions correct)
+- `Quiz.tsx` calls `apiService.completeLesson()` only when `percentage >= 60`
+- Stats update in real-time: topics learned, minutes, day streak
+- Streak calculation based on consecutive days of activity
 
-**Property 5: Wikipedia fallback invocation**
-*For any* lesson request where primary sources return insufficient content, the system should invoke the Wikipedia API
-**Validates: Requirements 1.11**
+### Mobile-First Media Generation
 
-**Property 6: Conflict resolution without errors**
-*For any* set of sources with conflicting information, the AI synthesis process should complete without errors and produce a coherent output
-**Validates: Requirements 1.12**
+**Images:**
+- Aspect ratio: 9:16 portrait (1080x1920)
+- Generated via Hugging Face Stable Diffusion
+- Field-specific visual styles (tech = futuristic, finance = professional, etc.)
+- No text overlays, safe zones for UI elements
+- Uploaded to Supabase storage
 
-**Property 7: Video transcript extraction**
-*For any* video content URL, the system should extract transcripts or captions before passing to the synthesis engine
-**Validates: Requirements 1.13**
+**Videos:**
+- Vertical format (9:16) for mobile
+- AI-planned scene structure
+- TTS narration + background music mixing
+- Optimized for short attention spans (5-7 minutes)
 
-**Property 8: Numeric data transformation**
-*For any* numeric data input (stock prices, economic indicators), the system should convert it to human-readable text before synthesis
-**Validates: Requirements 1.14**
+## Error Handling (As Implemented)
 
-### Quiz Generation Properties
+### LLM Service Failures
 
-**Property 9: Quiz question count**
-*For any* completed lesson, the generated quiz should contain between 3 and 5 questions
-**Validates: Requirements 2.1**
+**Groq → OpenAI Fallback Chain:**
+```python
+try:
+    response = await self._generate_with_groq(prompt)
+except Exception as e:
+    logger.warning(f"Groq failed: {e}, falling back to OpenAI")
+    response = await self._generate_with_openai(prompt)
+```
 
-**Property 10: Quiz format consistency**
-*For any* generated quiz, all questions should follow the same schema with required fields: question, question_type, options (if multiple choice), correct_answer, and explanation
-**Validates: Requirements 2.2**
+**JSON Repair Logic:**
+- Handles incomplete JSON from LLM responses
+- Attempts to repair common JSON errors
+- Falls back to hardcoded quiz if repair fails
 
-**Property 11: Quiz scoring accuracy**
-*For any* quiz submission, the calculated score should equal the number of correct answers divided by total questions
-**Validates: Requirements 2.3**
-
-**Property 12: Feedback completeness**
-*For any* quiz result, feedback should include explanations for all questions (both correct and incorrect)
-**Validates: Requirements 2.4**
-
-**Property 13: Quiz result persistence**
-*For any* completed quiz, the results should be retrievable from the database immediately after submission
-**Validates: Requirements 2.5**
-
-### Gamification Properties
-
-**Property 14: Points award consistency**
-*For any* lesson completion, points should be awarded and the amount should be deterministic based on difficulty and completion time
-**Validates: Requirements 3.1**
-
-**Property 15: Streak increment on consecutive days**
-*For any* user completing activities on consecutive days, the streak counter should increment by exactly 1 each day
-**Validates: Requirements 3.2**
-
-**Property 16: Achievement unlock on criteria match**
-*For any* user whose stats meet achievement criteria, the achievement should be unlocked and visible
-**Validates: Requirements 3.3**
-
-**Property 17: Leaderboard ordering**
-*For any* leaderboard query, results should be ordered by total_points in descending order
-**Validates: Requirements 3.4**
-
-**Property 18: Leaderboard real-time update**
-*For any* point update, the user's leaderboard rank should be recalculated within the same transaction
-**Validates: Requirements 3.5**
-
-### Recommendation Properties
-
-**Property 19: Recommendation trigger on completion**
-*For any* lesson completion, the recommendation engine should be invoked to analyze user progress
-**Validates: Requirements 4.1**
-
-**Property 20: Recommendation difficulty progression**
-*For any* set of recommendations, the suggested lessons should match or slightly exceed the user's current difficulty level
-**Validates: Requirements 4.2**
-
-**Property 21: Recommendation count**
-*For any* recommendation request, the system should return between 3 and 5 suggested lessons
-**Validates: Requirements 4.3**
-
-**Property 22: Cross-field recommendation diversity**
-*For any* user with completed lessons in multiple fields, at least one recommendation should be from a different field than the most recent lesson
-**Validates: Requirements 4.4**
-
-### Reflection Properties
-
-**Property 23: Daily reflection generation**
-*For any* new day, the system should generate exactly one new reflection prompt for influence skills
-**Validates: Requirements 5.1**
-
-**Property 24: Reflection analysis trigger**
-*For any* submitted reflection, the AI analysis service should be invoked
-**Validates: Requirements 5.2**
-
-**Property 25: Reflection feedback generation**
-*For any* analyzed reflection, constructive feedback should be generated and stored
-**Validates: Requirements 5.3**
-
-**Property 26: Reflection quality tracking**
-*For any* reflection with feedback, a quality score between 0 and 100 should be assigned and stored
-**Validates: Requirements 5.4**
-
-**Property 27: Reflection history completeness**
-*For any* user viewing reflection history, all past reflections should include the prompt, response, feedback, and quality score
-**Validates: Requirements 5.5**
-
-### Scheduling Properties
-
-**Property 28: Schedule generation from preferences**
-*For any* valid user preferences, the system should generate a schedule containing lessons, quizzes, and reflections
-**Validates: Requirements 6.1**
-
-**Property 29: Calendar session persistence**
-*For any* scheduled session, it should be retrievable from the calendar by user_id and scheduled_time
-**Validates: Requirements 6.2**
-
-**Property 30: Notification trigger on enabled**
-*For any* user with notifications enabled, reminders should be sent before scheduled sessions
-**Validates: Requirements 6.3**
-
-**Property 31: Session availability at scheduled time**
-*For any* scheduled session, it should become accessible when the current time equals or exceeds the scheduled_time
-**Validates: Requirements 6.4**
-
-**Property 32: Completion triggers next scheduling**
-*For any* completed scheduled session, the system should mark it complete and generate the next session in the sequence
-**Validates: Requirements 6.5**
-
-### Analytics Properties
-
-**Property 33: Completion rate calculation**
-*For any* user and field, the completion rate should equal (lessons_completed / total_lessons_in_field) * 100
-**Validates: Requirements 7.1**
-
-**Property 34: Quiz score trend calculation**
-*For any* user with multiple quiz results, the trend should be calculated from historical scores ordered by date
-**Validates: Requirements 7.2**
-
-**Property 35: Streak display accuracy**
-*For any* user analytics view, both current_streak and longest_streak should be displayed and match database values
-**Validates: Requirements 7.3**
-
-**Property 36: Cross-field distribution sum**
-*For any* user's cross-field learning distribution, the percentages across all fields should sum to 100%
-**Validates: Requirements 7.4**
-
-**Property 37: Real-time metric updates**
-*For any* completed activity, analytics metrics should be recalculated and updated within the same request cycle
-**Validates: Requirements 7.5**
-
-### AI Agent Orchestration Properties
-
-**Property 38: Field-to-API routing**
-*For any* lesson request with a valid field, the system should invoke the correct external APIs associated with that field
-**Validates: Requirements 8.1**
-
-**Property 39: AI synthesis invocation**
-*For any* retrieved content, the AI synthesis service should be called to generate a summary
-**Validates: Requirements 8.2**
-
-**Property 40: Quiz generation AI invocation**
-*For any* quiz generation request, the AI service should be called with the lesson content
-**Validates: Requirements 8.3**
-
-**Property 41: Reflection analysis AI invocation**
-*For any* submitted reflection, the AI service should be called to analyze and provide feedback
-**Validates: Requirements 8.4**
-
-**Property 42: Recommendation AI invocation**
-*For any* recommendation request, the AI service should be called with user progress data
-**Validates: Requirements 8.5**
-
-**Property 43: Leaderboard persistence**
-*For any* leaderboard update, the new rankings should be persisted to the database
-**Validates: Requirements 8.6**
-
-**Property 44: Rate limit fallback**
-*For any* API rate limit error, the system should implement a fallback strategy (queue or use cached data) without failing the request
-**Validates: Requirements 8.7**
-
-## Error Handling
+**Retry Logic:**
+- 2 attempts per LLM call
+- Exponential backoff between retries
+- Comprehensive error logging
 
 ### External API Failures
 
-1. **Timeout Handling**: All external API calls have 10-second timeouts
-2. **Retry Logic**: Failed requests retry up to 3 times with exponential backoff (1s, 2s, 4s)
-3. **Fallback Strategy**: If all external sources fail, use internal MindForge content only
-4. **Partial Success**: If some sources succeed and others fail, proceed with available content
+**Implemented:**
+- Timeout handling (10-30 seconds depending on API)
+- Try/except blocks around all API calls
+- Logging of failures for debugging
+- Graceful degradation (continue with available sources)
 
-### AI Service Failures
-
-1. **Model Fallback**: If OpenAI fails, fallback to Hugging Face (or vice versa)
-2. **Degraded Mode**: If AI synthesis fails, return raw content with basic formatting
-3. **Quiz Fallback**: If quiz generation fails, use pre-generated quiz templates
-4. **Reflection Fallback**: If reflection analysis fails, provide generic constructive feedback
+**Not Implemented:**
+- Automatic retry logic for external APIs
+- Request queuing for rate limits
+- Caching layer (would improve performance)
 
 ### Database Failures
 
-1. **Connection Pooling**: Maintain connection pool with automatic reconnection
-2. **Transaction Rollback**: All multi-step operations use database transactions
-3. **Read Replicas**: Use read replicas for analytics queries to reduce load
+**Implemented:**
+- Supabase client handles connection pooling
+- Error logging for failed queries
+- Transaction support for multi-step operations
 
-### Rate Limiting
+**Known Issues:**
+- Occasional timeout errors during lesson generation (Supabase free tier limits)
+- No automatic retry for failed database writes
 
-1. **Request Queuing**: Queue requests when approaching rate limits
-2. **Caching**: Cache external API responses (1-6 hours depending on content type)
-3. **User Feedback**: Inform users when rate limits cause delays
+## Testing Strategy (As Implemented)
 
-## Testing Strategy
+### Manual Testing
 
-### Unit Testing
+**Primary Testing Approach:**
+- Manual testing through web interface
+- Testing quiz generation with debug scripts
+- Verifying lesson generation end-to-end
+- UI/UX testing across different screen sizes
 
-**Framework**: pytest for backend, Jest for frontend
-
-**Coverage Areas**:
-- Content normalization functions for each data type
-- Points calculation logic
-- Streak tracking logic
-- Quiz scoring algorithms
-- Schedule generation logic
-- Analytics calculation functions
-
-**Example Unit Tests**:
-- Test that numeric data (e.g., stock prices) converts to readable text
-- Test that video URLs trigger transcript extraction
-- Test that quiz scoring correctly handles edge cases (all correct, all wrong, partial)
-- Test that streak resets after a gap in activity
-- Test that leaderboard ranks are calculated correctly
-
-### Property-Based Testing
-
-**Framework**: Hypothesis (Python) for backend, fast-check (TypeScript) for frontend
-
-**Configuration**: Each property test runs minimum 100 iterations
-
-**Test Tagging**: Each property-based test includes a comment with format:
-`# Feature: frankenstein-microlearning, Property X: [property description]`
-
-**Key Property Tests**:
-
-1. **Property 2: Format normalization**
-   - Generate random content in different formats (text, numeric, video)
-   - Verify all outputs conform to NormalizedContent schema
-   - Check that required fields are present and correctly typed
-
-2. **Property 3: Summary word count constraint**
-   - Generate random sets of normalized content
-   - Verify synthesized summaries are always < 200 words
-   - Test with varying content lengths and complexities
-
-3. **Property 11: Quiz scoring accuracy**
-   - Generate random quiz submissions with varying correct/incorrect answers
-   - Verify score calculation: (correct / total) * 100
-   - Test edge cases: all correct, all wrong, empty submission
-
-4. **Property 15: Streak increment on consecutive days**
-   - Generate random sequences of activity dates
-   - Verify streak increments for consecutive days
-   - Verify streak resets after gaps
-
-5. **Property 17: Leaderboard ordering**
-   - Generate random sets of user scores
-   - Verify leaderboard is always sorted by points descending
-   - Test with ties, zero scores, and large datasets
-
-6. **Property 36: Cross-field distribution sum**
-   - Generate random user activity across fields
-   - Verify distribution percentages sum to 100%
-   - Test with uneven distributions and edge cases
+**Test Scripts Created:**
+- `test_quiz_generation_debug.py` - Debug quiz generation issues
+- `test_one_lesson.py` - Test single lesson generation
+- `test_complete_lesson.py` - Test full lesson pipeline
+- `generate_six_lessons.py` - Generate multiple lessons for testing
 
 ### Integration Testing
 
-**Areas**:
-- End-to-end lesson generation: API fetch → normalization → AI synthesis → storage
-- Quiz workflow: generation → user submission → scoring → storage
-- Gamification flow: activity completion → points award → leaderboard update
-- Scheduling flow: preference setting → schedule generation → session completion
+**Tested Workflows:**
+1. **Lesson Generation Pipeline:**
+   - API selection → Content fetching → AI synthesis → Quiz generation → Image generation → Database storage
+   
+2. **Quiz Workflow:**
+   - Quiz generation → User submission → Scoring → Completion validation (60%+) → Progress update
 
-### API Testing
+3. **Multi-Modal Learning:**
+   - Swipe cards → Deep read → Video → Review (flashcards)
+   - Cross-learning style navigation
 
-**External API Mocking**: Use VCR.py to record/replay external API responses for consistent testing
+4. **Progress Tracking:**
+   - Quiz completion → Stats update → Streak calculation
 
-**Test Cases**:
-- Each external API adapter (Hacker News, Reddit, Yahoo Finance, etc.)
-- API failure scenarios and fallback behavior
-- Rate limiting and retry logic
-- Response parsing and error handling
+### Known Issues & Limitations
 
-## Performance Considerations
+**Database Timeouts:**
+- Occasional Supabase timeout errors during lesson generation
+- Transient network issues, not code bugs
+- Workaround: Retry failed generations manually
 
-### Caching Strategy
+**API Rate Limits:**
+- Free tier limits on external APIs
+- No automatic rate limit handling
+- Manual monitoring required
 
-1. **External API Responses**: Cache for 1-6 hours based on content freshness
-   - News/Reddit: 1 hour
-   - Finance data: 15 minutes
-   - Books/Wikipedia: 6 hours
+**Testing Gaps:**
+- No automated unit tests
+- No property-based testing
+- No CI/CD pipeline
+- Limited error scenario testing
 
-2. **AI-Generated Content**: Cache synthesized lessons for 24 hours
-3. **Leaderboard**: Cache top 100 for 5 minutes, invalidate on updates
-4. **User Progress**: Cache per user for 1 minute
+## Performance Considerations (As Implemented)
 
-### Optimization
+### Current Performance
 
-1. **Parallel API Calls**: Use asyncio to fetch from multiple sources concurrently
-2. **Database Indexing**: Index on user_id, field_id, scheduled_time, points
-3. **Lazy Loading**: Load lesson content only when user opens lesson detail
-4. **Pagination**: Paginate leaderboard, lesson lists, and reflection history
+**Lesson Generation:**
+- Takes 20-30 seconds per lesson (API calls + LLM + image generation)
+- Batch processing for quizzes (3 questions at a time) reduces timeouts
+- Async/await used throughout for non-blocking operations
 
-### Scalability
+**Image Generation:**
+- Hugging Face Stable Diffusion: 5-10 seconds per image
+- Images uploaded to Supabase storage
+- URLs stored in database for fast retrieval
 
-1. **Horizontal Scaling**: FastAPI backend can scale horizontally behind load balancer
-2. **Database Connection Pooling**: Use pgbouncer for PostgreSQL connection pooling
-3. **Background Jobs**: Use Celery for async tasks (quiz generation, reflection analysis)
-4. **CDN**: Serve static assets and cached content via CDN
+**Database Queries:**
+- Simple queries (< 100ms)
+- Occasional timeouts on complex writes (Supabase free tier)
+- No caching layer implemented
 
-## Security Considerations
+### Optimization Opportunities
 
-1. **API Key Management**: Store all API keys in environment variables, never in code
-2. **Rate Limiting**: Implement per-user rate limits to prevent abuse
-3. **Input Validation**: Validate all user inputs (reflection text, quiz answers)
-4. **SQL Injection Prevention**: Use parameterized queries via Supabase client
-5. **Authentication**: Use Supabase Auth for user authentication
-6. **CORS**: Configure CORS to allow only frontend domain in production
+**Not Implemented (Would Improve Performance):**
+1. **Caching Layer**: Redis for API responses, generated content
+2. **Background Jobs**: Celery/RQ for async lesson generation
+3. **Database Indexing**: Additional indexes on frequently queried fields
+4. **CDN**: For serving images and static assets
+5. **Connection Pooling**: Advanced database connection management
+6. **Lazy Loading**: Load lesson content on-demand
+7. **Pagination**: For large lists (currently loading all items)
 
-## Deployment Strategy
+### Scalability Considerations
 
-### Development Phase (Using Kiro IDE)
+**Current Architecture:**
+- FastAPI backend deployed on Vercel (serverless)
+- Supabase free tier (limited connections, storage)
+- No load balancing or horizontal scaling
 
-1. **MCP Integration**: Define AI tasks as MCP tools for development
-2. **Agent Hooks**: Automate testing of fetch, summarize, quiz generation
-3. **Steering Docs**: Ensure AI outputs meet quality standards
+**For Production:**
+- Move to dedicated backend hosting (Railway, Render, AWS)
+- Upgrade Supabase tier for better performance
+- Implement caching layer (Redis)
+- Add CDN for media assets
+- Background job queue for lesson generation
 
-### Production Deployment
+## Security Considerations (As Implemented)
 
-1. **Backend**: Deploy FastAPI to cloud platform (AWS, GCP, or Heroku)
-2. **Database**: Use Supabase hosted PostgreSQL
-3. **Frontend**: Deploy React Native app to App Store and Google Play
-4. **Environment Variables**: Configure all API keys and secrets
-5. **Monitoring**: Set up error tracking (Sentry) and performance monitoring
+**Implemented:**
+1. **API Key Management**: All keys in `.env` file, loaded via `load_dotenv()`
+2. **Environment Variables**: Groq, OpenAI, Hugging Face, Supabase keys
+3. **Supabase Client**: Parameterized queries prevent SQL injection
+4. **CORS**: Configured in FastAPI for frontend domain
 
-## Implementation Priorities for 4-Day Deadline
+**Not Implemented:**
+1. **User Authentication**: Currently using hardcoded `user_1` for testing
+2. **Rate Limiting**: No per-user rate limits
+3. **Input Validation**: Minimal validation on user inputs
+4. **Authorization**: No role-based access control
+5. **API Key Rotation**: No automatic key rotation
 
-### Day 1: Core Infrastructure
-- Set up external API adapters (Hacker News, Reddit, Yahoo Finance, FRED)
-- Implement content normalization
-- Set up AI client (OpenAI/Hugging Face)
-- Basic lesson synthesis
+**For Production:**
+- Implement Supabase Auth for real user authentication
+- Add rate limiting middleware
+- Validate and sanitize all user inputs
+- Implement proper authorization checks
+- Set up API key rotation policies
+- Add request logging and monitoring
 
-### Day 2: AI Features
-- Quiz generation
-- Reflection prompts and analysis
-- Recommendation engine
-- Test multi-source integration
+## Deployment Strategy (As Implemented)
 
-### Day 3: Gamification & Scheduling
-- Points and streak tracking
-- Achievements system
-- Leaderboard
-- Session scheduling
-- Calendar integration
+### Current Deployment
 
-### Day 4: Frontend & Polish
-- Update React Native screens
-- Connect all backend endpoints
-- Testing and bug fixes
-- Demo preparation
+**Frontend:**
+- Deployed on Vercel: https://mindforge.vercel.app/
+- React + Vite + TypeScript
+- Automatic deployments from GitHub main branch
+
+**Backend:**
+- Deployed on Vercel (serverless functions)
+- FastAPI with Python 3.11
+- Environment variables configured in Vercel dashboard
+
+**Database:**
+- Supabase hosted PostgreSQL (free tier)
+- Supabase Storage for media files (images, audio, video)
+
+**External Services:**
+- Groq API (primary LLM)
+- OpenAI API (fallback LLM)
+- Hugging Face API (image generation)
+- 10+ external content APIs
+
+### Development Workflow
+
+**Built with Kiro IDE:**
+- Vibe coding approach (conversational development)
+- Rapid iteration on features
+- Real-time debugging and fixes
+- Multi-file coordinated changes
+
+**Version Control:**
+- GitHub repository
+- Main branch auto-deploys to Vercel
+- No CI/CD pipeline (manual testing)
+
+### Production Readiness
+
+**What's Working:**
+- ✅ Full lesson generation pipeline
+- ✅ Multi-modal learning interface
+- ✅ Quiz-based completion validation
+- ✅ Progress tracking and gamification
+- ✅ Mobile-optimized media
+
+**What Needs Work:**
+- ❌ User authentication (currently hardcoded user)
+- ❌ Rate limiting and abuse prevention
+- ❌ Caching layer for performance
+- ❌ Automated testing suite
+- ❌ Error monitoring and logging
+- ❌ Database connection pooling
+- ❌ Background job queue
+
+### Future Deployment Improvements
+
+1. **Authentication**: Implement Supabase Auth
+2. **Monitoring**: Add Sentry for error tracking
+3. **Caching**: Redis layer for API responses
+4. **Background Jobs**: Celery/RQ for async tasks
+5. **CI/CD**: Automated testing and deployment
+6. **Database**: Upgrade Supabase tier for production
+7. **CDN**: CloudFlare for media assets
 
